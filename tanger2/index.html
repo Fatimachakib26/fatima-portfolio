@@ -3,167 +3,360 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Simulateur interactif du montage financier de l'usine Tanger II (cas pédagogique fictif).">
-<style>html,body{height:100%}body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{color-scheme:light}</style>
-<title>Simulateur Tanger II</title>
+<meta name="description" content="Dossier de financement interactif de l'unité industrielle Tanger II (cas pédagogique fictif).">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Tanger II · Dossier de financement</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;1,6..96,400;1,6..96,500&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
 <style>
-/* Mise en page : barre d'outils d'usine (en-tête + onglets), contenu en grille fluide ; couleurs « acier » et « orange sécurité » */
+/* Mise en page : salle de comité de banque privée. Barre latérale (dossier / analyse / démonstration / annexes) + contenu éditorial.
+   Bleu nuit profond, filets et accents or champagne ; Bodoni pour les titres, Manrope pour le texte, DM Mono pour les chiffres. */
 :root{
-  --bg:#f4f5f3; --panel:#ffffff; --ink:#1b2428; --muted:#5d6a70; --line:#dde2e0;
-  --steel:#24566b; --orange:#d9622b; --sage:#4f8a5b; --plum:#7a5c86;
-  --ok:#2f7d4a; --okbg:#e3f1e7; --ko:#b93a2a; --kobg:#f8e5e1; --warn:#a36b07; --warnbg:#fbf0d9;
-  --chip:#eef1ef; --shadow:0 1px 2px rgba(20,35,40,.06),0 4px 14px rgba(20,35,40,.05);
-  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
-  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --bg:#f3f3f1; --bg2:#e9e8e4; --panel:#ffffff; --panel2:#f8f7f4; --ink:#121a2a; --muted:#5f6878; --line:rgba(18,26,42,.10); --hair:rgba(156,122,53,.38);
+  --gold:#9c7a35; --gold-soft:#b8955a; --onGold:#ffffff; --glow:rgba(156,122,53,.10);
+  --c-a:#2f5d8c; --c-b:#a8823a; --c-c:#3f7d63; --c-x:#7a5c95;
+  --ok:#2f7a54; --okbg:rgba(47,122,84,.10); --ko:#a7392c; --kobg:rgba(167,57,44,.09); --warn:#94650c; --warnbg:rgba(148,101,12,.10);
+  --shadow:0 1px 1px rgba(18,26,42,.04),0 10px 30px -12px rgba(18,26,42,.18);
+  --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --radius:14px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#12181b; --panel:#1a2226; --ink:#e6ecea; --muted:#9aa8ad; --line:#2c373c;
-  --steel:#6fb0cb; --orange:#f08a52; --sage:#7fc08b; --plum:#b796c4;
-  --ok:#7fd39a; --okbg:#1d3326; --ko:#ff8f7d; --kobg:#3a2020; --warn:#f2c46b; --warnbg:#3a2f17;
-  --chip:#222c31; --shadow:none; color-scheme:dark}}
+  --bg:#0b111c; --bg2:#0f1726; --panel:#121b2b; --panel2:#172234; --ink:#ebe5d8; --muted:#97a0b0; --line:rgba(235,229,216,.09); --hair:rgba(212,180,118,.30);
+  --gold:#d4b476; --gold-soft:#e7d3a6; --onGold:#14110a; --glow:rgba(212,180,118,.09);
+  --c-a:#86acd9; --c-b:#d4b476; --c-c:#8cc6a6; --c-x:#b99ad8;
+  --ok:#86d1a6; --okbg:rgba(134,209,166,.12); --ko:#f29a8c; --kobg:rgba(242,154,140,.12); --warn:#f0c77a; --warnbg:rgba(240,199,122,.12);
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 40px -20px rgba(0,0,0,.7); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#12181b; --panel:#1a2226; --ink:#e6ecea; --muted:#9aa8ad; --line:#2c373c;
-  --steel:#6fb0cb; --orange:#f08a52; --sage:#7fc08b; --plum:#b796c4;
-  --ok:#7fd39a; --okbg:#1d3326; --ko:#ff8f7d; --kobg:#3a2020; --warn:#f2c46b; --warnbg:#3a2f17;
-  --chip:#222c31; --shadow:none; color-scheme:dark}
+  --bg:#0b111c; --bg2:#0f1726; --panel:#121b2b; --panel2:#172234; --ink:#ebe5d8; --muted:#97a0b0; --line:rgba(235,229,216,.09); --hair:rgba(212,180,118,.30);
+  --gold:#d4b476; --gold-soft:#e7d3a6; --onGold:#14110a; --glow:rgba(212,180,118,.09);
+  --c-a:#86acd9; --c-b:#d4b476; --c-c:#8cc6a6; --c-x:#b99ad8;
+  --ok:#86d1a6; --okbg:rgba(134,209,166,.12); --ko:#f29a8c; --kobg:rgba(242,154,140,.12); --warn:#f0c77a; --warnbg:rgba(240,199,122,.12);
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 40px -20px rgba(0,0,0,.7); color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
-h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
-h1{font-size:clamp(1.4rem,2.6vw,2rem);font-weight:800}
-h2{font-size:1.15rem;font-weight:700}
-h3{font-size:.95rem;font-weight:700}
+html,body{height:100%}
+body{background:var(--bg);background-image:radial-gradient(1200px 600px at 85% -10%,var(--glow),transparent 60%);background-attachment:fixed;color:var(--ink);font:15px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,.serif{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;letter-spacing:-.005em}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02}
+h2{font-size:clamp(1.5rem,2.6vw,2rem);line-height:1.1}
+h3{font-family:var(--f-body);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+em.g{font-style:italic;color:var(--gold)}
+p{margin:0}
 .num,td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 button,select,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.eyebrow{font:600 .72rem var(--f-body);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.rule{height:1px;background:linear-gradient(90deg,var(--hair),transparent);border:0;margin:0}
 
-/* Connexion */
-#login{min-height:100%;display:grid;place-items:center;padding:32px 16px}
-.lcard{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:var(--shadow);display:grid;gap:16px}
-.brand{display:flex;gap:12px;align-items:center}
-.mark{width:46px;height:46px;border-radius:10px;background:var(--steel);color:#fff;display:grid;place-items:center;font:800 1.1rem var(--f-display);position:relative;flex:none}
-.mark::after{content:"";position:absolute;right:-4px;bottom:-4px;width:14px;height:14px;border-radius:3px;background:var(--orange)}
-label.f{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
-input[type=text],input[type=password],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
-.btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--chip);color:var(--ink)}
-.btn.primary{background:var(--orange);color:#fff}
-.btn.steel{background:var(--steel);color:#fff}
-.btn:disabled{opacity:.55;cursor:not-allowed}
+/* ---------- Connexion ---------- */
+#login{min-height:100%;display:grid;grid-template-columns:1.15fr minmax(320px,.85fr)}
+@media (max-width:860px){#login{grid-template-columns:1fr}}
+.lhero{padding:clamp(28px,6vw,72px);display:grid;align-content:space-between;gap:36px;border-right:1px solid var(--line);background:linear-gradient(160deg,var(--bg2),var(--bg))}
+.lhero .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:18px;border-top:1px solid var(--hair);padding-top:22px}
+.fact .v{font:400 clamp(1.6rem,3vw,2.2rem) var(--f-display)}
+.fact .l{font-size:.78rem;color:var(--muted);letter-spacing:.04em}
+.lside{display:grid;place-items:center;padding:32px 16px}
+.lcard{width:min(400px,100%);display:grid;gap:18px}
+.monogram{width:54px;height:54px;border:1px solid var(--hair);border-radius:50%;display:grid;place-items:center;font:italic 500 1.25rem var(--f-display);color:var(--gold)}
+label.f{display:grid;gap:6px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=password],input[type=number],select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;width:100%;color:var(--ink);font-size:.95rem;letter-spacing:0;text-transform:none;font-weight:500}
+input:focus,select:focus{border-color:var(--hair)}
+.btn{border:1px solid var(--line);border-radius:999px;padding:10px 20px;font-weight:600;cursor:pointer;background:var(--panel);color:var(--ink);transition:transform .15s,border-color .15s}
+.btn:hover{border-color:var(--hair)}
+.btn.primary{background:var(--gold);color:var(--onGold);border-color:transparent}
+.btn.primary:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .err{color:var(--ko);font-size:.9rem;min-height:1.2em}
-.demo{font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
-.demo code{font-family:var(--f-mono);background:var(--chip);padding:1px 6px;border-radius:4px;color:var(--ink)}
+.demo{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;line-height:1.8}
+.demo code{font-family:var(--f-mono);background:var(--panel2);border:1px solid var(--line);padding:1px 7px;border-radius:6px;color:var(--ink)}
 
-/* Application */
-#app{display:grid;grid-template-rows:auto auto 1fr;min-height:100%}
-header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
-.who{display:flex;gap:10px;align-items:center;font-size:.88rem;color:var(--muted)}
-.role{font:600 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:var(--chip);padding:3px 8px;border-radius:99px;color:var(--ink)}
-nav.tabs{display:flex;gap:2px;overflow-x:auto;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
-nav.tabs button{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
-nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--orange)}
-main{padding-block:20px 40px;padding-inline:max(16px,3vw);display:grid;gap:18px;max-width:1400px;width:100%;margin:0 auto}
-section.page{display:grid;gap:18px}
-.lead{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:end;justify-content:space-between}
-.lead p{margin:4px 0 0;color:var(--muted);max-width:75ch}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);min-width:0}
-.grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
-.grid3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
-.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:2px;min-width:0}
-.tile .lab{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
-.tile .val{font:600 1.45rem var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ---------- Application ---------- */
+#app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100%}
+aside.side{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--line);background:var(--bg2);padding:26px 18px;display:flex;flex-direction:column;gap:22px}
+.side .brand{display:flex;gap:12px;align-items:center}
+.side .brand b{font:400 1.45rem var(--f-display);display:block;line-height:1}
+.side .brand span{font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+nav#tabs{display:flex;flex-direction:column;gap:18px}
+.navgrp{display:grid;gap:2px}
+.navgrp .gl{font-size:.66rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding:0 10px 6px}
+nav#tabs button{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--muted);font-weight:600;font-size:.9rem}
+nav#tabs button::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.35;flex:none}
+nav#tabs button:hover{color:var(--ink);background:var(--panel)}
+nav#tabs button[aria-selected=true]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--hair)}
+nav#tabs button[aria-selected=true]::before{background:var(--gold);opacity:1}
+.who{margin-top:auto;display:grid;gap:10px;font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+.role{font:500 .7rem var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--gold)}
+@media (max-width:900px){
+  #app{grid-template-columns:minmax(0,1fr)}
+  aside.side{min-width:0;position:sticky;top:env(safe-area-inset-top,0px);height:auto;z-index:6;flex-direction:row;align-items:center;gap:12px;padding:10px 16px;border-right:0;border-bottom:1px solid var(--line);overflow:visible}
+  .side .brand span,.navgrp .gl,.who span{display:none}
+  nav#tabs{flex-direction:row;overflow-x:auto;gap:2px;flex:1;min-width:0}
+  .navgrp{display:flex;gap:2px}
+  nav#tabs button{white-space:nowrap;padding:7px 10px}
+  nav#tabs button::before{display:none}
+  .who{margin:0;border:0;padding:0}
+  .who .btn{padding:6px 12px;font-size:.8rem}
+}
+main{padding-block:clamp(24px,4vw,48px) 56px;padding-inline:clamp(16px,4vw,56px);display:grid;gap:26px;max-width:1380px;width:100%;margin:0 auto;min-width:0}
+section.page{display:grid;gap:26px;min-width:0}
+.lead{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:end;justify-content:space-between}
+.lead>div:not(.seg):not(.toolbar){display:grid;gap:8px;max-width:78ch}
+.lead p{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);min-width:0;display:grid;gap:14px;align-content:start}
+.panel.gilt{border-color:var(--hair)}
+.grid2{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
+.grid3{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+.tile{padding:16px 18px;display:grid;gap:3px;min-width:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.tile .lab{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tile .val{font:400 1.75rem var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:lining-nums tabular-nums}
 .tile .sub{font-size:.8rem;color:var(--muted)}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:3px 9px;border-radius:12px;white-space:normal;max-width:100%}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:4px 11px;border-radius:12px;white-space:normal;max-width:100%;letter-spacing:.01em}
 .pill.ok{background:var(--okbg);color:var(--ok)} .pill.ko{background:var(--kobg);color:var(--ko)} .pill.warn{background:var(--warnbg);color:var(--warn)}
+.pill.gold{background:var(--glow);color:var(--gold);border:1px solid var(--hair)}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:.88rem}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
 th:first-child,td:first-child{text-align:left}
-th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.wrap,th.wrap{white-space:normal;text-align:left;min-width:170px}
+th{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+tr.hl td{background:var(--glow)}
 .chart{width:100%;height:340px}
-.chart.tall{height:440px}
-.verdict{border-radius:10px;padding:12px 14px;border:1px solid var(--line);background:var(--chip)}
-.verdict.ok{background:var(--okbg);border-color:transparent;color:var(--ink)} .verdict.ko{background:var(--kobg);border-color:transparent} .verdict.warn{background:var(--warnbg);border-color:transparent}
-.sim{display:grid;gap:18px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}
-@media (max-width:860px){.sim{grid-template-columns:1fr}}
+.chart.tall{height:440px} .chart.short{height:280px}
+.verdict{border-radius:12px;padding:14px 16px;border:1px solid var(--line);background:var(--panel2)}
+.verdict.ok{background:var(--okbg);border-color:transparent} .verdict.ko{background:var(--kobg);border-color:transparent} .verdict.warn{background:var(--warnbg);border-color:transparent}
+
+/* Héros de la synthèse */
+.hero{position:relative;border:1px solid var(--hair);border-radius:20px;padding:clamp(22px,4vw,44px);background:linear-gradient(140deg,var(--panel),var(--panel2));box-shadow:var(--shadow);display:grid;gap:22px;overflow:hidden}
+.hero::after{content:"T2";position:absolute;right:-10px;bottom:-60px;font:italic 400 clamp(9rem,20vw,16rem)/1 var(--f-display);color:var(--gold);opacity:.07;pointer-events:none}
+.hero .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:start}
+.hero p.sub{color:var(--muted);max-width:62ch;font-size:1.02rem}
+.decision{border-left:2px solid var(--gold);padding:4px 0 4px 18px;display:grid;gap:6px;max-width:90ch}
+.decision b{font:italic 500 1.2rem var(--f-display);color:var(--gold)}
+
+.sim{display:grid;gap:22px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}
+@media (max-width:1100px){.sim{grid-template-columns:1fr}}
 .ctrls{display:grid;gap:12px;align-content:start}
-.ctrls h3{margin-top:6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.ctrls h3{margin-top:8px}
 .rng{display:grid;gap:2px}
-.rng .row{display:flex;justify-content:space-between;gap:8px;font-size:.86rem}
-.rng output{font:600 .82rem var(--f-mono);color:var(--orange)}
-input[type=range]{width:100%;accent-color:var(--orange)}
-.seg{display:inline-flex;background:var(--chip);border-radius:8px;padding:3px;gap:2px}
-.seg button{border:0;background:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;color:var(--muted)}
-.seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
-.scard{display:grid;gap:10px}
+.rng .row{display:flex;justify-content:space-between;gap:8px;font-size:.88rem}
+.rng output{font:500 .82rem var(--f-mono);color:var(--gold)}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:.85rem;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--gold);color:var(--onGold)}
 .scard .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:.88rem}
+.scard h3{font:400 1.15rem var(--f-display);letter-spacing:0;text-transform:none;color:var(--ink);display:flex;gap:8px;align-items:center}
+.kv{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:.9rem}
 .kv span:nth-child(even){font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .delta.up{color:var(--ok)} .delta.down{color:var(--ko)}
-form.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
-fieldset{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px;min-width:0}
-legend{font:700 .8rem var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--steel);padding:0 6px}
-.checks{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+form.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+fieldset{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;min-width:0;align-content:start}
+legend{font:italic 500 1.05rem var(--f-display);color:var(--gold);padding:0 8px}
+.checks{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 .toolbar>label{min-width:150px;flex:1 1 150px}
-details summary{cursor:pointer;color:var(--steel);font-weight:600}
-.big{font:800 clamp(1.3rem,3vw,1.9rem) var(--f-display)}
-.event{font-size:.95rem;padding:10px 14px;border-left:4px solid var(--orange);background:var(--chip);border-radius:6px}
-pre.code{background:var(--chip);padding:12px;border-radius:8px;overflow-x:auto;font:.82rem/1.5 var(--f-mono)}
-footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24px}
+details summary{cursor:pointer;color:var(--gold);font-weight:600}
+.big{font:400 clamp(1.4rem,3vw,2.1rem) var(--f-display)}
+.event{font:italic 400 1.1rem var(--f-display);padding:12px 18px;border-left:2px solid var(--gold);background:var(--panel)}
+pre.code{background:var(--panel2);border:1px solid var(--line);padding:14px;border-radius:10px;overflow-x:auto;font:.82rem/1.6 var(--f-mono)}
+
+/* Dossier */
+.swot{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.swot>div{background:var(--panel);padding:18px;display:grid;gap:8px;align-content:start}
+.swot h4{margin:0;font:italic 500 1.15rem var(--f-display);color:var(--gold)}
+ul.clean{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+ul.clean li{padding-left:16px;position:relative}
+ul.clean li::before{content:"";position:absolute;left:0;top:.7em;width:6px;height:1px;background:var(--gold)}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:12px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start}
+ol.steps li::before{content:counter(s);font:italic 400 1.5rem/1 var(--f-display);color:var(--gold);border-right:1px solid var(--hair);padding-top:2px}
+blockquote.q{margin:0;padding:18px 22px;border-left:2px solid var(--gold);font:italic 400 clamp(1.1rem,2vw,1.35rem)/1.45 var(--f-display);background:var(--panel)}
+.formula{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.formula b{font:italic 500 1.05rem var(--f-display);color:var(--gold)}
+.formula code{font:.86rem/1.6 var(--f-mono);white-space:normal}
+footer{color:var(--muted);font-size:.78rem;text-align:center;padding:10px 16px 28px;grid-column:1/-1}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 
 <div id="login">
-  <form class="lcard" id="loginForm" autocomplete="off">
-    <div class="brand"><div class="mark">T2</div>
-      <div><h2>Simulateur Tanger II</h2><div class="muted" style="font-size:.86rem">Montage financier de l'usine de composants automobiles · cas pédagogique fictif</div></div></div>
-    <label class="f" for="lu">Identifiant<input type="text" id="lu" placeholder="admin" required></label>
-    <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
-    <div class="err" id="lerr" role="alert"></div>
-    <button class="btn primary" id="lbtn" type="submit">Se connecter</button>
-    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations</div>
-  </form>
+  <div class="lhero">
+    <div style="display:grid;gap:18px">
+      <span class="eyebrow">Rapport au comité de financement · Octobre 2026</span>
+      <h1>Unité industrielle<br><em class="g">Tanger II</em></h1>
+      <p class="muted" style="max-width:52ch;font-size:1.05rem">Optimisation du financement d'une usine de pièces plastiques injectées et peintes pour l'automobile, province de Fahs-Anjra, à proximité de Tanger Med.</p>
+    </div>
+    <div class="facts">
+      <div class="fact"><div class="v">960 MDH</div><div class="l">besoin de financement</div></div>
+      <div class="fact"><div class="v">500 000</div><div class="l">kits par an</div></div>
+      <div class="fact"><div class="v">750</div><div class="l">emplois en croisière</div></div>
+      <div class="fact"><div class="v">01/07/2028</div><div class="l">mise en service</div></div>
+    </div>
+  </div>
+  <div class="lside">
+    <form class="lcard" id="loginForm" autocomplete="off">
+      <div class="monogram">T2</div>
+      <div style="display:grid;gap:4px"><h2>Accès au dossier</h2><p class="muted">Détroit Plasturgie Automobile S.A. · société et projet fictifs, cas pédagogique</p></div>
+      <label class="f" for="lu">Identifiant<input type="text" id="lu" placeholder="admin" required></label>
+      <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
+      <div class="err" id="lerr" role="alert"></div>
+      <button class="btn primary" id="lbtn" type="submit">Entrer dans le dossier</button>
+      <div class="demo">Comptes de démonstration<br><code>admin</code> / <code>Tanger2026!</code> accès complet<br><code>jury</code> / <code>Jury2026</code> lecture et simulations</div>
+    </form>
+  </div>
 </div>
 
 <div id="app" hidden>
-  <header class="top">
-    <div class="brand"><div class="mark">T2</div>
-      <div><h1>Tanger II</h1><div class="muted" style="font-size:.84rem">Détroit Plasturgie Automobile · 500 000 kits/an · mise en service 01/07/2028 · besoin ≈ 960 MDH</div></div></div>
-    <div class="who"><span id="whoName"></span><span class="role" id="whoRole"></span><button class="btn" id="logout" type="button">Se déconnecter</button></div>
-  </header>
-  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <aside class="side">
+    <div class="brand"><div class="monogram" style="width:42px;height:42px;font-size:1rem">T2</div><div><b>Tanger II</b><span>Dossier de financement</span></div></div>
+    <nav id="tabs" aria-label="Sections"></nav>
+    <div class="who"><span><span id="whoName"></span> · <span class="role" id="whoRole"></span></span><button class="btn" id="logout" type="button">Se déconnecter</button></div>
+  </aside>
   <main id="main">
 
+    <!-- ===================== SYNTHÈSE ===================== -->
     <section class="page" data-page="dash">
-      <div class="lead"><div><h2>Tableau de bord</h2><p>Les trois montages comparés sur le même business plan. Choisissez un cas d'hypothèses : tout se recalcule.</p></div>
-        <label class="f" for="dCase" style="min-width:220px">Cas d'hypothèses<select id="dCase"></select></label></div>
+      <div class="hero">
+        <div class="top">
+          <div style="display:grid;gap:10px"><span class="eyebrow">Synthèse exécutive</span><h1>Financer <em class="g">960 MDH</em><br>sans perdre le contrôle</h1></div>
+          <label class="f" for="dCase" style="min-width:230px">Cas d'hypothèses<select id="dCase"></select></label>
+        </div>
+        <p class="sub">La maison mère ne peut apporter que 350 MDH. Trois montages sont comparés sur un business plan identique ; le financement change peu la valeur, il décide qui porte le risque.</p>
+        <div class="decision"><b>Décision demandée au comité</b><span>Approuver le montage B sécurisé : 350 MDH de fonds propres, 450 MDH de dette bancaire sur 10 ans, 180 MDH de crédit-bail sur 7 ans. Autoriser la négociation de 160 MDH de lignes de sécurité et lancer la convention d'investissement.</span></div>
+      </div>
       <div class="tiles" id="dTiles"></div>
-      <div class="panel"><div class="tablewrap"><table id="dTable"></table></div></div>
+      <div class="panel"><div class="lead"><h3>Comparaison des trois montages</h3><span class="pill gold">Recommandé : B</span></div><div class="tablewrap"><table id="dTable"></table></div></div>
       <div class="grid2">
-        <div class="panel"><h3>Activité et rentabilité, scénario B (MDH)</h3><div class="chart" id="cAct"></div></div>
+        <div class="panel"><h3>Activité et rentabilité · scénario B (MDH)</h3><div class="chart" id="cAct"></div></div>
         <div class="panel"><h3>DSCR par scénario</h3><div class="chart" id="cDscr"></div></div>
         <div class="panel"><h3>Trésorerie de clôture (MDH)</h3><div class="chart" id="cCash"></div></div>
-        <div class="panel"><h3>Ressources et emplois, scénario B (MDH)</h3><div class="chart" id="cSankey"></div></div>
+        <div class="panel"><h3>Ressources et emplois · scénario B (MDH)</h3><div class="chart" id="cSankey"></div></div>
       </div>
       <div class="verdict ok" id="dVerdict"></div>
     </section>
 
+    <!-- ===================== LE PROJET ===================== -->
+    <section class="page" data-page="projet" hidden>
+      <div class="lead"><div><span class="eyebrow">Partie 1 et 3 du rapport</span><h2>Le projet et son <em class="g">marché</em></h2>
+        <p>Une troisième usine pour DPA, équipementier de rang 1 et 2 : pare-chocs et habillages intérieurs injectés et peints, livrés en juste-à-temps à Melloussa et Kénitra et exportés vers la péninsule Ibérique et la France.</p></div></div>
+      <div class="tiles">
+        <div class="tile"><span class="lab">Capacité</span><span class="val">500 000</span><span class="sub">kits par an (un kit = un véhicule)</span></div>
+        <div class="tile"><span class="lab">Prix 2028</span><span class="val">3 500 MAD</span><span class="sub">≈ 317 EUR par kit</span></div>
+        <div class="tile"><span class="lab">Export</span><span class="val">55 %</span><span class="sub">Ibérie et France</span></div>
+        <div class="tile"><span class="lab">Matières</span><span class="val">62,5 %</span><span class="sub">du prix, importées à 70 %</span></div>
+        <div class="tile"><span class="lab">CAPEX / emploi</span><span class="val">1,05 MDH</span><span class="sub">CA de croisière = 2,0 × CAPEX</span></div>
+      </div>
+      <blockquote class="q">Comment financer un investissement de 960 MDH, soit 1,3 fois les capitaux propres de la maison mère, en préservant à la fois la rentabilité des actionnaires, la liquidité pendant la montée en cadence, la solvabilité vis-à-vis des prêteurs et la flexibilité financière, sans dépendre d'aides publiques non acquises ?</blockquote>
+      <div class="swot">
+        <div><h4>Forces</h4><ul class="clean"><li>Savoir-faire industriel et clients existants</li><li>Maison mère rentable et peu endettée (0,9x l'EBITDA)</li><li>Main-d'œuvre compétitive (SMIG 17,92 DH/h)</li><li>Proximité immédiate des clients et du port</li></ul></div>
+        <div><h4>Faiblesses</h4><ul class="clean"><li>Projet de 4,6 fois l'EBITDA de la maison mère</li><li>Capacité d'apport limitée à 350 MDH</li><li>Dépendance à deux constructeurs</li><li>Matières importées à 70 % (exposition à l'euro)</li></ul></div>
+        <div><h4>Opportunités</h4><ul class="clean"><li>Objectif de 80 % d'intégration locale en 2030</li><li>Charte de l'investissement : primes jusqu'à 30 %</li><li>Exonération d'IS de 5 ans des sociétés industrielles nouvelles</li><li>Nouvelles capacités à Kénitra et Tanger</li></ul></div>
+        <div><h4>Menaces</h4><ul class="clean"><li>Cycle européen (production −11,5 % en 2025)</li><li>Baisses de prix annuelles des constructeurs</li><li>Critères d'origine européens à l'étude</li><li>Volatilité des résines et de l'énergie ; dérive du chantier</li></ul></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h3>Maison mère DPA · données fictives (MDH)</h3><div class="tablewrap"><table>
+          <thead><tr><th>Indicateur</th><th>2023</th><th>2024</th><th>2025</th></tr></thead><tbody>
+          <tr><td>Chiffre d'affaires</td><td class="n">1 420</td><td class="n">1 540</td><td class="n">1 610</td></tr>
+          <tr><td>EBITDA</td><td class="n">178</td><td class="n">196</td><td class="n">209</td></tr>
+          <tr><td>Résultat net</td><td class="n">62</td><td class="n">75</td><td class="n">87</td></tr>
+          <tr><td>Capacité d'autofinancement</td><td class="n">140</td><td class="n">159</td><td class="n">175</td></tr>
+          <tr><td>Capitaux propres</td><td class="n">640</td><td class="n">685</td><td class="n">735</td></tr>
+          <tr><td>Dette financière nette</td><td class="n">260</td><td class="n">228</td><td class="n">190</td></tr>
+          <tr class="hl"><td>Dette nette / EBITDA</td><td class="n">1,46x</td><td class="n">1,16x</td><td class="n">0,91x</td></tr></tbody></table></div>
+          <p class="muted" style="font-size:.88rem">Capacité d'apport de 350 MDH : 100 de trésorerie excédentaire, 160 de flux conservés sur 2026-2028 et 90 d'endettement complémentaire. Au-delà, il faut ouvrir le capital.</p></div>
+        <div class="panel"><h3>Montée en cadence et effectif</h3><div class="chart" id="pRamp"></div></div>
+        <div class="panel"><h3>Budget d'investissement · 791 MDH HT</h3><div class="chart" id="pCapex"></div></div>
+        <div class="panel"><h3>Besoin total de financement (MDH)</h3><div class="tablewrap"><table>
+          <thead><tr><th>Emplois</th><th>A</th><th>B</th><th>C</th><th>Part (B)</th></tr></thead><tbody>
+          <tr><td>CAPEX initial</td><td class="n">791,0</td><td class="n">791,0</td><td class="n">791,0</td><td class="n">82,4 %</td></tr>
+          <tr><td>BFR initial</td><td class="n">107,3</td><td class="n">107,3</td><td class="n">107,3</td><td class="n">11,2 %</td></tr>
+          <tr><td>Réserve de trésorerie</td><td class="n">50,4</td><td class="n">50,4</td><td class="n">50,4</td><td class="n">5,2 %</td></tr>
+          <tr><td>Frais de financement</td><td class="n">5,4</td><td class="n">4,5</td><td class="n">4,7</td><td class="n">0,5 %</td></tr>
+          <tr><td>Intérêts intercalaires</td><td class="n">8,0</td><td class="n">6,8</td><td class="n">7,1</td><td class="n">0,7 %</td></tr>
+          <tr class="hl"><td>Besoin total</td><td class="n">962,1</td><td class="n">960,0</td><td class="n">960,5</td><td class="n">100 %</td></tr></tbody></table></div>
+          <p class="muted" style="font-size:.88rem">Le BFR représente environ 44 jours de chiffre d'affaires ; la réserve de 50 MDH couvre cinq mois de charges fixes.</p></div>
+      </div>
+    </section>
+
+    <!-- ===================== MONTAGE RETENU ===================== -->
+    <section class="page" data-page="montage" hidden>
+      <div class="lead"><div><span class="eyebrow">Partie 6 du rapport</span><h2>Le montage retenu : <em class="g">B, sécurisé</em></h2>
+        <p>Le seul montage que la maison mère peut engager seule, avec des ressources fermes et dans le respect des covenants. Les aides publiques restent un supplément, jamais une condition.</p></div></div>
+        <div class="panel gilt"><h3>Structure recommandée</h3><div class="tablewrap"><table>
+          <thead><tr><th>Ressource</th><th>MDH</th><th>Part</th><th class="wrap">Conditions cibles</th></tr></thead><tbody>
+          <tr><td><span class="dot" style="background:var(--c-a)"></span> Fonds propres, maison mère</td><td class="n">350</td><td class="n">35,7 %</td><td class="wrap">Libérés au prorata des tirages de dette</td></tr>
+          <tr><td><span class="dot" style="background:var(--c-b)"></span> Dette bancaire long terme</td><td class="n">450</td><td class="n">45,9 %</td><td class="wrap">10 ans dont 3 de différé ; semestrialités constantes ; taux fixe ≈ 5,25 %</td></tr>
+          <tr><td><span class="dot" style="background:var(--c-c)"></span> Crédit-bail mobilier</td><td class="n">180</td><td class="n">18,4 %</td><td class="wrap">7 ans ; option d'achat de 1 % ; presses, robots, manutention</td></tr>
+          <tr class="hl"><td>Ressources fermes</td><td class="n">980</td><td class="n">100 %</td><td class="wrap">Besoin : 960 MDH, réserve de 50 MDH incluse</td></tr>
+          <tr><td>Lignes de sécurité (non tirées)</td><td class="n">160</td><td class="n">—</td><td class="wrap">90 MDH d'engagement d'apport + 70 MDH de dette de réserve</td></tr>
+          <tr><td>Prime (conditionnelle)</td><td class="n">56</td><td class="n">—</td><td class="wrap">Affectée à l'annulation des lignes de sécurité ou au remboursement anticipé</td></tr>
+          </tbody></table></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Justification quantitative · calculée en direct</h3><div id="mQuant" class="kv" style="font-size:.95rem"></div>
+          <div class="rule"></div><h3>Justification qualitative</h3>
+          <ul class="clean"><li><b>Contrôle :</b> la maison mère reste seule actionnaire, sans pacte ni délai de levée de fonds.</li><li><b>Diversification :</b> banques et crédit-bailleur ; sûretés concentrées sur l'immobilier et les actifs spécifiques.</li><li><b>Indépendance :</b> le projet tient sans prime ni exonération.</li><li><b>Réversibilité :</b> bascule vers A avec un co-investisseur, ou vers C si la convention est signée.</li></ul></div>
+        <div class="panel"><h3>Carte des risques · probabilité × impact</h3><div class="chart" id="mRisk"></div></div>
+      </div>
+        <div class="panel" style="grid-column:1/-1"><h3>Conditions préalables au premier tirage</h3><ol class="steps">
+          <li><span>Lettres de nomination des constructeurs couvrant au moins <b>70 % de la capacité</b>, avec clause d'indexation des matières.</span></li>
+          <li><span>Offres fermes des banques et du crédit-bailleur : taux, différé, profil et covenants testés à partir de 2030.</span></li>
+          <li><span>Contrat de construction <b>clé en main à prix forfaitaire</b> et date garantie, avec pénalités de retard couvrant charges fixes et loyers.</span></li>
+          <li><span>Engagement écrit de soutien de la maison mère (90 MDH) et dette de réserve (70 MDH) signés avec le crédit principal.</span></li>
+          <li><span>Confirmation par l'administration fiscale du régime applicable (taux, exonération, TVA sur investissements).</span></li></ol></div>
+      <div class="panel"><h3>Mesures de sécurisation</h3><div class="tablewrap"><table>
+        <thead><tr><th>Risque</th><th class="wrap">Mesure</th><th class="wrap">Coût ou effet</th></tr></thead><tbody>
+        <tr><td>Dépassement de CAPEX</td><td class="wrap">Prix forfaitaire ; provision pour aléas de 30 MDH ; lignes de sécurité de 160 MDH</td><td class="wrap">Commission d'engagement ≈ 0,5 % par an sur la tranche non tirée</td></tr>
+        <tr><td>Retard de mise en service</td><td class="wrap">Pénalités de retard ; clause de report du différé ; franchise de loyers à négocier</td><td class="wrap">Neutralise la chute du DSCR</td></tr>
+        <tr><td>Montée en cadence</td><td class="wrap">Réserve de 50 MDH ; trésorerie minimale de 40 MDH ; aucun dividende avant 2030</td><td class="wrap">Liquidité préservée</td></tr>
+        <tr><td>Change sur équipements</td><td class="wrap">Achats à terme d'euros sur 45 % du CAPEX, adossés aux commandes</td><td class="wrap">Coût du CAPEX figé en dirhams</td></tr>
+        <tr><td>Matières premières</td><td class="wrap">Indexation contractuelle des prix ; approvisionnement local en compounds</td><td class="wrap">Protège la marge, variable la plus sensible</td></tr>
+        <tr><td>Taux d'intérêt</td><td class="wrap">Taux fixe sur la dette et le crédit-bail</td><td class="wrap">Sensibilité déjà faible (+1 pt ≈ −11 MDH de VAN)</td></tr>
+        <tr><td>Aide non obtenue</td><td class="wrap">Aucune dépendance : la prime est un supplément</td><td class="wrap">Sans objet dans B</td></tr></tbody></table></div></div>
+    </section>
+
+    <!-- ===================== MISE EN ŒUVRE ===================== -->
+    <section class="page" data-page="oeuvre" hidden>
+      <div class="lead"><div><span class="eyebrow">Partie 7 du rapport</span><h2>Mise en <em class="g">œuvre</em></h2>
+        <p>Du comité de fin 2026 à l'extinction de la dette en 2036 : jalons industriels et financiers, négociations et gouvernance du projet.</p></div></div>
+      <div class="panel"><h3>Calendrier du projet</h3><div class="chart tall" id="oGantt"></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Négociations bancaires et de crédit-bail</h3><div class="tablewrap"><table>
+          <thead><tr><th>Point</th><th class="wrap">Objectif</th><th class="wrap">Position de repli</th></tr></thead><tbody>
+          <tr><td>Taux de la dette</td><td class="wrap">≤ 5,25 % fixe</td><td class="wrap">Taux variable plafonné</td></tr>
+          <tr><td>Différé</td><td class="wrap">3 ans, reportable en cas de retard</td><td class="wrap">2,5 ans avec réserve du service de la dette</td></tr>
+          <tr><td>Profil</td><td class="wrap">Semestrialités constantes</td><td class="wrap">Capital constant sur 16 semestres</td></tr>
+          <tr><td>Covenants</td><td class="wrap">Premier test 2030 ; DSCR ≥ 1,20x ; levier ≤ 3,5x</td><td class="wrap">DSCR de 1,10x les deux premières années</td></tr>
+          <tr><td>Tranche de réserve</td><td class="wrap">70 MDH, disponible 30 mois</td><td class="wrap">50 MDH et engagement d'apport porté à 110 MDH</td></tr>
+          <tr><td>Crédit-bail</td><td class="wrap">6,5 % ; 7 ans ; franchise de 6 mois</td><td class="wrap">Crédit-bail réduit à 120 MDH, dette relevée</td></tr>
+          <tr><td>Sûretés</td><td class="wrap">Limitées aux actifs du projet</td><td class="wrap">Caution plafonnée et dégressive</td></tr></tbody></table></div></div>
+        <div class="panel"><h3>Parties prenantes</h3><ul class="clean">
+          <li><b>Maison mère et conseil :</b> apport, caution, engagement de soutien, gouvernance.</li>
+          <li><b>Pool de 2 à 3 banques et crédit-bailleur :</b> financements, sûretés, covenants.</li>
+          <li><b>CRI, AMDIE, Commission nationale des investissements :</b> convention et prime.</li>
+          <li><b>Administration fiscale et douane :</b> régime fiscal, exonérations de TVA et de droits.</li>
+          <li><b>Constructeurs clients :</b> nominations, homologation, clauses de prix.</li>
+          <li><b>Constructeur et fournisseurs d'équipements :</b> prix forfaitaire, délais, garanties.</li>
+          <li><b>Aménageur de zone et collectivités :</b> foncier, raccordements, autorisations.</li></ul></div>
+      </div>
+      <div class="panel"><h3>Tableau de bord de pilotage</h3><div class="tablewrap"><table>
+        <thead><tr><th>Indicateur</th><th>Fréquence</th><th>Seuil d'alerte</th><th>Responsable</th><th>Valeur simulée (B, central)</th></tr></thead><tbody id="oGov"></tbody></table></div>
+        <p class="muted" style="font-size:.88rem">Comité de pilotage mensuel ; compte rendu trimestriel au conseil d'administration et semestriel aux prêteurs.</p></div>
+    </section>
+
+    <!-- ===================== SIMULATEUR ===================== -->
     <section class="page" data-page="sim" hidden>
-      <div class="lead"><div><h2>Simulateur</h2><p>Déplacez les curseurs : le modèle complet (activité, BFR, dette, crédit-bail, IS, trésorerie, valorisation) se recalcule à chaque mouvement pour les trois montages.</p></div></div>
+      <div class="lead"><div><span class="eyebrow">Analyse</span><h2>Simulateur de <em class="g">chocs</em></h2><p>Chaque curseur relance le modèle complet (activité, BFR, dette, crédit-bail, IS, trésorerie, valorisation) pour les trois montages.</p></div></div>
       <div class="sim">
-        <div class="panel ctrls" id="simCtrls">
-          <label class="f" for="sPreset">Partir du cas<select id="sPreset"></select></label>
-        </div>
-        <div style="display:grid;gap:18px;min-width:0">
+        <div class="panel ctrls" id="simCtrls"><label class="f" for="sPreset">Partir du cas<select id="sPreset"></select></label></div>
+        <div style="display:grid;gap:22px;min-width:0">
           <div class="grid3" id="sCards"></div>
-          <div class="panel" style="display:grid;gap:12px">
+          <div class="panel">
             <div class="lead"><h3>Courbes du scénario</h3><div class="seg" id="sSeg"></div></div>
             <div class="grid2"><div class="chart" id="sCash"></div><div class="chart" id="sDscr"></div></div>
             <div class="chart" id="sFlux"></div>
@@ -172,8 +365,9 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
       </div>
     </section>
 
+    <!-- ===================== FORMULAIRE ===================== -->
     <section class="page" data-page="form" hidden>
-      <div class="lead"><div><h2>Formulaire de scénario</h2><p>Proposez votre propre structure de financement. Elle est contrôlée contre chaque contrainte du cahier des charges et comparée aux scénarios A, B et C.</p></div></div>
+      <div class="lead"><div><span class="eyebrow">Analyse</span><h2>Votre <em class="g">montage</em></h2><p>Proposez une structure de financement : elle est contrôlée contre chaque contrainte du cahier des charges et comparée aux scénarios A, B et C.</p></div></div>
       <form class="panel grid" id="fForm">
         <fieldset><legend>Ressources (MDH)</legend>
           <label class="f" for="fName">Nom du scénario<input type="text" id="fName" value="Mon scénario"></label>
@@ -188,19 +382,21 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
           <label class="f" for="fProf">Profil<select id="fProf"><option value="1">Annuités constantes</option><option value="0">Capital constant</option></select></label>
           <label class="f" for="fLRate">Taux du crédit-bail (%)<input type="number" id="fLRate" value="6.5" min="3" max="12" step="0.05"></label>
         </fieldset>
-        <fieldset><legend>Aides publiques (conditionnelles)</legend>
-          <label class="f" for="fPrime">Prime à l'investissement (% de l'assiette)<input type="number" id="fPrime" value="0" min="0" max="30" step="1"></label>
-          <label class="f" for="fBridge">Part préfinancée par crédit relais (%)<input type="number" id="fBridge" value="0" min="0" max="100" step="10"></label>
-          <label class="f" for="fHol" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="fHol"> Exonération d'IS de 5 ans</label>
+        <fieldset><legend>Aides publiques</legend>
+          <label class="f" for="fPrime">Prime (% de l'assiette)<input type="number" id="fPrime" value="0" min="0" max="30" step="1"></label>
+          <label class="f" for="fBridge">Part préfinancée par relais (%)<input type="number" id="fBridge" value="0" min="0" max="100" step="10"></label>
+          <label for="fHol" style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="fHol"> Exonération d'IS de 5 ans</label>
           <label class="f" for="fCase">Évaluer dans le cas<select id="fCase"></select></label>
           <button class="btn primary" type="submit">Évaluer le scénario</button>
         </fieldset>
       </form>
-      <div id="fOut" style="display:grid;gap:18px"></div>
+      <div id="fOut" style="display:grid;gap:22px"></div>
     </section>
 
+    <!-- ===================== SENSIBILITÉS ===================== -->
     <section class="page" data-page="stress" hidden>
-      <div class="lead"><div><h2>Sensibilités et stress tests</h2><p>Quelles hypothèses pèsent le plus, et le montage résiste-t-il aux chocs de chantier ?</p></div><div class="seg" id="stSeg"></div></div>
+      <div class="lead"><div><span class="eyebrow">Analyse</span><h2>Sensibilités et <em class="g">stress tests</em></h2><p>Quelles hypothèses pèsent le plus, à partir de quel seuil la valeur disparaît, et le montage résiste-t-il aux chocs de chantier ?</p></div><div class="seg" id="stSeg"></div></div>
+      <div class="panel gilt"><div class="lead"><h3>Seuils de rupture · valeur de chaque hypothèse qui annule la VAN</h3><span class="pill gold">calculés en direct</span></div><div class="tablewrap"><table id="stBreak"></table></div></div>
       <div class="grid2">
         <div class="panel"><div class="lead"><h3>Diagramme tornade</h3><select id="tMetric" aria-label="Indicateur" style="width:auto"><option value="npv">VAN projet</option><option value="triEq">TRI des fonds propres</option><option value="dscrMin">DSCR minimum</option><option value="minCash">Trésorerie minimum</option></select></div><div class="chart tall" id="cTornado"></div></div>
         <div class="panel"><div class="lead"><h3>Carte de chaleur</h3><div class="toolbar"><select id="hMetric" aria-label="Indicateur" style="width:auto"><option value="npv">VAN projet</option><option value="dscrMin">DSCR minimum</option><option value="triEq">TRI FP</option></select><select id="hPair" aria-label="Variables" style="width:auto"><option>Prix × Volumes</option><option>CAPEX × Retard</option><option>Matières × Prix</option></select></div></div><div class="chart tall" id="cHeat"></div></div>
@@ -208,28 +404,30 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
       <div class="panel"><h3>Table des cas (onglet 02, section 11)</h3><div class="tablewrap"><table id="stTable"></table></div></div>
     </section>
 
+    <!-- ===================== MONTE-CARLO ===================== -->
     <section class="page" data-page="mc" hidden>
-      <div class="lead"><div><h2>Monte-Carlo</h2><p>Sept facteurs de risque tirés ensemble, avec leurs corrélations (copule gaussienne, décomposition de Cholesky) : prix, volumes, matières, énergie (lois normales), dépassement du CAPEX (loi triangulaire), retard (loi exponentielle tronquée à 18 mois) et taux.</p></div></div>
-      <div class="panel" style="display:grid;gap:12px">
+      <div class="lead"><div><span class="eyebrow">Modèle avancé</span><h2>Monte-<em class="g">Carlo</em></h2><p>Sept facteurs de risque tirés ensemble avec leurs corrélations (copule gaussienne, décomposition de Cholesky) : prix, volumes, matières, énergie, dépassement du CAPEX (loi triangulaire), retard (exponentielle tronquée à 18 mois) et taux.</p></div></div>
+      <div class="panel">
         <div class="toolbar">
           <label class="f" for="mSc">Scénario<select id="mSc"></select></label>
           <label class="f" for="mN">Tirages<select id="mN"><option>250</option><option>500</option><option selected>1000</option><option>2000</option><option>4000</option></select></label>
           <label class="f" for="mSeed">Graine<input type="number" id="mSeed" value="42"></label>
           <button class="btn primary" id="mGo" type="button">Lancer la simulation</button>
         </div>
-        <details><summary>Paramètres des lois</summary><div class="grid3" id="mParams" style="margin-top:10px"></div></details>
+        <details><summary>Paramètres des lois</summary><div class="grid3" id="mParams" style="margin-top:12px"></div></details>
       </div>
       <div class="tiles" id="mTiles"></div>
       <div class="grid2">
         <div class="panel"><h3>Distribution de la VAN projet (MDH)</h3><div class="chart" id="mHist"></div></div>
         <div class="panel"><h3>Distribution du DSCR minimum</h3><div class="chart" id="mDscr"></div></div>
-        <div class="panel"><h3>Contribution au risque (corrélation de rang avec la VAN)</h3><div class="chart" id="mCorr"></div></div>
+        <div class="panel"><h3>Contribution au risque · corrélation de rang avec la VAN</h3><div class="chart" id="mCorr"></div></div>
         <div class="panel"><h3>CAPEX × retard, coloré par la VAN</h3><div class="chart" id="mScatter"></div></div>
       </div>
     </section>
 
+    <!-- ===================== OPTIMISEUR ===================== -->
     <section class="page" data-page="opt" hidden>
-      <div class="lead"><div><h2>Optimiseur de structure</h2><p>Recherche sur grille : quelle répartition fonds propres / dette / crédit-bail maximise le TRI des fonds propres en respectant l'apport maximal, le plafond bancaire, un DSCR ≥ 1,20x, un levier ≤ 3,5x et une trésorerie positive ?</p></div></div>
+      <div class="lead"><div><span class="eyebrow">Modèle avancé</span><h2>Optimiseur de <em class="g">structure</em></h2><p>Quelle répartition fonds propres / dette / crédit-bail maximise le TRI des fonds propres en respectant l'apport maximal, le plafond bancaire, un DSCR ≥ 1,20x, un levier ≤ 3,5x et une trésorerie positive ?</p></div></div>
       <div class="panel toolbar">
         <label class="f" for="oCase">Cas<select id="oCase"></select></label>
         <label class="f" for="oNeed">Ressources à lever (MDH)<input type="number" id="oNeed" value="980" step="10"></label>
@@ -238,13 +436,14 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
         <button class="btn primary" id="oGo" type="button">Optimiser</button>
       </div>
       <div class="grid2" id="oBest"></div>
-      <div class="panel"><div class="lead"><h3>Carte des structures (✓ = admissible, dette = solde)</h3><div class="seg" id="oSeg"></div></div><div class="chart tall" id="oHeat"></div></div>
+      <div class="panel"><div class="lead"><h3>Carte des structures · ✓ = admissible, dette = solde</h3><div class="seg" id="oSeg"></div></div><div class="chart tall" id="oHeat"></div></div>
       <div class="panel"><h3>Frontière rendement / risque</h3><div class="chart" id="oFront"></div></div>
     </section>
 
+    <!-- ===================== EN DIRECT ===================== -->
     <section class="page" data-page="live" hidden>
-      <div class="lead"><div><h2>Simulation en direct</h2><p>Le projet joué année par année, un Monte-Carlo qui converge sous vos yeux, et l'épreuve finale avec un choc tiré au sort.</p></div><div class="seg" id="lSeg"></div></div>
-      <div id="liveFilm" style="display:grid;gap:14px">
+      <div class="lead"><div><span class="eyebrow">Démonstration</span><h2>Simulation en <em class="g">direct</em></h2><p>Le projet joué année par année, un Monte-Carlo qui converge sous vos yeux, et l'épreuve finale avec un choc tiré au sort.</p></div><div class="seg" id="lSeg"></div></div>
+      <div id="liveFilm" style="display:grid;gap:18px">
         <div class="panel toolbar">
           <label class="f" for="lfSc">Scénario<select id="lfSc"></select></label>
           <label class="f" for="lfCase">Cas<select id="lfCase"></select></label>
@@ -255,7 +454,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
         <div class="event" id="lfEvent"></div>
         <div class="grid2"><div class="panel"><div class="chart" id="lfChart"></div></div><div class="panel"><div class="chart" id="lfGauge"></div></div></div>
       </div>
-      <div id="liveMc" hidden style="display:grid;gap:14px">
+      <div id="liveMc" hidden style="display:grid;gap:18px">
         <div class="panel toolbar">
           <label class="f" for="lmSc">Scénario<select id="lmSc"></select></label>
           <label class="f" for="lmN">Tirages<select id="lmN"><option>300</option><option selected>800</option><option>1500</option></select></label>
@@ -264,9 +463,9 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
         <div class="tiles" id="lmTiles"></div>
         <div class="grid2"><div class="panel"><h3>Distribution de la VAN (MDH)</h3><div class="chart" id="lmHist"></div></div><div class="panel"><h3>Convergence des probabilités</h3><div class="chart" id="lmConv"></div></div></div>
       </div>
-      <div id="liveDraw" hidden style="display:grid;gap:14px">
+      <div id="liveDraw" hidden style="display:grid;gap:18px">
         <div class="panel toolbar">
-          <button class="btn primary" id="ldGo" type="button">🎲 Tirer un choc au sort</button>
+          <button class="btn primary" id="ldGo" type="button">Tirer un choc au sort</button>
           <label class="f" for="ldCapex">ou CAPEX (%)<input type="number" id="ldCapex" value="20" step="5" min="0" max="40"></label>
           <label class="f" for="ldDelay">Retard (mois)<input type="number" id="ldDelay" value="6" step="1" min="0" max="18"></label>
           <button class="btn" id="ldManual" type="button">Appliquer ce choc</button>
@@ -277,19 +476,46 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
       </div>
     </section>
 
+    <!-- ===================== MÉTHODE ===================== -->
+    <section class="page" data-page="methode" hidden>
+      <div class="lead"><div><span class="eyebrow">Annexe 3 et limites</span><h2>Méthode et <em class="g">formules</em></h2><p>Les indicateurs calculés par le moteur, sa fidélité au modèle Excel et les limites de l'analyse.</p></div></div>
+      <div class="grid3">
+        <div class="formula"><b>Coût des fonds propres</b><code>Ke = rf + βL × prime de marché + prime spécifique</code><span class="muted">rf 3,55 % · prime 6,7 % · βu 1,20 (Damodaran, Auto Parts)</span></div>
+        <div class="formula"><b>Bêta réendetté (Hamada)</b><code>βL = βu × [1 + (1 − IS) × D / E]</code><span class="muted">IS marginal 35 % ; D = encours moyen dette + crédit-bail</span></div>
+        <div class="formula"><b>WACC</b><code>WACC = E/(D+E) × Ke + D/(D+E) × Kd × (1 − IS)</code><span class="muted">Kd pondéré entre dette (5,25 %) et crédit-bail (6,5 %)</span></div>
+        <div class="formula"><b>Flux du projet</b><code>FCFF = EBITDA − IS théorique − ΔBFR − CAPEX</code><span class="muted">Valeur terminale prudente : VNC + BFR en 2038</span></div>
+        <div class="formula"><b>CFADS et DSCR</b><code>CFADS = EBITDA − IS − ΔBFR − renouvellements<br>DSCR = CFADS / (intérêts + capital + loyers)</code><span class="muted">Covenant 1,20x testé dès 2030</span></div>
+        <div class="formula"><b>Levier</b><code>(dette bancaire + crédit-bail − trésorerie) / EBITDA</code><span class="muted">Covenant ≤ 3,5x ; crédit-bail retraité en dette</span></div>
+        <div class="formula"><b>IS marocain (art. 19 CGI)</b><code>20 %, puis 35 % sur la totalité dès 100 MDH de bénéfice</code><span class="muted">Cotisation minimale 0,25 % du CA dès le 4e exercice</span></div>
+        <div class="formula"><b>Dividendes</b><code>Div(N) = min(résultat distribuable N−1, trésorerie − 40)</code><span class="muted">Réserve légale 5 % ; blocage si DSCR N−1 &lt; 1,20x</span></div>
+        <div class="formula"><b>Monte-Carlo</b><code>z = L·ε, avec L·Lᵀ = Σ (Cholesky)</code><span class="muted">Copule gaussienne ; CAPEX triangulaire ; retard exponentiel</span></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h3>Fidélité au modèle Excel · cas central</h3><div class="tablewrap"><table id="meCal"></table></div></div>
+        <div class="panel"><h3>Limites de l'analyse</h3><ul class="clean">
+          <li><b>Données :</b> société et projet fictifs ; prix, marges, CAPEX et conditions à confirmer par nominations, devis et offres fermes.</li>
+          <li><b>Modèle :</b> pas annuel pour l'exploitation, semestriel pour la dette ; BFR hors TVA ; pas de produits financiers.</li>
+          <li><b>Fiscalité :</b> droit commun retenu par prudence ; statut de zone d'accélération industrielle non vérifié.</li>
+          <li><b>Coût du capital :</b> bêta sectoriel mondial ; structure financière supposée stable (levier moyen).</li>
+          <li><b>Aides :</b> taux, assiette et calendrier de la prime dépendent de la convention.</li>
+          <li><b>Valeur terminale :</b> valeur comptable prudente ; Gordon-Shapiro ou multiple donneraient une VAN supérieure.</li></ul></div>
+      </div>
+    </section>
+
+    <!-- ===================== POWER BI ===================== -->
     <section class="page" data-page="data" hidden>
-      <div class="lead"><div><h2>Données pour Power BI</h2><p>Table de faits annuelle au format long (scénario, cas, année, indicateur, valeur), prête à coller dans Power BI Desktop (Accueil → Entrer des données) ou dans Excel.</p></div>
-        <div class="toolbar"><button class="btn steel" id="dataCopy" type="button">Copier la table de faits (CSV)</button><button class="btn" id="kpiCopy" type="button">Copier les indicateurs (CSV)</button></div></div>
+      <div class="lead"><div><span class="eyebrow">Annexe</span><h2>Données pour <em class="g">Power BI</em></h2><p>Table de faits annuelle au format long (scénario, cas, année, indicateur, valeur), prête à coller dans Power BI Desktop (Accueil → Entrer des données) ou dans Excel.</p></div>
+        <div class="toolbar"><button class="btn primary" id="dataCopy" type="button">Copier la table de faits</button><button class="btn" id="kpiCopy" type="button">Copier les indicateurs</button></div></div>
       <div class="muted" id="copyMsg" aria-live="polite"></div>
-      <div class="panel"><div class="lead"><h3>Aperçu, scénario B, cas central</h3></div><div class="tablewrap"><table id="dataTable"></table></div></div>
+      <div class="panel"><h3>Aperçu · scénario B, cas central</h3><div class="tablewrap"><table id="dataTable"></table></div></div>
       <div class="panel"><h3>Mesures DAX suggérées</h3><pre class="code">VAN projet = CALCULATE(SUM(fait_kpi[Valeur]), fait_kpi[Indicateur] = "VAN projet")
 DSCR min = CALCULATE(SUM(fait_kpi[Valeur]), fait_kpi[Indicateur] = "DSCR min")
 Respect covenant = IF([DSCR min] >= 1.2, "Oui", "Non")
 Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Trésorerie (fin)")</pre>
-      <p class="muted" style="margin:8px 0 0">La version Python / Streamlit complète (avec export CSV et Excel en fichiers) est dans le dépôt GitHub, dossier <span class="num">tanger2-app</span>.</p></div>
+      <p class="muted">La version Python / Streamlit complète, avec export CSV et Excel en fichiers, est dans le dépôt GitHub (dossier <span class="num">tanger2-app</span>).</p></div>
     </section>
   </main>
-  <footer>Cas pédagogique fictif. Moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II » (VAN B 113,7 MDH contre 114,2 ; DSCR min B 1,38x contre 1,37x). L'Excel reste la référence pour les chiffres du rapport. Contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
+  <footer>Cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
 <script>
@@ -602,7 +828,7 @@ if (typeof module !== "undefined") module.exports = T2;
 (() => {
 const $ = (id) => document.getElementById(id);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const COLS = () => ({ A: css("--steel"), B: css("--orange"), C: css("--sage"), X: css("--plum"),
+const COLS = () => ({ A: css("--c-a"), B: css("--c-b"), C: css("--c-c"), X: css("--c-x"), gold: css("--gold"),
   ink: css("--ink"), muted: css("--muted"), line: css("--line"), ko: css("--ko"), ok: css("--ok"), warn: css("--warn") });
 const fmt = (x, d = 1) => (x == null || !isFinite(x)) ? "n.d." : x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
 const pct = (x, d = 2) => (x == null || !isFinite(x)) ? "n.d." : fmt(x * 100, d) + " %";
@@ -621,7 +847,7 @@ const hasPlotly = () => typeof Plotly !== "undefined";
 function layout(extra = {}) {
   const c = COLS();
   return Object.assign({ margin: { l: 48, r: 16, t: 10, b: 40 }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    font: { family: "Public Sans, system-ui, sans-serif", color: c.ink, size: 12 }, hovermode: "x unified",
+    font: { family: "Manrope, system-ui, sans-serif", color: c.ink, size: 12 }, hovermode: "x unified",
     legend: { orientation: "h", y: -0.18, font: { color: c.muted } },
     xaxis: { gridcolor: c.line, zerolinecolor: c.line, color: c.muted },
     yaxis: { gridcolor: c.line, zerolinecolor: c.line, color: c.muted } }, extra);
@@ -659,16 +885,20 @@ $("loginForm").addEventListener("submit", async (e) => {
 });
 $("logout").addEventListener("click", () => { user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
 
-const PAGES = [["dash", "Tableau de bord"], ["sim", "Simulateur"], ["form", "Formulaire"], ["stress", "Sensibilités & stress"],
-  ["mc", "Monte-Carlo"], ["opt", "Optimiseur", true], ["live", "En direct"], ["data", "Power BI", true]];
+const PAGES = [["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+  ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"],
+  ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
+  ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
 let current = "dash";
 function enterApp() {
   $("login").hidden = true; $("app").hidden = false;
   $("whoName").textContent = user.name; $("whoRole").textContent = user.role;
   const tabs = $("tabs"); tabs.innerHTML = "";
-  PAGES.filter((p) => !p[2] || user.role === "admin").forEach(([id, label]) => {
-    const b = document.createElement("button"); b.type = "button"; b.role = "tab"; b.textContent = label; b.dataset.page = id;
-    b.addEventListener("click", () => show(id)); tabs.appendChild(b);
+  let grp = null;
+  PAGES.filter((p) => !p[2] || user.role === "admin").forEach(([id, label, , g]) => {
+    if (!grp || grp.dataset.g !== g) { grp = document.createElement("div"); grp.className = "navgrp"; grp.dataset.g = g; grp.innerHTML = `<div class="gl">${g}</div>`; tabs.appendChild(grp); }
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.page = id;
+    b.addEventListener("click", () => { show(id); window.scrollTo({ top: 0 }); }); grp.appendChild(b);
   });
   const h = (location.hash || "").slice(1);
   show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin")) ? h : "dash");
@@ -677,9 +907,9 @@ const rendered = {};
 function show(id) {
   current = id;
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
-  document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.page === id));
+  document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); if (b.dataset.page === id) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
 }
 function fillSelect(id, names, sel) { const el = $(id); if (el.options.length) return; names.forEach((n) => { const o = document.createElement("option"); o.value = o.textContent = n; el.appendChild(o); }); if (sel) el.value = sel; }
@@ -716,7 +946,7 @@ function renderDash() {
     ["TRI fonds propres", (k) => pct(k.triEq)], ["Coût des fonds propres", (k) => pct(k.ke)], ["DSCR minimum", (k) => xx(k.dscrMin)],
     ["Dette nette / EBITDA max", (k) => xx(k.levMax)], ["Trésorerie minimum (MDH)", (k) => fmt(k.minCash)],
     ["Dilution de la maison mère", (k) => pct(k.dilution, 1)]];
-  $("dTable").innerHTML = `<thead><tr><th>Indicateur</th>${"ABC".split("").map((k) => `<th><span class="dot" style="background:${c[k]}"></span> ${esc(S[k].name)}</th>`).join("")}</tr></thead><tbody>`
+  $("dTable").innerHTML = `<thead><tr><th>Indicateur</th>${"ABC".split("").map((k) => `<th><span class="dot" style="background:${c[k]}"></span> ${esc(S[k].name)}${k === "B" ? ' <span class="pill gold">retenu</span>' : ""}</th>`).join("")}</tr></thead><tbody>`
     + rows.map(([l, f]) => `<tr><td>${l}</td>${"ABC".split("").map((k) => `<td class="n">${f(R[k].kpi)}</td>`).join("")}</tr>`).join("")
     + `<tr><td>Verdict</td>${"ABC".split("").map((k) => `<td>${pill(R[k].kpi)}</td>`).join("")}</tr></tbody>`;
   const t = R.B.table;
@@ -732,7 +962,7 @@ function renderDash() {
   const f = S.B;
   plot("cSankey", [{ type: "sankey", arrangement: "snap",
     node: { label: ["Fonds propres", "Dette bancaire", "Crédit-bail", "Besoin total", "CAPEX", "BFR initial", "Réserve, frais, intérêts"], pad: 16,
-      color: [c.A, c.B, c.C, c.muted, c.A, c.X, c.line] },
+      color: [c.A, c.B, c.C, c.gold, c.A, c.X, c.muted] },
     link: { source: [0, 1, 2, 3, 3, 3], target: [3, 3, 3, 4, 5, 6], value: [f.equity, f.debt, f.lease, 791, 107, 62], color: "rgba(128,128,128,.25)" } }],
     { hovermode: false, margin: { l: 10, r: 10, t: 10, b: 10 } });
   $("dVerdict").innerHTML = `<b>Recommandation : scénario B sécurisé.</b> C'est le seul montage admissible sans condition préalable : apport de 350 MDH à la portée de la maison mère, aucune dilution, covenants respectés. A dilue la maison mère de ${pct(R.A.kpi.dilution, 1)} ; C repose sur une prime et une exonération qui ne sont pas acquises.`;
@@ -857,6 +1087,7 @@ function renderStress() {
     ["tMetric", "hMetric", "hPair"].forEach((id) => $(id).addEventListener("change", renderStress));
   }
   const fin = S[stSc], c = COLS(), m = $("tMetric").value, base = T2.SHOCKS();
+  renderBreak(fin);
   const ref = run(fin, base).kpi[m];
   const rows = TORNADO.map(([l, a, dl]) => { const lo = Object.assign(T2.SHOCKS(), { [a]: a === "delay_months" ? 0 : -dl }), hi = Object.assign(T2.SHOCKS(), { [a]: dl });
     return [l, run(fin, lo).kpi[m] - ref, run(fin, hi).kpi[m] - ref]; }).sort((p, q) => Math.max(Math.abs(p[1]), Math.abs(p[2])) - Math.max(Math.abs(q[1]), Math.abs(q[2])));
@@ -871,7 +1102,7 @@ function renderStress() {
   else { xs = lin(-0.06, 0.06, 9); ys = lin(-0.06, 0.06, 9); xa = "materials"; ya = "price"; }
   const z = ys.map((y) => xs.map((x) => run(fin, Object.assign(T2.SHOCKS(), { [xa]: x, [ya]: y })).kpi[hm]));
   const lab = (a, v) => a === "delay_months" ? v + " mois" : (v >= 0 ? "+" : "") + fmt(v * 100, 0) + " %";
-  plot("cHeat", [{ type: "heatmap", z, x: xs.map((v) => lab(xa, v)), y: ys.map((v) => lab(ya, v)), colorscale: "RdYlGn",
+  plot("cHeat", [{ type: "heatmap", z, x: xs.map((v) => lab(xa, v)), y: ys.map((v) => lab(ya, v)), colorscale: [[0, COLS().ko], [0.5, css("--panel2")], [1, COLS().ok]],
     zmid: hm === "npv" ? 0 : hm === "dscrMin" ? 1.2 : 0.157, text: z.map((r) => r.map((v) => hm === "triEq" ? pct(v, 1) : fmt(v, hm === "npv" ? 0 : 2))),
     texttemplate: "%{text}", hoverinfo: "skip", colorbar: { tickfont: { color: c.muted } } }],
     { hovermode: false, margin: { l: 70, r: 10, t: 10, b: 50 }, xaxis: { title: { text: { price: "Prix de vente", capex_overrun: "Dépassement du CAPEX", materials: "Coût des matières" }[xa] }, color: c.muted },
@@ -923,7 +1154,7 @@ function drawMc(res, sc, tiles, hist, dscr, cor, scat) {
       { hovermode: "closest", showlegend: false, margin: { l: 80, r: 16, t: 10, b: 40 }, xaxis: { range: [-1, 1], gridcolor: c.line, color: c.muted } });
   }
   if (scat) plot(scat, [{ type: "scatter", mode: "markers", x: res.map((r) => r.capex_overrun * 100), y: res.map((r) => r.delay_months),
-    marker: { color: npv, colorscale: "RdYlGn", cmid: 0, size: 6, opacity: 0.75, colorbar: { title: { text: "VAN" }, tickfont: { color: c.muted } } } }],
+    marker: { color: npv, colorscale: [[0, c.ko], [0.5, c.gold], [1, c.ok]], cmid: 0, size: 6, opacity: 0.75, colorbar: { title: { text: "VAN" }, tickfont: { color: c.muted } } } }],
     { hovermode: "closest", xaxis: { title: { text: "Dépassement du CAPEX (%)" }, gridcolor: c.line, color: c.muted }, yaxis: { title: { text: "Retard (mois)" }, gridcolor: c.line, color: c.muted } });
 }
 
@@ -956,7 +1187,7 @@ function drawOpt() {
   const get = (e, l) => optRes.find((r) => r.e === e && r.l === l);
   const z = ls.map((l) => es.map((e) => { const r = get(e, l); return r ? r.k[optMetric] : null; }));
   const tx = ls.map((l) => es.map((e) => { const r = get(e, l); if (!r) return ""; const v = r.k[optMetric]; return (r.ok ? "✓ " : "") + (optMetric === "triEq" ? pct(v, 1) : fmt(v, optMetric === "npv" ? 0 : 2)); }));
-  plot("oHeat", [{ type: "heatmap", z, x: es, y: ls, text: tx, texttemplate: "%{text}", colorscale: "Viridis", hoverinfo: "skip", colorbar: { tickfont: { color: c.muted } } }],
+  plot("oHeat", [{ type: "heatmap", z, x: es, y: ls, text: tx, texttemplate: "%{text}", colorscale: [[0, css("--panel2")], [1, c.gold]], hoverinfo: "skip", colorbar: { tickfont: { color: c.muted } } }],
     { hovermode: false, margin: { l: 60, r: 10, t: 10, b: 50 }, xaxis: { title: { text: "Fonds propres (MDH)" }, color: c.muted }, yaxis: { title: { text: "Crédit-bail (MDH)" }, color: c.muted } });
   plot("oFront", [{ type: "scatter", mode: "markers", x: optRes.map((r) => r.k.dscrMin), y: optRes.map((r) => r.k.triEq * 100),
     text: optRes.map((r) => `FP ${r.e} / dette ${r.d} / CB ${r.l}`), hovertemplate: "%{text}<br>DSCR %{x:.2f}x · TRI FP %{y:.1f} %<extra></extra>",
@@ -1075,6 +1306,103 @@ function renderData() {
   const t = run(S.B, CASES["1. Central"]).table;
   $("dataTable").innerHTML = `<thead><tr><th>Indicateur (MDH)</th>${Y.map((y) => `<th>${y}</th>`).join("")}</tr></thead><tbody>`
     + IND.map(([l, f]) => `<tr><td>${l}</td>${Y.map((_, i) => `<td class="n">${f === "dscr" || f === "lev" ? (isFinite(t[f][i]) ? fmt(t[f][i], 2) : "—") : fmt(t[f][i], 1)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+}
+
+// ---------- Dossier : le projet ----------
+const CAPEX_LIST = [["Machines de production", 355], ["Bâtiments", 180], ["Installations techniques", 64], ["Terrain (8 ha)", 46], ["Ingénierie et mise en service", 30],
+  ["Provision pour aléas", 30], ["Équipements logistiques", 28], ["Frais préopérationnels", 22], ["Systèmes d'information", 16], ["Aménagement et VRD", 14], ["Mobilier et véhicules", 6]];
+const HEADCOUNT = [0, 256, 575, 674, 725, 744, 750, 750, 750, 750, 750, 750];
+function renderProjet() {
+  const c = COLS(), t = run(S.B, T2.SHOCKS()).table;
+  plot("pRamp", [{ type: "bar", x: Y, y: t.vol.map((v) => v / 5000), name: "Taux d'utilisation moyen (%)", marker: { color: c.gold } },
+    { type: "scatter", x: Y, y: HEADCOUNT, name: "Effectif moyen", yaxis: "y2", line: { color: c.A, width: 3 } }],
+    { yaxis: { ticksuffix: " %", range: [0, 100], gridcolor: c.line, color: c.muted }, yaxis2: { overlaying: "y", side: "right", showgrid: false, color: c.muted, range: [0, 800] },
+      margin: { l: 48, r: 48, t: 10, b: 40 } });
+  const l = CAPEX_LIST.slice().reverse();
+  plot("pCapex", [{ type: "bar", orientation: "h", y: l.map((x) => x[0]), x: l.map((x) => x[1]), text: l.map((x) => fmt(x[1], 0) + " · " + fmt(x[1] / 7.91, 1) + " %"),
+    textposition: "outside", cliponaxis: false, marker: { color: l.map((x) => x[0].startsWith("Machines") ? c.gold : c.A) }, hovertemplate: "%{y} : %{x} MDH<extra></extra>" }],
+    { hovermode: "closest", margin: { l: 175, r: 80, t: 10, b: 30 }, xaxis: { gridcolor: c.line, color: c.muted, range: [0, 420] }, showlegend: false });
+}
+
+// ---------- Dossier : montage retenu ----------
+function renderMontage() {
+  const c = COLS(), k = run(S.B, T2.SHOCKS()).kpi, st = run(S.B, CASES["6. Stress combiné"]).kpi, fx = run(S.B, CASES["7. Combiné + mesures"]).kpi;
+  const rows = [["Création de valeur", `VAN ${fmt(k.npv)} MDH`], ["TRI du projet / WACC", `${pct(k.tri)} / ${pct(k.wacc)}`],
+    ["TRI des fonds propres / coût", `${pct(k.triEq)} / ${pct(k.ke)}`], ["DSCR minimum / moyen", `${xx(k.dscrMin)} / ${xx(k.dscrAvg)}`],
+    ["Dette nette / EBITDA max", xx(k.levMax)], ["Dilution de la maison mère", pct(k.dilution, 1)],
+    ["Stress combiné, sans mesures", `besoin ${fmt(st.gap, 0)} MDH · DSCR ${xx(st.dscrMin)}`], ["Stress combiné, avec lignes de sécurité", `DSCR ${xx(fx.dscrMin)} · trésorerie ≥ 0`]];
+  $("mQuant").innerHTML = rows.map(([a, b]) => `<span>${a}</span><span>${b}</span>`).join("");
+  const base = k.npv, d = (o) => run(S.B, Object.assign(T2.SHOCKS(), o)).kpi.npv - base;
+  const risks = [["Dépassement du CAPEX +20 %", 3, d({ capex_overrun: 0.2 })], ["Retard de 6 mois", 3, d({ delay_months: 6 })],
+    ["Baisse de prix de 3 %", 4, d({ price: -0.03 })], ["Matières +5 %", 3, d({ materials: 0.05 })], ["Volumes −10 %", 2, d({ volume: -0.1 })],
+    ["Énergie +20 %", 3, d({ energy: 0.2 })], ["Taux +1 point", 2, d({ rate: 0.01 })], ["Délai clients +30 j", 2, d({ dso_days: 30 })]];
+  plot("mRisk", [{ type: "scatter", mode: "markers+text", x: risks.map((r) => r[1] + (Math.random() - 0.5) * 0.25), y: risks.map((r) => -r[2]), text: risks.map((r) => r[0]),
+    textposition: "top center", textfont: { size: 11, color: c.ink }, hovertemplate: "%{text}<br>perte de VAN : %{y:.0f} MDH<extra></extra>",
+    marker: { size: risks.map((r) => 12 + Math.sqrt(Math.abs(r[2])) * 2.2), color: risks.map((r) => -r[2] > 100 ? c.ko : -r[2] > 40 ? c.warn : c.ok), opacity: 0.8, line: { color: c.gold, width: 1 } } }],
+    { hovermode: "closest", showlegend: false, xaxis: { title: { text: "Probabilité (1 = rare, 5 = fréquent)" }, range: [0.5, 5.5], dtick: 1, gridcolor: c.line, color: c.muted },
+      yaxis: { title: { text: "Perte de VAN, scénario B (MDH)" }, rangemode: "tozero", gridcolor: c.line, color: c.muted }, margin: { l: 60, r: 16, t: 20, b: 50 } });
+}
+
+// ---------- Dossier : mise en œuvre ----------
+const GANTT = [["Comité, nominations, mandat aux banques", "2026-10-01", "2026-12-31", "Préparation"], ["Signature des crédits, terrain, contrat de construction", "2027-01-01", "2027-03-31", "Financement"],
+  ["Gros œuvre et commande des équipements", "2027-01-01", "2027-12-31", "Chantier"], ["Installation, recrutement, essais", "2028-01-01", "2028-06-30", "Chantier"],
+  ["Tirages de fonds propres et de dette", "2027-01-01", "2028-12-31", "Financement"], ["Différé d'amortissement (3 ans)", "2027-01-01", "2029-12-31", "Financement"],
+  ["Mise en service et homologation", "2028-07-01", "2028-09-30", "Jalon"], ["Montée en cadence (50 → 85 %)", "2028-07-01", "2030-12-31", "Exploitation"],
+  ["Loyers de crédit-bail (14 semestres)", "2028-07-01", "2035-06-30", "Financement"], ["Remboursement de la dette, tests des covenants", "2030-01-01", "2036-12-31", "Financement"],
+  ["Premiers dividendes", "2030-01-01", "2030-12-31", "Jalon"], ["Régime de croisière (92 %)", "2031-01-01", "2038-12-31", "Exploitation"]];
+function renderOeuvre() {
+  const c = COLS(), col = { "Préparation": c.X, "Financement": c.A, "Chantier": c.gold, "Jalon": c.ko, "Exploitation": c.C };
+  const g = GANTT.slice().sort((p, q) => p[1].localeCompare(q[1]) || p[2].localeCompare(q[2])).reverse();
+  plot("oGantt", Object.keys(col).map((cat) => { const r = g.filter((x) => x[3] === cat);
+    return { type: "bar", orientation: "h", name: cat, y: r.map((x) => x[0]), base: r.map((x) => x[1]), x: r.map((x) => new Date(x[2]) - new Date(x[1]) + 864e5),
+      marker: { color: col[cat] }, hovertemplate: "%{y}<br>%{base|%b %Y} → fin<extra></extra>" }; }),
+    { barmode: "overlay", hovermode: "closest", margin: { l: 300, r: 16, t: 10, b: 40 }, xaxis: { type: "date", gridcolor: c.line, color: c.muted },
+      yaxis: { color: c.ink, automargin: true, categoryorder: "array", categoryarray: g.map((x) => x[0]) }, shapes: [vline("2028-07-01", c.gold)] });
+  const t = run(S.B, T2.SHOCKS()).table, k = run(S.B, T2.SHOCKS()).kpi, i32 = Y.indexOf(2032);
+  const gov = [["Coût à terminaison / budget", "Mensuelle", "> 5 % de dépassement", "Directeur de projet", "791 MDH budgétés"],
+    ["Date prévisionnelle de mise en service", "Mensuelle", "> 1 mois de glissement", "Directeur de projet", "01/07/2028"],
+    ["Trésorerie et prévision à 12 mois", "Mensuelle", "< 40 MDH", "Directeur financier", `${fmt(Math.min(...t.cash.slice(1)), 0)} MDH au plus bas (2028-2038)`],
+    ["Taux d'utilisation et rebut", "Mensuelle", "Écart > 5 points au plan", "Directeur d'usine", `${fmt(t.vol[i32] / 5000, 0)} % en 2032`],
+    ["DSCR et dette nette / EBITDA", "Semestrielle", "DSCR < 1,30x ; levier > 3,0x", "Directeur financier", `${xx(k.dscrMin)} · ${xx(k.levMax)}`],
+    ["BFR en jours de CA", "Trimestrielle", "> 55 jours", "Directeur financier", `${fmt(t.bfr[i32] / t.ca[i32] * 360, 0)} jours en 2032`],
+    ["Convention et versement de la prime", "Trimestrielle", "Retard > 6 mois", "Secrétaire général", "Hors montage de base"]];
+  $("oGov").innerHTML = gov.map((r) => `<tr>${r.map((v, j) => `<td class="${j === 4 ? "n" : ""}">${v}</td>`).join("")}</tr>`).join("");
+}
+
+// ---------- Seuils de rupture ----------
+const BREAK = [["Prix de vente", "price", -0.3, 0, "%", "−2,4 %"], ["Coût des matières", "materials", 0, 0.3, "%", "+3,6 %"], ["Volumes", "volume", -0.5, 0, "%", "−10 %"],
+  ["Dépassement du CAPEX", "capex_overrun", 0, 0.8, "%", "+22 %"], ["Retard de mise en service", "delay_months", 0, 30, "m", "8 mois"],
+  ["Délai clients", "dso_days", 0, 240, "j", "+57 jours"], ["Taux d'intérêt", "rate", 0, 0.15, "pt", "—"]];
+function breakpoint(fin, key, lo, hi) {
+  const f = (v) => run(fin, Object.assign(T2.SHOCKS(), { [key]: v })).kpi.npv;
+  let a = lo === 0 ? 0 : hi, b = lo === 0 ? hi : lo; // a = côté central (VAN > 0), b = côté extrême
+  if (f(0) <= 0) return { v: 0, note: "VAN déjà négative" };
+  if (f(b) > 0) return { v: b, note: "au-delà" };
+  for (let i = 0; i < 40; i++) { const m = (a + b) / 2; if (f(m) > 0) a = m; else b = m; }
+  return { v: (a + b) / 2 };
+}
+function renderBreak(fin) {
+  const isB = fin === S.B;
+  $("stBreak").innerHTML = `<thead><tr><th>Hypothèse</th><th>Valeur centrale</th><th>Seuil qui annule la VAN</th><th>Rapport (B)</th><th class="wrap">Lecture</th></tr></thead><tbody>`
+    + BREAK.map(([l, key, lo, hi, u, rep]) => {
+      const r = breakpoint(fin, key, lo, hi);
+      const v = u === "%" ? `${r.v >= 0 ? "+" : ""}${fmt(r.v * 100, 1)} %` : u === "pt" ? `+${fmt(r.v * 100, 2)} pt` : u === "m" ? `${fmt(r.v, 1)} mois` : `+${fmt(r.v, 0)} jours`;
+      const shown = r.note === "au-delà" ? `au-delà de ${v}` : r.note || v;
+      const read = { price: "Variable la plus sensible avec les matières", materials: "Clauses d'indexation indispensables", volume: "Nominations clients à sécuriser",
+        capex_overrun: "Le choc de 20 % annule presque la VAN", delay_months: "Environ 15 MDH de VAN par mois", dso_days: "Pèse surtout sur la trésorerie", rate: "Le taux compte peu" }[key];
+      const central = { price: "3 500 MAD/kit", materials: "62,5 % du prix", volume: "92 % de la capacité", capex_overrun: "791 MDH", delay_months: "aucun", dso_days: "60 jours", rate: "5,25 %" }[key];
+      return `<tr><td>${l}</td><td class="n">${central}</td><td class="n"><b>${shown}</b></td><td class="n">${isB ? rep : "—"}</td><td class="wrap muted">${read}</td></tr>`;
+    }).join("") + "</tbody>";
+}
+
+// ---------- Méthode ----------
+function renderMethode() {
+  const K = { A: T2.run(S.A).kpi, B: T2.run(S.B).kpi, C: T2.run(S.C).kpi };
+  const X = { npv: [107.5, 114.2, 272.5], tri: [0.1298, 0.1298, 0.1686], triEq: [0.1541, 0.172, 0.2241], wacc: [0.1051, 0.1037, 0.1035], dscrMin: [1.58, 1.37, 1.64], levMax: [1.33, 1.73, 1.47] };
+  const f = { npv: (v) => fmt(v), tri: (v) => pct(v), triEq: (v) => pct(v), wacc: (v) => pct(v), dscrMin: xx, levMax: xx };
+  const lab = { npv: "VAN projet (MDH)", tri: "TRI projet", triEq: "TRI fonds propres", wacc: "WACC", dscrMin: "DSCR minimum", levMax: "Dette nette / EBITDA max" };
+  $("meCal").innerHTML = `<thead><tr><th>Indicateur</th><th>Excel A / B / C</th><th>Application A / B / C</th></tr></thead><tbody>`
+    + Object.keys(X).map((k) => `<tr><td>${lab[k]}</td><td class="n">${X[k].map(f[k]).join(" / ")}</td><td class="n">${"ABC".split("").map((s) => f[k](K[s][k])).join(" / ")}</td></tr>`).join("") + "</tbody>";
 }
 
 // thème : redessiner les graphiques quand le thème change
