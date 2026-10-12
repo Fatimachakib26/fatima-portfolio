@@ -3,6 +3,13 @@
 Application **Python / Streamlit** de démonstration du projet « Financement de l'unité industrielle Tanger II »
 (Détroit Plasturgie Automobile — société et projet **fictifs**, cas pédagogique), avec export vers **Power BI**.
 
+## Version web (sans installation)
+
+Le dossier `tanger2/` à la racine du dépôt contient une version 100 % navigateur (HTML + JavaScript + Plotly) :
+même moteur porté en JavaScript (résultats identiques au moteur Python sur les 24 combinaisons cas × scénarios),
+connexion, curseurs, formulaire, stress tests, Monte-Carlo, optimiseur et simulation en direct.
+Vercel la publie automatiquement à l'adresse `/tanger2/` du portfolio.
+
 ## Lancer l'application
 
 ```bash

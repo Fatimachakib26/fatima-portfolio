@@ -1,0 +1,1087 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Simulateur interactif du montage financier de l'usine Tanger II (cas pédagogique fictif).">
+<style>html,body{height:100%}body{margin:0}[hidden]{display:none!important}img{max-width:100%}:root{color-scheme:light}</style>
+<title>Simulateur Tanger II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Mise en page : barre d'outils d'usine (en-tête + onglets), contenu en grille fluide ; couleurs « acier » et « orange sécurité » */
+:root{
+  --bg:#f4f5f3; --panel:#ffffff; --ink:#1b2428; --muted:#5d6a70; --line:#dde2e0;
+  --steel:#24566b; --orange:#d9622b; --sage:#4f8a5b; --plum:#7a5c86;
+  --ok:#2f7d4a; --okbg:#e3f1e7; --ko:#b93a2a; --kobg:#f8e5e1; --warn:#a36b07; --warnbg:#fbf0d9;
+  --chip:#eef1ef; --shadow:0 1px 2px rgba(20,35,40,.06),0 4px 14px rgba(20,35,40,.05);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12181b; --panel:#1a2226; --ink:#e6ecea; --muted:#9aa8ad; --line:#2c373c;
+  --steel:#6fb0cb; --orange:#f08a52; --sage:#7fc08b; --plum:#b796c4;
+  --ok:#7fd39a; --okbg:#1d3326; --ko:#ff8f7d; --kobg:#3a2020; --warn:#f2c46b; --warnbg:#3a2f17;
+  --chip:#222c31; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12181b; --panel:#1a2226; --ink:#e6ecea; --muted:#9aa8ad; --line:#2c373c;
+  --steel:#6fb0cb; --orange:#f08a52; --sage:#7fc08b; --plum:#b796c4;
+  --ok:#7fd39a; --okbg:#1d3326; --ko:#ff8f7d; --kobg:#3a2020; --warn:#f2c46b; --warnbg:#3a2f17;
+  --chip:#222c31; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(1.4rem,2.6vw,2rem);font-weight:800}
+h2{font-size:1.15rem;font-weight:700}
+h3{font-size:.95rem;font-weight:700}
+.num,td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+/* Connexion */
+#login{min-height:100%;display:grid;place-items:center;padding:32px 16px}
+.lcard{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:var(--shadow);display:grid;gap:16px}
+.brand{display:flex;gap:12px;align-items:center}
+.mark{width:46px;height:46px;border-radius:10px;background:var(--steel);color:#fff;display:grid;place-items:center;font:800 1.1rem var(--f-display);position:relative;flex:none}
+.mark::after{content:"";position:absolute;right:-4px;bottom:-4px;width:14px;height:14px;border-radius:3px;background:var(--orange)}
+label.f{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=password],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
+.btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--chip);color:var(--ink)}
+.btn.primary{background:var(--orange);color:#fff}
+.btn.steel{background:var(--steel);color:#fff}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.err{color:var(--ko);font-size:.9rem;min-height:1.2em}
+.demo{font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
+.demo code{font-family:var(--f-mono);background:var(--chip);padding:1px 6px;border-radius:4px;color:var(--ink)}
+
+/* Application */
+#app{display:grid;grid-template-rows:auto auto 1fr;min-height:100%}
+header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.who{display:flex;gap:10px;align-items:center;font-size:.88rem;color:var(--muted)}
+.role{font:600 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:var(--chip);padding:3px 8px;border-radius:99px;color:var(--ink)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav.tabs button{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--orange)}
+main{padding-block:20px 40px;padding-inline:max(16px,3vw);display:grid;gap:18px;max-width:1400px;width:100%;margin:0 auto}
+section.page{display:grid;gap:18px}
+.lead{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:end;justify-content:space-between}
+.lead p{margin:4px 0 0;color:var(--muted);max-width:75ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
+.grid3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:2px;min-width:0}
+.tile .lab{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tile .val{font:600 1.45rem var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .sub{font-size:.8rem;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:3px 9px;border-radius:12px;white-space:normal;max-width:100%}
+.pill.ok{background:var(--okbg);color:var(--ok)} .pill.ko{background:var(--kobg);color:var(--ko)} .pill.warn{background:var(--warnbg);color:var(--warn)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.chart{width:100%;height:340px}
+.chart.tall{height:440px}
+.verdict{border-radius:10px;padding:12px 14px;border:1px solid var(--line);background:var(--chip)}
+.verdict.ok{background:var(--okbg);border-color:transparent;color:var(--ink)} .verdict.ko{background:var(--kobg);border-color:transparent} .verdict.warn{background:var(--warnbg);border-color:transparent}
+.sim{display:grid;gap:18px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}
+@media (max-width:860px){.sim{grid-template-columns:1fr}}
+.ctrls{display:grid;gap:12px;align-content:start}
+.ctrls h3{margin-top:6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.rng{display:grid;gap:2px}
+.rng .row{display:flex;justify-content:space-between;gap:8px;font-size:.86rem}
+.rng output{font:600 .82rem var(--f-mono);color:var(--orange)}
+input[type=range]{width:100%;accent-color:var(--orange)}
+.seg{display:inline-flex;background:var(--chip);border-radius:8px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.scard{display:grid;gap:10px}
+.scard .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:.88rem}
+.kv span:nth-child(even){font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.delta.up{color:var(--ok)} .delta.down{color:var(--ko)}
+form.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px;min-width:0}
+legend{font:700 .8rem var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--steel);padding:0 6px}
+.checks{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.toolbar>label{min-width:150px;flex:1 1 150px}
+details summary{cursor:pointer;color:var(--steel);font-weight:600}
+.big{font:800 clamp(1.3rem,3vw,1.9rem) var(--f-display)}
+.event{font-size:.95rem;padding:10px 14px;border-left:4px solid var(--orange);background:var(--chip);border-radius:6px}
+pre.code{background:var(--chip);padding:12px;border-radius:8px;overflow-x:auto;font:.82rem/1.5 var(--f-mono)}
+footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <form class="lcard" id="loginForm" autocomplete="off">
+    <div class="brand"><div class="mark">T2</div>
+      <div><h2>Simulateur Tanger II</h2><div class="muted" style="font-size:.86rem">Montage financier de l'usine de composants automobiles · cas pédagogique fictif</div></div></div>
+    <label class="f" for="lu">Identifiant<input type="text" id="lu" placeholder="admin" required></label>
+    <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
+    <div class="err" id="lerr" role="alert"></div>
+    <button class="btn primary" id="lbtn" type="submit">Se connecter</button>
+    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations</div>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand"><div class="mark">T2</div>
+      <div><h1>Tanger II</h1><div class="muted" style="font-size:.84rem">Détroit Plasturgie Automobile · 500 000 kits/an · mise en service 01/07/2028 · besoin ≈ 960 MDH</div></div></div>
+    <div class="who"><span id="whoName"></span><span class="role" id="whoRole"></span><button class="btn" id="logout" type="button">Se déconnecter</button></div>
+  </header>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="main">
+
+    <section class="page" data-page="dash">
+      <div class="lead"><div><h2>Tableau de bord</h2><p>Les trois montages comparés sur le même business plan. Choisissez un cas d'hypothèses : tout se recalcule.</p></div>
+        <label class="f" for="dCase" style="min-width:220px">Cas d'hypothèses<select id="dCase"></select></label></div>
+      <div class="tiles" id="dTiles"></div>
+      <div class="panel"><div class="tablewrap"><table id="dTable"></table></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Activité et rentabilité, scénario B (MDH)</h3><div class="chart" id="cAct"></div></div>
+        <div class="panel"><h3>DSCR par scénario</h3><div class="chart" id="cDscr"></div></div>
+        <div class="panel"><h3>Trésorerie de clôture (MDH)</h3><div class="chart" id="cCash"></div></div>
+        <div class="panel"><h3>Ressources et emplois, scénario B (MDH)</h3><div class="chart" id="cSankey"></div></div>
+      </div>
+      <div class="verdict ok" id="dVerdict"></div>
+    </section>
+
+    <section class="page" data-page="sim" hidden>
+      <div class="lead"><div><h2>Simulateur</h2><p>Déplacez les curseurs : le modèle complet (activité, BFR, dette, crédit-bail, IS, trésorerie, valorisation) se recalcule à chaque mouvement pour les trois montages.</p></div></div>
+      <div class="sim">
+        <div class="panel ctrls" id="simCtrls">
+          <label class="f" for="sPreset">Partir du cas<select id="sPreset"></select></label>
+        </div>
+        <div style="display:grid;gap:18px;min-width:0">
+          <div class="grid3" id="sCards"></div>
+          <div class="panel" style="display:grid;gap:12px">
+            <div class="lead"><h3>Courbes du scénario</h3><div class="seg" id="sSeg"></div></div>
+            <div class="grid2"><div class="chart" id="sCash"></div><div class="chart" id="sDscr"></div></div>
+            <div class="chart" id="sFlux"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-page="form" hidden>
+      <div class="lead"><div><h2>Formulaire de scénario</h2><p>Proposez votre propre structure de financement. Elle est contrôlée contre chaque contrainte du cahier des charges et comparée aux scénarios A, B et C.</p></div></div>
+      <form class="panel grid" id="fForm">
+        <fieldset><legend>Ressources (MDH)</legend>
+          <label class="f" for="fName">Nom du scénario<input type="text" id="fName" value="Mon scénario"></label>
+          <label class="f" for="fEq">Fonds propres<input type="number" id="fEq" value="350" min="100" max="700" step="10"></label>
+          <label class="f" for="fDebt">Dette bancaire long terme<input type="number" id="fDebt" value="450" min="0" max="800" step="10"></label>
+          <label class="f" for="fLease">Crédit-bail (valeur du matériel)<input type="number" id="fLease" value="180" min="0" max="355" step="10"></label>
+        </fieldset>
+        <fieldset><legend>Conditions de la dette</legend>
+          <label class="f" for="fRate">Taux de la dette (%)<input type="number" id="fRate" value="5.25" min="2" max="12" step="0.05"></label>
+          <label class="f" for="fGrace">Différé (semestres)<input type="number" id="fGrace" value="6" min="0" max="10" step="1"></label>
+          <label class="f" for="fRep">Échéances semestrielles<input type="number" id="fRep" value="14" min="6" max="24" step="1"></label>
+          <label class="f" for="fProf">Profil<select id="fProf"><option value="1">Annuités constantes</option><option value="0">Capital constant</option></select></label>
+          <label class="f" for="fLRate">Taux du crédit-bail (%)<input type="number" id="fLRate" value="6.5" min="3" max="12" step="0.05"></label>
+        </fieldset>
+        <fieldset><legend>Aides publiques (conditionnelles)</legend>
+          <label class="f" for="fPrime">Prime à l'investissement (% de l'assiette)<input type="number" id="fPrime" value="0" min="0" max="30" step="1"></label>
+          <label class="f" for="fBridge">Part préfinancée par crédit relais (%)<input type="number" id="fBridge" value="0" min="0" max="100" step="10"></label>
+          <label class="f" for="fHol" style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="fHol"> Exonération d'IS de 5 ans</label>
+          <label class="f" for="fCase">Évaluer dans le cas<select id="fCase"></select></label>
+          <button class="btn primary" type="submit">Évaluer le scénario</button>
+        </fieldset>
+      </form>
+      <div id="fOut" style="display:grid;gap:18px"></div>
+    </section>
+
+    <section class="page" data-page="stress" hidden>
+      <div class="lead"><div><h2>Sensibilités et stress tests</h2><p>Quelles hypothèses pèsent le plus, et le montage résiste-t-il aux chocs de chantier ?</p></div><div class="seg" id="stSeg"></div></div>
+      <div class="grid2">
+        <div class="panel"><div class="lead"><h3>Diagramme tornade</h3><select id="tMetric" aria-label="Indicateur" style="width:auto"><option value="npv">VAN projet</option><option value="triEq">TRI des fonds propres</option><option value="dscrMin">DSCR minimum</option><option value="minCash">Trésorerie minimum</option></select></div><div class="chart tall" id="cTornado"></div></div>
+        <div class="panel"><div class="lead"><h3>Carte de chaleur</h3><div class="toolbar"><select id="hMetric" aria-label="Indicateur" style="width:auto"><option value="npv">VAN projet</option><option value="dscrMin">DSCR minimum</option><option value="triEq">TRI FP</option></select><select id="hPair" aria-label="Variables" style="width:auto"><option>Prix × Volumes</option><option>CAPEX × Retard</option><option>Matières × Prix</option></select></div></div><div class="chart tall" id="cHeat"></div></div>
+      </div>
+      <div class="panel"><h3>Table des cas (onglet 02, section 11)</h3><div class="tablewrap"><table id="stTable"></table></div></div>
+    </section>
+
+    <section class="page" data-page="mc" hidden>
+      <div class="lead"><div><h2>Monte-Carlo</h2><p>Sept facteurs de risque tirés ensemble, avec leurs corrélations (copule gaussienne, décomposition de Cholesky) : prix, volumes, matières, énergie (lois normales), dépassement du CAPEX (loi triangulaire), retard (loi exponentielle tronquée à 18 mois) et taux.</p></div></div>
+      <div class="panel" style="display:grid;gap:12px">
+        <div class="toolbar">
+          <label class="f" for="mSc">Scénario<select id="mSc"></select></label>
+          <label class="f" for="mN">Tirages<select id="mN"><option>250</option><option>500</option><option selected>1000</option><option>2000</option><option>4000</option></select></label>
+          <label class="f" for="mSeed">Graine<input type="number" id="mSeed" value="42"></label>
+          <button class="btn primary" id="mGo" type="button">Lancer la simulation</button>
+        </div>
+        <details><summary>Paramètres des lois</summary><div class="grid3" id="mParams" style="margin-top:10px"></div></details>
+      </div>
+      <div class="tiles" id="mTiles"></div>
+      <div class="grid2">
+        <div class="panel"><h3>Distribution de la VAN projet (MDH)</h3><div class="chart" id="mHist"></div></div>
+        <div class="panel"><h3>Distribution du DSCR minimum</h3><div class="chart" id="mDscr"></div></div>
+        <div class="panel"><h3>Contribution au risque (corrélation de rang avec la VAN)</h3><div class="chart" id="mCorr"></div></div>
+        <div class="panel"><h3>CAPEX × retard, coloré par la VAN</h3><div class="chart" id="mScatter"></div></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="opt" hidden>
+      <div class="lead"><div><h2>Optimiseur de structure</h2><p>Recherche sur grille : quelle répartition fonds propres / dette / crédit-bail maximise le TRI des fonds propres en respectant l'apport maximal, le plafond bancaire, un DSCR ≥ 1,20x, un levier ≤ 3,5x et une trésorerie positive ?</p></div></div>
+      <div class="panel toolbar">
+        <label class="f" for="oCase">Cas<select id="oCase"></select></label>
+        <label class="f" for="oNeed">Ressources à lever (MDH)<input type="number" id="oNeed" value="980" step="10"></label>
+        <label class="f" for="oEq">Capacité d'apport (MDH)<input type="number" id="oEq" value="350" step="10"></label>
+        <label class="f" for="oBank">Plafond bancaire (MDH)<input type="number" id="oBank" value="540" step="10"></label>
+        <button class="btn primary" id="oGo" type="button">Optimiser</button>
+      </div>
+      <div class="grid2" id="oBest"></div>
+      <div class="panel"><div class="lead"><h3>Carte des structures (✓ = admissible, dette = solde)</h3><div class="seg" id="oSeg"></div></div><div class="chart tall" id="oHeat"></div></div>
+      <div class="panel"><h3>Frontière rendement / risque</h3><div class="chart" id="oFront"></div></div>
+    </section>
+
+    <section class="page" data-page="live" hidden>
+      <div class="lead"><div><h2>Simulation en direct</h2><p>Le projet joué année par année, un Monte-Carlo qui converge sous vos yeux, et l'épreuve finale avec un choc tiré au sort.</p></div><div class="seg" id="lSeg"></div></div>
+      <div id="liveFilm" style="display:grid;gap:14px">
+        <div class="panel toolbar">
+          <label class="f" for="lfSc">Scénario<select id="lfSc"></select></label>
+          <label class="f" for="lfCase">Cas<select id="lfCase"></select></label>
+          <label class="f" for="lfSpeed">Vitesse<select id="lfSpeed"><option value="900">Lente</option><option value="550" selected>Normale</option><option value="250">Rapide</option></select></label>
+          <button class="btn primary" id="lfGo" type="button">▶ Lancer</button>
+        </div>
+        <div class="tiles" id="lfTiles"></div>
+        <div class="event" id="lfEvent"></div>
+        <div class="grid2"><div class="panel"><div class="chart" id="lfChart"></div></div><div class="panel"><div class="chart" id="lfGauge"></div></div></div>
+      </div>
+      <div id="liveMc" hidden style="display:grid;gap:14px">
+        <div class="panel toolbar">
+          <label class="f" for="lmSc">Scénario<select id="lmSc"></select></label>
+          <label class="f" for="lmN">Tirages<select id="lmN"><option>300</option><option selected>800</option><option>1500</option></select></label>
+          <button class="btn primary" id="lmGo" type="button">▶ Démarrer</button>
+        </div>
+        <div class="tiles" id="lmTiles"></div>
+        <div class="grid2"><div class="panel"><h3>Distribution de la VAN (MDH)</h3><div class="chart" id="lmHist"></div></div><div class="panel"><h3>Convergence des probabilités</h3><div class="chart" id="lmConv"></div></div></div>
+      </div>
+      <div id="liveDraw" hidden style="display:grid;gap:14px">
+        <div class="panel toolbar">
+          <button class="btn primary" id="ldGo" type="button">🎲 Tirer un choc au sort</button>
+          <label class="f" for="ldCapex">ou CAPEX (%)<input type="number" id="ldCapex" value="20" step="5" min="0" max="40"></label>
+          <label class="f" for="ldDelay">Retard (mois)<input type="number" id="ldDelay" value="6" step="1" min="0" max="18"></label>
+          <button class="btn" id="ldManual" type="button">Appliquer ce choc</button>
+        </div>
+        <div class="big" id="ldTitle" aria-live="polite">Tirez un choc pour commencer.</div>
+        <div class="grid3" id="ldCards"></div>
+        <div id="ldFix"></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="data" hidden>
+      <div class="lead"><div><h2>Données pour Power BI</h2><p>Table de faits annuelle au format long (scénario, cas, année, indicateur, valeur), prête à coller dans Power BI Desktop (Accueil → Entrer des données) ou dans Excel.</p></div>
+        <div class="toolbar"><button class="btn steel" id="dataCopy" type="button">Copier la table de faits (CSV)</button><button class="btn" id="kpiCopy" type="button">Copier les indicateurs (CSV)</button></div></div>
+      <div class="muted" id="copyMsg" aria-live="polite"></div>
+      <div class="panel"><div class="lead"><h3>Aperçu, scénario B, cas central</h3></div><div class="tablewrap"><table id="dataTable"></table></div></div>
+      <div class="panel"><h3>Mesures DAX suggérées</h3><pre class="code">VAN projet = CALCULATE(SUM(fait_kpi[Valeur]), fait_kpi[Indicateur] = "VAN projet")
+DSCR min = CALCULATE(SUM(fait_kpi[Valeur]), fait_kpi[Indicateur] = "DSCR min")
+Respect covenant = IF([DSCR min] >= 1.2, "Oui", "Non")
+Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Trésorerie (fin)")</pre>
+      <p class="muted" style="margin:8px 0 0">La version Python / Streamlit complète (avec export CSV et Excel en fichiers) est dans le dépôt GitHub, dossier <span class="num">tanger2-app</span>.</p></div>
+    </section>
+  </main>
+  <footer>Cas pédagogique fictif. Moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II » (VAN B 113,7 MDH contre 114,2 ; DSCR min B 1,38x contre 1,37x). L'Excel reste la référence pour les chiffres du rapport. Contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script>
+// Moteur financier Tanger II — portage JavaScript de tanger2-app/model.py
+const T2 = (() => {
+  const YEARS = Array.from({ length: 12 }, (_, i) => 2027 + i);
+  const N = 12, NS = 24;
+  const RAMP = [0.50, 0.72, 0.85, 0.90, 0.92];
+  const OVERCOST = [0.05, 0.02, 0, 0, 0];
+  const CAPEX_ITEMS = [
+    ["Terrain", 46, 0.00, [1, 0, 0, 0], false],
+    ["Aménagement / VRD", 14, 0.05, [0.6, 0.4, 0, 0], true],
+    ["Bâtiments", 180, 0.05, [0.3, 0.4, 0.25, 0.05], true],
+    ["Installations techniques", 64, 0.10, [0, 0.35, 0.5, 0.15], true],
+    ["Machines de production", 355, 0.10, [0.1, 0.3, 0.45, 0.15], true],
+    ["Équipements logistiques", 28, 0.15, [0, 0, 0.6, 0.4], true],
+    ["Systèmes d'information", 16, 0.20, [0, 0.3, 0.4, 0.3], true],
+    ["Mobilier / véhicules", 6, 0.20, [0, 0, 0.5, 0.5], true],
+    ["Ingénierie / mise en service", 30, 0.10, [0.1, 0.3, 0.4, 0.2], true],
+    ["Frais préopérationnels", 22, 0.20, [0.1, 0.2, 0.4, 0.3], false],
+    ["Provision pour aléas", 30, 0.10, [0.1, 0.3, 0.4, 0.2], true],
+  ];
+  const CAPEX_BASE = CAPEX_ITEMS.reduce((a, i) => a + i[1], 0);
+  const ELIGIBLE_BASE = CAPEX_ITEMS.filter(i => i[4]).reduce((a, i) => a + i[1], 0);
+  const MAINT_BASE = 355 + 64 + 28;
+  const MIN_CASH = 40, DSCR_COV = 1.2, LEV_COV = 3.5, EQ_CAP = 350, BANK_CAP = 540;
+
+  const SHOCKS = () => ({ capex_overrun: 0, delay_months: 0, price: 0, volume: 0, materials: 0, energy: 0,
+    ebitda_margin: 0, rate: 0, dso_days: 0, prime_obtained: 1, extra_equity: 0, standby_debt: 0,
+    extra_grace: 0, extra_tenor: 0, deferred_capex: 0 });
+  const FIN = (o) => Object.assign({ name: "B", equity: 350, debt: 450, lease: 180, debt_rate: 0.0525,
+    grace_sem: 6, n_repay_sem: 14, annuity: true, arrangement_fee: 0.01, lease_rate: 0.065, lease_sem: 14,
+    lease_residual: 0.01, prime_rate: 0, bridge_share: 0, bridge_spread: -0.0025, tax_holiday: false }, o);
+  const MARKET = () => ({ rf: 0.0355, beta_u: 1.2, mrp: 0.067, specific_premium: 0, tv_method: 1,
+    growth: 0.015, exit_multiple: 5, tax_shield: 0.35 });
+
+  const SCENARIOS = {
+    A: FIN({ name: "A — Fonds propres + dette", equity: 440, debt: 540, lease: 0, lease_rate: 0 }),
+    B: FIN({ name: "B — FP + dette + crédit-bail" }),
+    C: FIN({ name: "C — Mixte avec aides", equity: 320, debt: 420, lease: 180, prime_rate: 0.11,
+             bridge_share: 0.8, tax_holiday: true }),
+  };
+  const sh = (o) => Object.assign(SHOCKS(), o);
+  const CASES = {
+    "1. Central": sh({}),
+    "2. Prudent": sh({ capex_overrun: 0.05, price: -0.01, volume: -0.05, materials: 0.01, energy: 0.10, rate: 0.005, dso_days: 10 }),
+    "3. Favorable": sh({ capex_overrun: -0.03, price: 0.01, volume: 0.03, materials: -0.01, energy: -0.05, rate: -0.0025 }),
+    "4. Stress CAPEX +20 %": sh({ capex_overrun: 0.20 }),
+    "5. Stress retard 6 mois": sh({ delay_months: 6 }),
+    "6. Stress combiné": sh({ capex_overrun: 0.20, delay_months: 6 }),
+    "7. Combiné + mesures": sh({ capex_overrun: 0.20, delay_months: 6, extra_equity: 90, standby_debt: 70, deferred_capex: 25, extra_grace: 2 }),
+    "8. Sans prime (C)": sh({ prime_obtained: 0 }),
+  };
+
+  const zeros = (n) => new Array(n).fill(0);
+  const sum = (a) => a.reduce((x, y) => x + y, 0);
+  const mean = (a) => sum(a) / a.length;
+  const clip = (x, a, b) => Math.min(Math.max(x, a), b);
+
+  function irr(f) {
+    const npv = (r) => f.reduce((acc, v, t) => acc + v / Math.pow(1 + r, t), 0);
+    let lo = -0.95, hi = 3, vlo = npv(lo), vhi = npv(hi);
+    if (Math.sign(vlo) === Math.sign(vhi)) return NaN;
+    for (let i = 0; i < 100; i++) {
+      const mid = (lo + hi) / 2, vm = npv(mid);
+      if (Math.sign(vm) === Math.sign(vlo)) { lo = mid; vlo = vm; } else hi = mid;
+      if (hi - lo < 1e-7) break;
+    }
+    return (lo + hi) / 2;
+  }
+  const annuity = (pv, r, n) => n <= 0 ? 0 : Math.abs(r) < 1e-12 ? pv / n : pv * r / (1 - Math.pow(1 + r, -n));
+
+  function utilization(delayY) {
+    const start = 1.5 + delayY, startPlan = 1.5;
+    const R = (j) => j < 1 ? 0 : RAMP[Math.min(j, RAMP.length) - 1];
+    const rateAt = (t) => t <= start ? 0 : R(Math.ceil(t - start - 1e-9));
+    const avg = zeros(N), end = zeros(N), frac = zeros(N), fracPlan = zeros(N), oc = zeros(N);
+    for (let k = 0; k < N; k++) {
+      let s = 0, so = 0;
+      for (let m = 0; m < 12; m++) {
+        const t = k + (m + 0.5) / 12;
+        s += rateAt(t);
+        if (t > start) { const j = Math.ceil(t - start - 1e-9); so += OVERCOST[Math.min(j, 5) - 1]; }
+      }
+      avg[k] = s / 12; oc[k] = so / 12;
+      end[k] = rateAt(k + 1 - 1e-6);
+      frac[k] = clip(k + 1 - start, 0, 1);
+      fracPlan[k] = clip(k + 1 - startPlan, 0, 1);
+    }
+    return { avg, end, frac, fracPlan, oc, start };
+  }
+
+  function run(fin, s, mk) {
+    s = Object.assign(SHOCKS(), s || {}); mk = Object.assign(MARKET(), mk || {});
+    const U = utilization(s.delay_months / 12);
+    const { frac } = U;
+    const vf = 1 + s.volume, cap = 500000;
+    const kidx = YEARS.map((_, k) => Math.max(k - 1, 0));
+    const price = kidx.map(i => 3500 * Math.pow(0.995, i) * (1 + s.price));
+    const matU = kidx.map(i => 2188 * Math.pow(0.995, i) * (1 + s.materials));
+    const eneU = kidx.map(i => 115 * Math.pow(1.02, i) * (1 + s.energy));
+    const dlU = kidx.map(i => 108 * Math.pow(1.015, i));
+    const vol = U.avg.map(u => cap * u * vf);
+    const ca = vol.map((v, k) => v * price[k] / 1e6);
+    const varc = vol.map((v, k) => (v * matU[k] * (1 + U.oc[k]) + v * eneU[k] + v * dlU[k] * (1 + U.oc[k])) / 1e6 + 0.05 * ca[k]);
+    const fcoef = frac.map((f, k) => f + 0.7 * Math.max(U.fracPlan[k] - f, 0));
+    const cm = 1 + s.capex_overrun;
+    const fixed = kidx.map((i, k) => (60 * Math.pow(1.035, i) + 52 * Math.pow(1.02, i) + 0.02 * MAINT_BASE * cm * Math.pow(1.02, i)) * fcoef[k]);
+    const ebitda = ca.map((c, k) => c - varc[k] - fixed[k] + s.ebitda_margin * c);
+
+    const capexSem = zeros(NS);
+    CAPEX_ITEMS.forEach(([, amt, , split]) => split.forEach((p, i) => { capexSem[i] += amt * cm * p; }));
+    const deferred = Math.min(s.deferred_capex, capexSem[3]);
+    capexSem[3] -= deferred;
+    const agg = (x) => YEARS.map((_, k) => x[2 * k] + x[2 * k + 1]);
+    const endY = (x) => YEARS.map((_, k) => x[2 * k + 1]);
+    const capexInit = agg(capexSem); capexInit[6] += deferred;
+    const renew = ca.map((c, k) => YEARS[k] >= 2031 ? 0.015 * c : 0);
+    const capexTot = capexInit.map((c, k) => c + renew[k]);
+
+    const dep = zeros(N);
+    CAPEX_ITEMS.forEach(([, amt, rate]) => {
+      if (!rate) return; const base = amt * cm; let rem = base;
+      for (let k = 0; k < N; k++) { const d = Math.min(rem, base * rate * frac[k]); dep[k] += d; rem -= d; }
+    });
+    for (let k = 6; k < N; k++) dep[k] += deferred * 0.10;
+    let rs0 = 0; for (let k = 0; k < N; k++) { dep[k] += 0.10 * rs0; rs0 += renew[k]; }
+
+    const bfr = YEARS.map((_, k) => {
+      const e = cap * U.end[k] * vf;
+      const caR = e * price[k] / 1e6, matR = e * matU[k] * (1 + U.oc[k]) / 1e6;
+      const purch = matR + e * eneU[k] / 1e6 + 0.05 * caR;
+      const prod = matR + e * (eneU[k] + dlU[k]) / 1e6 + (U.end[k] > 0 ? fixed[k] / Math.max(fcoef[k], 1e-9) : 0);
+      const pers = e * dlU[k] / 1e6 + (U.end[k] > 0 ? 60 * Math.pow(1.035, kidx[k]) : 0);
+      return (60 + s.dso_days) / 360 * caR + 30 / 360 * matR + 12 / 360 * prod - 60 / 360 * purch - 20 / 360 * pers;
+    });
+    const dbfr = bfr.map((b, k) => b - (k ? bfr[k - 1] : 0));
+
+    function tax(pretax, holiday) {
+      const out = zeros(N); let loss = 0, under = 99, rank = 0;
+      for (let k = 0; k < N; k++) {
+        if (frac[k] > 0) rank++;
+        let taxable;
+        if (pretax[k] < 0) { loss += -pretax[k]; taxable = 0; }
+        else { const u = Math.min(loss, pretax[k]); loss -= u; taxable = pretax[k] - u; }
+        under = taxable >= 100 ? 0 : under + 1;
+        const r = under < 3 ? 0.35 : 0.20;
+        const cmin = rank >= 4 ? 0.0025 * ca[k] : 0;
+        out[k] = holiday && rank >= 1 && rank <= 5 ? 0 : Math.max(taxable * r, cmin);
+      }
+      return out;
+    }
+    const ebitU = ebitda.map((e, k) => e - dep[k]);
+    const taxU = tax(ebitU, false), taxUH = tax(ebitU, true);
+
+    const r = fin.debt_rate + s.rate, rsm = r / 2;
+    const leaseVal = fin.lease > 0 ? fin.lease * cm : 0;
+    const debtAmt = fin.debt + s.standby_debt, fees = fin.arrangement_fee * debtAmt;
+    const reserve = (60 + 52 + 0.02 * MAINT_BASE * cm) * 5 / 12;
+    const leaseSem = zeros(NS); CAPEX_ITEMS[4][3].forEach((p, i) => { leaseSem[i] = leaseVal * p; });
+    const uses = [0, 1, 2, 3].map(i => capexSem[i] - leaseSem[i]);
+    uses[0] += fees; uses[3] += Math.max(bfr[1], 0) + reserve;
+    const tot = sum(uses); const prof = uses.map(u => u / tot);
+    const equityTot = fin.equity + s.extra_equity;
+    const eqSem = zeros(NS), draws = zeros(NS);
+    for (let i = 0; i < 4; i++) { eqSem[i] = fin.equity * prof[i]; draws[i] = fin.debt * prof[i]; }
+    eqSem[3] += s.extra_equity; draws[3] += s.standby_debt;
+    const grace = fin.grace_sem + s.extra_grace, nrep = fin.n_repay_sem + s.extra_tenor;
+    const dInt = zeros(NS), dPrin = zeros(NS), dBal = zeros(NS);
+    let bal = 0, pay = null, lin = 0;
+    for (let i = 0; i < NS; i++) {
+      bal += draws[i]; dInt[i] = bal * rsm;
+      if (i >= grace && bal > 1e-9) {
+        if (pay === null) { pay = annuity(bal, rsm, nrep); lin = bal / nrep; }
+        const p = Math.min(fin.annuity ? pay - dInt[i] : lin, bal);
+        dPrin[i] = p; bal -= p;
+      }
+      dBal[i] = bal;
+    }
+    const lRent = zeros(NS), lBal = zeros(NS);
+    if (leaseVal > 0) {
+      const lrs = (fin.lease_rate + s.rate) / 2, resid = fin.lease_residual * leaseVal;
+      const rent = annuity(leaseVal - resid / Math.pow(1 + lrs, fin.lease_sem), lrs, fin.lease_sem);
+      let lb = leaseVal;
+      for (let i = 0; i < fin.lease_sem; i++) {
+        const k = 3 + i; if (k >= NS) break;
+        const it = lb * lrs; lRent[k] = rent + (i === fin.lease_sem - 1 ? resid : 0);
+        lb = lb + it - lRent[k]; lBal[k] = Math.max(lb, 0);
+      }
+      lBal[0] = lBal[1] = lBal[2] = leaseVal;
+    }
+    const prime = fin.prime_rate ? fin.prime_rate * ELIGIBLE_BASE * cm * s.prime_obtained : 0;
+    const primeY = zeros(N); primeY[2] = primeY[3] = prime / 2;
+    const bridge = fin.bridge_share * fin.prime_rate * ELIGIBLE_BASE * cm;
+    const brDraw = zeros(N); brDraw[0] = bridge * (prof[0] + prof[1]); brDraw[1] = bridge * (prof[2] + prof[3]);
+    const brRep = zeros(N), brBal = zeros(N), brInt = zeros(N);
+    let bb = 0;
+    for (let k = 0; k < N; k++) {
+      bb += brDraw[k]; brInt[k] = bb * (r + fin.bridge_spread) * (k <= 1 ? 0.5 : 1);
+      const rep = YEARS[k] < 2031 ? Math.min(bb, primeY[k]) : (YEARS[k] === 2031 ? bb : 0);
+      brRep[k] = rep; bb -= rep; brBal[k] = bb;
+    }
+    const interest = agg(dInt).map((v, k) => v + brInt[k]);
+    const idc = agg(dInt.map((v, i) => (i + 1) / 2 <= U.start + 1e-9 ? v : 0));
+    const nvBase = sum(idc) + fees; const nvDep = zeros(N);
+    let remNv = nvBase; for (let k = 0; k < N; k++) { const d = Math.min(remNv, nvBase * 0.2 * frac[k]); nvDep[k] = d; remNv -= d; }
+    const principal = agg(dPrin), rents = agg(lRent), debtBal = endY(dBal), leaseBal = endY(lBal);
+    const eqIn = agg(eqSem), debtDraw = agg(draws), leaseY = agg(leaseSem);
+    const leaseDep = zeros(N);
+    if (leaseVal > 0) { let rem = leaseVal; for (let k = 0; k < N; k++) { const d = Math.min(rem, leaseVal * 0.1 * frac[k]); leaseDep[k] = d; rem -= d; } }
+    const depCo = dep.map((d, k) => d - leaseDep[k] + nvDep[k]);
+    const primeReco = YEARS.map((y, k) => prime > 0 && y >= 2029 ? prime * 0.1 * frac[k] : 0);
+    const feesY = zeros(N); feesY[0] = fees;
+    const ebt = ebitda.map((e, k) => e - rents[k] - depCo[k] - (interest[k] - idc[k]) + primeReco[k]);
+    const taxCo = tax(ebt, fin.tax_holiday);
+    const net = ebt.map((e, k) => e - taxCo[k]);
+
+    const cash = zeros(N), div = zeros(N), cfads = zeros(N), service = zeros(N), dscr = new Array(N).fill(NaN);
+    let distributable = 0, legal = 0, c = 0, minCash = Infinity;
+    for (let k = 0; k < N; k++) {
+      if (YEARS[k] >= 2030 && k > 0) {
+        const ok = isNaN(dscr[k - 1]) || dscr[k - 1] >= DSCR_COV;
+        if (ok && distributable > 0 && c > MIN_CASH) { const d = Math.min(distributable, c - MIN_CASH); div[k] = d; c -= d; distributable -= d; }
+      }
+      cfads[k] = ebitda[k] - taxCo[k] - dbfr[k] - renew[k] - (YEARS[k] >= 2029 ? capexInit[k] : 0);
+      service[k] = interest[k] + principal[k] + rents[k];
+      if (service[k] > 1e-6 && YEARS[k] >= 2029) dscr[k] = cfads[k] / service[k];
+      c += eqIn[k] + debtDraw[k] + brDraw[k] + primeY[k] - (capexInit[k] - leaseY[k]) - renew[k]
+        + ebitda[k] - taxCo[k] - dbfr[k] - interest[k] - principal[k] - rents[k] - brRep[k] - feesY[k];
+      const alloc = Math.min(Math.max(net[k], 0) * 0.05, Math.max(0.1 * equityTot - legal, 0));
+      legal += alloc; distributable += net[k] - alloc;
+      cash[k] = c; minCash = Math.min(minCash, c);
+    }
+    const netDebt = debtBal.map((d, k) => d + leaseBal[k] + brBal[k] - cash[k]);
+    const lev = netDebt.map((d, k) => ebitda[k] > 1 ? d / ebitda[k] : NaN);
+    const tIdx = YEARS.map((y, k) => y >= 2030 ? k : -1).filter(k => k >= 0);
+    const dT = tIdx.map(k => dscr[k]).filter(v => !isNaN(v));
+    const dscrMin = dT.length ? Math.min(...dT) : NaN, dscrAvg = dT.length ? mean(dT) : NaN;
+    const levMax = Math.max(...tIdx.map(k => lev[k]).filter(v => !isNaN(v)));
+
+    const D = mean(debtBal.slice(1).map((d, i) => d + leaseBal[i + 1])), E = equityTot;
+    const betaL = mk.beta_u * (1 + (1 - mk.tax_shield) * D / E);
+    const ke = mk.rf + betaL * mk.mrp + mk.specific_premium;
+    const mD = mean(debtBal), mL = mean(leaseBal);
+    const kd = (mD * r + mL * (fin.lease_rate + s.rate)) / Math.max(mD + mL, 1e-9);
+    const wacc = E / (E + D) * ke + D / (E + D) * kd * (1 - mk.tax_shield);
+    const fcff = ebitda.map((e, k) => e - taxU[k] - dbfr[k] - capexTot[k] + (fin.tax_holiday ? taxU[k] - taxUH[k] : 0) + primeY[k] - 0.35 * primeReco[k]);
+    const nbv = cm * CAPEX_BASE + sum(renew) - sum(dep);
+    const tv = mk.tv_method === 1 ? nbv + bfr[N - 1] : mk.tv_method === 2
+      ? fcff[N - 1] * (1 + mk.growth) / Math.max(wacc - mk.growth, 1e-4) : mk.exit_multiple * ebitda[N - 1];
+    const fTv = fcff.slice(); fTv[N - 1] += tv;
+    const npv = fTv.reduce((a, v, k) => a + v / Math.pow(1 + wacc, k + 1), 0);
+    const tri = irr([0, ...fTv]);
+    const eqF = eqIn.map((e, k) => -e + div[k]);
+    eqF[N - 1] += tv - debtBal[N - 1] - leaseBal[N - 1] - brBal[N - 1] + cash[N - 1];
+    const triEq = irr([0, ...eqF]);
+    const k32 = YEARS.indexOf(2032);
+    const breakeven = (fixed[k32] + depCo[k32] + rents[k32] + interest[k32]) / ((ca[k32] - varc[k32]) / ca[k32]);
+    const gap = Math.max(0, -minCash);
+    return {
+      table: { year: YEARS, vol, ca, varc, fixed, ebitda, rents, interest, tax: taxCo, net, bfr, dbfr, capex: capexTot,
+        fcff, cfads, service, dscr, debtBal, leaseBal, brBal, cash, netDebt, lev, eqIn, div, primeY,
+        margin: ebitda.map((e, k) => ca[k] > 0 ? e / ca[k] : 0) },
+      kpi: { need: sum(capexInit) + bfr[1] + reserve + fees + sum(idc), wacc, ke, betaL, npv, tri, triEq,
+        dscrMin, dscrAvg, levMax, minCash, gap, dilution: Math.max(0, (E - EQ_CAP) / E), tv, breakeven,
+        ebitda32: ebitda[k32], ca32: ca[k32], prime,
+        ok: dscrMin >= DSCR_COV && levMax <= LEV_COV && minCash >= 0 },
+    };
+  }
+
+  // ---- Monte-Carlo (copule gaussienne, Cholesky) ----
+  const MC_VARS = ["price", "volume", "materials", "energy", "capex_overrun", "delay_months", "rate"];
+  const CORR = [
+    [1, .3, .4, .2, 0, 0, 0], [.3, 1, 0, 0, 0, -.2, 0], [.4, 0, 1, .5, .1, 0, .1], [.2, 0, .5, 1, .1, 0, .1],
+    [0, 0, .1, .1, 1, .6, 0], [0, -.2, 0, 0, .6, 1, 0], [0, 0, .1, .1, 0, 0, 1]];
+  function cholesky(A) {
+    const n = A.length, L = A.map(() => zeros(n));
+    for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) {
+      let s2 = A[i][j]; for (let k = 0; k < j; k++) s2 -= L[i][k] * L[j][k];
+      L[i][j] = i === j ? Math.sqrt(Math.max(s2, 1e-12)) : s2 / L[j][j];
+    }
+    return L;
+  }
+  const LCH = cholesky(CORR);
+  function rng(seed) { let a = seed >>> 0 || 1; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function normCdf(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)); const d = 0.3989423 * Math.exp(-x * x / 2);
+    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - p : p; }
+  function drawMC(n, v, seed) {
+    const rand = rng(seed); const gauss = () => { let u = 0; while (!u) u = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand()); };
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const e = MC_VARS.map(gauss); const z = LCH.map(row => row.reduce((a, l, j) => a + l * e[j], 0));
+      const [a, m, b] = v.capex_tri; const u4 = normCdf(z[4]); const fc = (m - a) / (b - a);
+      const capex = u4 < fc ? a + Math.sqrt(u4 * (b - a) * (m - a)) : b - Math.sqrt((1 - u4) * (b - a) * (b - m));
+      const delay = Math.min(-Math.log(1 - Math.min(normCdf(z[5]), 0.9999)) * v.delay_mean, 18);
+      out.push({ price: z[0] * v.price, volume: z[1] * v.volume, materials: z[2] * v.materials, energy: z[3] * v.energy,
+        capex_overrun: capex, delay_months: delay, rate: z[6] * v.rate });
+    }
+    return out;
+  }
+  function mcRun(fin, d, mk) {
+    const k = run(fin, d, mk).kpi;
+    return Object.assign({}, d, { npv: k.npv, triEq: k.triEq, dscrMin: k.dscrMin, minCash: k.minCash, ok: k.ok });
+  }
+  return { YEARS, SCENARIOS, CASES, SHOCKS, MARKET, FIN, run, drawMC, mcRun, MC_VARS, EQ_CAP, BANK_CAP, CAPEX_BASE };
+})();
+if (typeof module !== "undefined") module.exports = T2;
+</script>
+<script>
+(() => {
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const COLS = () => ({ A: css("--steel"), B: css("--orange"), C: css("--sage"), X: css("--plum"),
+  ink: css("--ink"), muted: css("--muted"), line: css("--line"), ko: css("--ko"), ok: css("--ok"), warn: css("--warn") });
+const fmt = (x, d = 1) => (x == null || !isFinite(x)) ? "n.d." : x.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x, d = 2) => (x == null || !isFinite(x)) ? "n.d." : fmt(x * 100, d) + " %";
+const xx = (x) => (x == null || !isFinite(x)) ? "n.d." : fmt(x, 2) + "x";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const yieldUI = () => new Promise((r) => setTimeout(r, 0));
+const S = T2.SCENARIOS, CASES = T2.CASES, Y = T2.YEARS;
+const caseNames = Object.keys(CASES);
+let MK = T2.MARKET();
+const cache = new Map();
+function run(fin, sh) { const key = JSON.stringify([fin, sh, MK]); if (!cache.has(key)) { if (cache.size > 3000) cache.clear(); cache.set(key, T2.run(fin, sh, MK)); } return cache.get(key); }
+
+// ---------- Plotly helpers ----------
+const hasPlotly = () => typeof Plotly !== "undefined";
+function layout(extra = {}) {
+  const c = COLS();
+  return Object.assign({ margin: { l: 48, r: 16, t: 10, b: 40 }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    font: { family: "Public Sans, system-ui, sans-serif", color: c.ink, size: 12 }, hovermode: "x unified",
+    legend: { orientation: "h", y: -0.18, font: { color: c.muted } },
+    xaxis: { gridcolor: c.line, zerolinecolor: c.line, color: c.muted },
+    yaxis: { gridcolor: c.line, zerolinecolor: c.line, color: c.muted } }, extra);
+}
+function plot(id, data, lay = {}) {
+  const el = $(id); if (!el) return;
+  if (!hasPlotly()) { el.innerHTML = '<p class="muted">Les graphiques n\'ont pas pu se charger (bibliothèque Plotly indisponible).</p>'; return; }
+  Plotly.react(el, data, layout(lay), { displayModeBar: false, responsive: true });
+}
+const hline = (y, color, dash = "dash") => ({ type: "line", xref: "paper", x0: 0, x1: 1, y0: y, y1: y, line: { color, dash, width: 1.5 } });
+const vline = (x, color, dash = "dash") => ({ type: "line", yref: "paper", y0: 0, y1: 1, x0: x, x1: x, line: { color, dash, width: 1.5 } });
+
+// ---------- Connexion ----------
+const USERS = {
+  admin: { name: "Administrateur", role: "admin", hash: "" },
+  jury: { name: "Membre du jury", role: "lecteur", hash: "" },
+};
+async function sha(s) {
+  try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join(""); }
+  catch (e) { let h = 0; for (const ch of s) h = (Math.imul(31, h) + ch.charCodeAt(0)) | 0; return "f" + h; }
+}
+let attempts = 0, lockedUntil = 0, user = null;
+(async () => { USERS.admin.hash = await sha("tg2|Tanger2026!"); USERS.jury.hash = await sha("tg2|Jury2026"); })();
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (Date.now() < lockedUntil) { $("lerr").textContent = `Trop de tentatives. Réessayez dans ${Math.ceil((lockedUntil - Date.now()) / 1000)} s.`; return; }
+  const u = USERS[$("lu").value.trim().toLowerCase()];
+  const h = await sha("tg2|" + $("lp").value);
+  if (u && u.hash && h === u.hash) { attempts = 0; user = u; enterApp(); }
+  else {
+    attempts++;
+    if (attempts >= 5) { lockedUntil = Date.now() + 60000; attempts = 0; $("lerr").textContent = "Accès bloqué pendant 60 secondes après 5 échecs."; }
+    else $("lerr").textContent = `Identifiant ou mot de passe incorrect (${5 - attempts} essai(s) restant(s)).`;
+  }
+});
+$("logout").addEventListener("click", () => { user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
+
+const PAGES = [["dash", "Tableau de bord"], ["sim", "Simulateur"], ["form", "Formulaire"], ["stress", "Sensibilités & stress"],
+  ["mc", "Monte-Carlo"], ["opt", "Optimiseur", true], ["live", "En direct"], ["data", "Power BI", true]];
+let current = "dash";
+function enterApp() {
+  $("login").hidden = true; $("app").hidden = false;
+  $("whoName").textContent = user.name; $("whoRole").textContent = user.role;
+  const tabs = $("tabs"); tabs.innerHTML = "";
+  PAGES.filter((p) => !p[2] || user.role === "admin").forEach(([id, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.role = "tab"; b.textContent = label; b.dataset.page = id;
+    b.addEventListener("click", () => show(id)); tabs.appendChild(b);
+  });
+  const h = (location.hash || "").slice(1);
+  show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin")) ? h : "dash");
+}
+const rendered = {};
+function show(id) {
+  current = id;
+  document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
+  document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.page === id));
+  try { localStorage.setItem("t2tab", id); } catch (e) {}
+  ({ dash: renderDash, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  rendered[id] = true;
+}
+function fillSelect(id, names, sel) { const el = $(id); if (el.options.length) return; names.forEach((n) => { const o = document.createElement("option"); o.value = o.textContent = n; el.appendChild(o); }); if (sel) el.value = sel; }
+function fillScen(id, sel = "B") { const el = $(id); if (el.options.length) return; "ABC".split("").forEach((k) => { const o = document.createElement("option"); o.value = k; o.textContent = S[k].name; el.appendChild(o); }); el.value = sel; }
+function seg(id, items, val, onChange) {
+  const el = $(id); el.innerHTML = "";
+  items.forEach(([v, l]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = l; b.setAttribute("aria-pressed", v === val);
+    b.addEventListener("click", () => { el.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); onChange(v); }); el.appendChild(b); });
+}
+const tile = (lab, val, sub = "", cls = "") => `<div class="tile"><span class="lab">${lab}</span><span class="val ${cls}">${val}</span><span class="sub">${sub}</span></div>`;
+function verdictOf(k) {
+  const why = [];
+  if (k.gap > 0.05) why.push(`besoin non financé ${fmt(k.gap, 0)} MDH`);
+  if (k.dscrMin < 1.2) why.push(`DSCR ${xx(k.dscrMin)} < 1,20x`);
+  if (k.levMax > 3.5) why.push(`levier ${xx(k.levMax)} > 3,5x`);
+  return why;
+}
+const pill = (k) => { const w = verdictOf(k); return w.length ? `<span class="pill ko">✗ ${w.join(" · ")}</span>` : `<span class="pill ok">✓ Soutenable</span>`; };
+
+// ---------- Tableau de bord ----------
+function renderDash() {
+  fillSelect("dCase", caseNames, "1. Central");
+  if (!rendered.dash) $("dCase").addEventListener("change", renderDash);
+  const sh = CASES[$("dCase").value];
+  const R = { A: run(S.A, sh), B: run(S.B, sh), C: run(S.C, sh) };
+  const b = R.B.kpi, c = COLS();
+  $("dTiles").innerHTML = tile("CA 2032 (MDH)", fmt(b.ca32, 0), "année de croisière")
+    + tile("EBITDA 2032 (MDH)", fmt(b.ebitda32, 0), pct(b.ebitda32 / b.ca32, 1) + " de marge")
+    + tile("VAN projet B (MDH)", fmt(b.npv, 1), "WACC " + pct(b.wacc))
+    + tile("TRI projet", pct(b.tri), "à comparer au WACC")
+    + tile("TRI fonds propres B", pct(b.triEq), "coût des FP " + pct(b.ke))
+    + tile("DSCR minimum B", xx(b.dscrMin), b.dscrMin >= 1.2 ? "covenant 1,20x respecté" : "sous le covenant 1,20x");
+  const rows = [["WACC", (k) => pct(k.wacc)], ["VAN projet (MDH)", (k) => fmt(k.npv)], ["TRI projet", (k) => pct(k.tri)],
+    ["TRI fonds propres", (k) => pct(k.triEq)], ["Coût des fonds propres", (k) => pct(k.ke)], ["DSCR minimum", (k) => xx(k.dscrMin)],
+    ["Dette nette / EBITDA max", (k) => xx(k.levMax)], ["Trésorerie minimum (MDH)", (k) => fmt(k.minCash)],
+    ["Dilution de la maison mère", (k) => pct(k.dilution, 1)]];
+  $("dTable").innerHTML = `<thead><tr><th>Indicateur</th>${"ABC".split("").map((k) => `<th><span class="dot" style="background:${c[k]}"></span> ${esc(S[k].name)}</th>`).join("")}</tr></thead><tbody>`
+    + rows.map(([l, f]) => `<tr><td>${l}</td>${"ABC".split("").map((k) => `<td class="n">${f(R[k].kpi)}</td>`).join("")}</tr>`).join("")
+    + `<tr><td>Verdict</td>${"ABC".split("").map((k) => `<td>${pill(R[k].kpi)}</td>`).join("")}</tr></tbody>`;
+  const t = R.B.table;
+  plot("cAct", [
+    { type: "bar", x: Y, y: t.ca, name: "Chiffre d'affaires", marker: { color: c.A, opacity: 0.35 } },
+    { type: "bar", x: Y, y: t.ebitda, name: "EBITDA", marker: { color: c.A } },
+    { type: "scatter", x: Y, y: t.margin.map((m) => m * 100), name: "Marge EBITDA (%)", yaxis: "y2", line: { color: c.B, width: 3 } }],
+    { barmode: "overlay", yaxis2: { overlaying: "y", side: "right", showgrid: false, color: c.muted, ticksuffix: " %" }, margin: { l: 48, r: 48, t: 10, b: 40 } });
+  plot("cDscr", "ABC".split("").map((k) => ({ type: "scatter", mode: "lines+markers", x: Y, y: R[k].table.dscr, name: "DSCR " + k, line: { color: c[k], width: 3 } })),
+    { shapes: [hline(1.2, c.ko)], annotations: [{ xref: "paper", x: 1, y: 1.2, text: "covenant 1,20x", showarrow: false, yanchor: "bottom", xanchor: "right", font: { color: c.ko, size: 11 } }] });
+  plot("cCash", "ABC".split("").map((k) => ({ type: "scatter", x: Y, y: R[k].table.cash, name: "Trésorerie " + k, line: { color: c[k], width: 3 } })),
+    { shapes: [hline(40, c.muted, "dot"), hline(0, c.ko, "solid")] });
+  const f = S.B;
+  plot("cSankey", [{ type: "sankey", arrangement: "snap",
+    node: { label: ["Fonds propres", "Dette bancaire", "Crédit-bail", "Besoin total", "CAPEX", "BFR initial", "Réserve, frais, intérêts"], pad: 16,
+      color: [c.A, c.B, c.C, c.muted, c.A, c.X, c.line] },
+    link: { source: [0, 1, 2, 3, 3, 3], target: [3, 3, 3, 4, 5, 6], value: [f.equity, f.debt, f.lease, 791, 107, 62], color: "rgba(128,128,128,.25)" } }],
+    { hovermode: false, margin: { l: 10, r: 10, t: 10, b: 10 } });
+  $("dVerdict").innerHTML = `<b>Recommandation : scénario B sécurisé.</b> C'est le seul montage admissible sans condition préalable : apport de 350 MDH à la portée de la maison mère, aucune dilution, covenants respectés. A dilue la maison mère de ${pct(R.A.kpi.dilution, 1)} ; C repose sur une prime et une exonération qui ne sont pas acquises.`;
+}
+
+// ---------- Simulateur ----------
+const SLIDERS = [
+  ["h", "Chocs d'exploitation"],
+  ["price", "Prix de vente", -10, 10, 0.5, "%"], ["volume", "Volumes", -20, 10, 1, "%"],
+  ["materials", "Coût des matières", -10, 15, 0.5, "%"], ["energy", "Coût de l'énergie", -20, 50, 5, "%"],
+  ["dso_days", "Allongement du délai clients", 0, 60, 5, " j"],
+  ["h", "Chocs de projet"],
+  ["capex_overrun", "Dépassement du CAPEX", -10, 40, 1, "%"], ["delay_months", "Retard de mise en production", 0, 18, 1, " mois"],
+  ["rate", "Variation du taux d'intérêt", -1, 3, 0.25, " pt"],
+  ["h", "Mesures correctrices"],
+  ["extra_equity", "Apport complémentaire", 0, 150, 5, " MDH"], ["standby_debt", "Dette de réserve", 0, 150, 5, " MDH"],
+  ["extra_grace", "Différé supplémentaire", 0, 4, 1, " sem."], ["extra_tenor", "Allongement de la dette", 0, 6, 1, " sem."],
+  ["deferred_capex", "Investissements reportés", 0, 60, 5, " MDH"]];
+const PCT_KEYS = new Set(["price", "volume", "materials", "energy", "capex_overrun"]);
+let simSc = "B";
+function shockFromSliders() {
+  const s = T2.SHOCKS();
+  SLIDERS.forEach(([k]) => { if (k === "h") return; const v = parseFloat($("r_" + k).value); s[k] = PCT_KEYS.has(k) || k === "rate" ? v / 100 : v; });
+  s.prime_obtained = $("r_prime").checked ? 1 : 0;
+  return s;
+}
+function setSliders(sh) {
+  SLIDERS.forEach(([k]) => { if (k === "h") return; const v = PCT_KEYS.has(k) || k === "rate" ? sh[k] * 100 : sh[k]; $("r_" + k).value = v; updOut(k); });
+  $("r_prime").checked = sh.prime_obtained >= 0.5;
+}
+function updOut(k) { const d = SLIDERS.find((x) => x[0] === k); const v = parseFloat($("r_" + k).value); $("o_" + k).value = (PCT_KEYS.has(k) || k === "rate" ? (v > 0 ? "+" : "") : "") + fmt(v, d[4] < 1 ? (d[4] < 0.5 ? 2 : 1) : 0) + d[5]; }
+function renderSim() {
+  if (!rendered.sim) {
+    fillSelect("sPreset", caseNames, "1. Central");
+    const box = $("simCtrls");
+    SLIDERS.forEach(([k, l, mn, mx, st]) => {
+      if (k === "h") { const h = document.createElement("h3"); h.textContent = l; box.appendChild(h); return; }
+      const w = document.createElement("div"); w.className = "rng";
+      w.innerHTML = `<div class="row"><label for="r_${k}">${l}</label><output id="o_${k}" for="r_${k}"></output></div><input type="range" id="r_${k}" min="${mn}" max="${mx}" step="${st}" value="0">`;
+      box.appendChild(w);
+      if (k === "rate") { const t = document.createElement("label"); t.className = "f"; t.style.cssText = "display:flex;gap:8px;align-items:center;color:var(--ink)"; t.htmlFor = "r_prime"; t.innerHTML = '<input type="checkbox" id="r_prime" checked> Prime à l\'investissement obtenue (C)'; box.appendChild(t); }
+    });
+    let raf = 0;
+    box.addEventListener("input", (e) => { if (e.target.id.startsWith("r_") && e.target.type === "range") updOut(e.target.id.slice(2)); cancelAnimationFrame(raf); raf = requestAnimationFrame(updateSim); });
+    $("sPreset").addEventListener("change", () => { setSliders(CASES[$("sPreset").value]); updateSim(); });
+    seg("sSeg", [["A", "Scénario A"], ["B", "Scénario B"], ["C", "Scénario C"]], "B", (v) => { simSc = v; updateSim(); });
+    setSliders(CASES["1. Central"]);
+  }
+  updateSim();
+}
+function updateSim() {
+  const sh = shockFromSliders(), c = COLS();
+  const R = {}, B0 = {};
+  "ABC".split("").forEach((k) => { R[k] = run(S[k], sh); B0[k] = run(S[k], T2.SHOCKS()); });
+  const d = (v, ref, f, unit = "") => { const x = v - ref; const cls = Math.abs(x) < 1e-9 ? "" : x > 0 ? "up" : "down"; return `<span class="delta ${cls}">${x >= 0 ? "+" : ""}${f(x)}${unit}</span>`; };
+  $("sCards").innerHTML = "ABC".split("").map((k) => { const r = R[k].kpi, b = B0[k].kpi;
+    return `<div class="panel scard"><div class="hd"><h3><span class="dot" style="background:${c[k]}"></span> ${esc(S[k].name)}</h3></div>
+      <div class="kv"><span>VAN projet</span><span>${fmt(r.npv)} MDH</span><span class="muted">écart au central</span><span>${d(r.npv, b.npv, (x) => fmt(x))}</span>
+      <span>TRI fonds propres</span><span>${pct(r.triEq)}</span><span>DSCR minimum</span><span>${xx(r.dscrMin)}</span>
+      <span>Levier max</span><span>${xx(r.levMax)}</span><span>Trésorerie min</span><span>${fmt(r.minCash)} MDH</span></div>${pill(r)}</div>`; }).join("");
+  const t = R[simSc].table, t0 = B0[simSc].table, col = c[simSc];
+  plot("sCash", [{ type: "scatter", x: Y, y: t0.cash, name: "Cas central", line: { color: c.muted, dash: "dot" } },
+    { type: "scatter", x: Y, y: t.cash, name: "Simulé", fill: "tozeroy", line: { color: col, width: 3 } }],
+    { shapes: [hline(0, c.ko, "solid")], title: { text: "Trésorerie (MDH)", font: { size: 13 }, x: 0.02 }, margin: { l: 48, r: 16, t: 34, b: 40 } });
+  plot("sDscr", [{ type: "scatter", x: Y, y: t0.dscr, name: "Cas central", line: { color: c.muted, dash: "dot" } },
+    { type: "scatter", mode: "lines+markers", x: Y, y: t.dscr, name: "Simulé", line: { color: col, width: 3 } }],
+    { shapes: [hline(1.2, c.ko)], title: { text: "DSCR", font: { size: 13 }, x: 0.02 }, margin: { l: 48, r: 16, t: 34, b: 40 } });
+  plot("sFlux", [{ type: "bar", x: Y, y: t.fcff, name: "Flux disponibles du projet", marker: { color: col } },
+    { type: "bar", x: Y, y: t.div, name: "Dividendes", marker: { color: c.X } },
+    { type: "scatter", x: Y, y: t.debtBal.map((v, i) => v + t.leaseBal[i]), name: "Dette + crédit-bail", line: { color: c.ink, width: 2 } }],
+    { title: { text: "Flux et endettement (MDH)", font: { size: 13 }, x: 0.02 }, margin: { l: 48, r: 16, t: 34, b: 40 } });
+}
+
+// ---------- Formulaire ----------
+let customs = [];
+try { customs = JSON.parse(localStorage.getItem("t2custom") || "[]"); } catch (e) { customs = []; }
+function renderForm() {
+  if (!rendered.form) {
+    fillSelect("fCase", caseNames, "1. Central");
+    $("fForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const v = (id) => parseFloat($(id).value) || 0;
+      const lease = v("fLease");
+      const fin = T2.FIN({ name: $("fName").value.trim() || "Mon scénario", equity: v("fEq"), debt: v("fDebt"), lease, debt_rate: v("fRate") / 100,
+        grace_sem: Math.round(v("fGrace")), n_repay_sem: Math.max(1, Math.round(v("fRep"))), annuity: $("fProf").value === "1",
+        lease_rate: lease ? v("fLRate") / 100 : 0, prime_rate: v("fPrime") / 100, bridge_share: v("fBridge") / 100, tax_holiday: $("fHol").checked });
+      customs = customs.filter((x) => x.fin.name !== fin.name).concat([{ fin, cas: $("fCase").value }]).slice(-5);
+      try { localStorage.setItem("t2custom", JSON.stringify(customs)); } catch (e2) {}
+      renderForm();
+    });
+  }
+  const out = $("fOut");
+  if (!customs.length) { out.innerHTML = '<div class="verdict">Remplissez le formulaire puis cliquez sur « Évaluer le scénario ». Exemple : 300 MDH de fonds propres, 500 de dette et 180 de crédit-bail.</div>'; return; }
+  const last = customs[customs.length - 1], f = last.fin, sh = CASES[last.cas] || CASES["1. Central"];
+  const k = run(f, sh).kpi, total = f.equity + f.debt + f.lease;
+  const checks = [["Apport ≤ capacité de la maison mère (350 MDH)", f.equity <= 350], ["Dette bancaire ≤ plafond présumé des banques (540 MDH)", f.debt <= 540],
+    ["DSCR minimum ≥ 1,20x", k.dscrMin >= 1.2], ["Dette nette / EBITDA ≤ 3,5x", k.levMax <= 3.5], ["Trésorerie jamais négative", k.minCash >= 0],
+    ["TRI des fonds propres > coût des fonds propres", k.triEq > k.ke], ["Aucune aide non acquise dans le montage", f.prime_rate === 0 && !f.tax_holiday]];
+  const all = Object.assign({}, ...["A", "B", "C"].map((x) => ({ [S[x].name]: run(S[x], sh).kpi })), ...customs.map((x) => ({ [x.fin.name]: run(x.fin, CASES[x.cas] || sh).kpi })));
+  out.innerHTML = `<div class="panel" style="display:grid;gap:14px"><div class="lead"><h3>Résultat : ${esc(f.name)} <span class="muted">(${esc(last.cas)})</span></h3>${pill(k)}</div>
+    <div class="tiles">${tile("Ressources (MDH)", fmt(total, 0), `${total - 960 >= 0 ? "+" : ""}${fmt(total - 960, 0)} par rapport au besoin de 960`)}${tile("VAN projet (MDH)", fmt(k.npv))}${tile("TRI fonds propres", pct(k.triEq), "coût " + pct(k.ke))}${tile("DSCR minimum", xx(k.dscrMin))}${tile("Levier max", xx(k.levMax))}</div>
+    <div class="checks">${checks.map(([l, ok]) => `<div class="verdict ${ok ? "ok" : "ko"}">${ok ? "✓" : "✗"} ${l}</div>`).join("")}</div></div>
+    <div class="grid2"><div class="panel"><h3>Comparaison</h3><div class="tablewrap"><table><thead><tr><th>Scénario</th><th>VAN</th><th>TRI FP</th><th>DSCR min</th><th>Levier</th><th>Trés. min</th></tr></thead><tbody>
+    ${Object.entries(all).map(([n, q]) => `<tr><td>${esc(n)}</td><td class="n">${fmt(q.npv)}</td><td class="n">${pct(q.triEq)}</td><td class="n">${xx(q.dscrMin)}</td><td class="n">${xx(q.levMax)}</td><td class="n">${fmt(q.minCash)}</td></tr>`).join("")}</tbody></table></div>
+    <button class="btn" type="button" id="fClear" style="margin-top:10px">Effacer mes scénarios</button></div>
+    <div class="panel"><h3>Profil multicritère (0 à 1)</h3><div class="chart" id="fRadar"></div></div></div>`;
+  $("fClear").addEventListener("click", () => { customs = []; try { localStorage.removeItem("t2custom"); } catch (e) {} renderForm(); });
+  const cats = ["VAN", "TRI FP", "DSCR min", "Liquidité", "Faible levier", "Contrôle"], c = COLS();
+  const pal = [c.A, c.B, c.C, c.X, c.warn, c.ink, c.muted, c.ok];
+  const sc = (q) => [q.npv / 300, q.triEq / 0.25, q.dscrMin - 1, q.minCash / 100, 1 - q.levMax / 4, 1 - q.dilution].map((v) => Math.max(0, Math.min(1, isFinite(v) ? v : 0)));
+  plot("fRadar", Object.entries(all).map(([n, q], i) => { const s = sc(q); return { type: "scatterpolar", r: s.concat(s[0]), theta: cats.concat(cats[0]), name: n, fill: "toself", opacity: 0.5, line: { color: pal[i % pal.length] } }; }),
+    { polar: { bgcolor: "rgba(0,0,0,0)", radialaxis: { range: [0, 1], gridcolor: c.line, color: c.muted }, angularaxis: { gridcolor: c.line, color: c.ink } }, hovermode: "closest" });
+}
+
+// ---------- Sensibilités ----------
+let stSc = "B";
+const TORNADO = [["Prix de vente ±5 %", "price", 0.05], ["Volumes ±10 %", "volume", 0.10], ["Coût matières ±5 %", "materials", 0.05], ["Énergie ±20 %", "energy", 0.20],
+  ["CAPEX ±15 %", "capex_overrun", 0.15], ["Retard 0 / +6 mois", "delay_months", 6], ["Taux ±1 pt", "rate", 0.01], ["Délai clients ±15 j", "dso_days", 15]];
+function renderStress() {
+  if (!rendered.stress) {
+    seg("stSeg", [["A", "A"], ["B", "B"], ["C", "C"]], "B", (v) => { stSc = v; renderStress(); });
+    ["tMetric", "hMetric", "hPair"].forEach((id) => $(id).addEventListener("change", renderStress));
+  }
+  const fin = S[stSc], c = COLS(), m = $("tMetric").value, base = T2.SHOCKS();
+  const ref = run(fin, base).kpi[m];
+  const rows = TORNADO.map(([l, a, dl]) => { const lo = Object.assign(T2.SHOCKS(), { [a]: a === "delay_months" ? 0 : -dl }), hi = Object.assign(T2.SHOCKS(), { [a]: dl });
+    return [l, run(fin, lo).kpi[m] - ref, run(fin, hi).kpi[m] - ref]; }).sort((p, q) => Math.max(Math.abs(p[1]), Math.abs(p[2])) - Math.max(Math.abs(q[1]), Math.abs(q[2])));
+  plot("cTornado", [{ type: "bar", orientation: "h", y: rows.map((r) => r[0]), x: rows.map((r) => r[1]), name: "Variable à la baisse", marker: { color: c.A } },
+    { type: "bar", orientation: "h", y: rows.map((r) => r[0]), x: rows.map((r) => r[2]), name: "Variable à la hausse", marker: { color: c.B } }],
+    { barmode: "overlay", hovermode: "y unified", margin: { l: 140, r: 16, t: 10, b: 40 } });
+  const hm = $("hMetric").value, pair = $("hPair").value;
+  const lin = (a, b, n) => Array.from({ length: n }, (_, i) => a + (b - a) * i / (n - 1));
+  let xs, ys, xa, ya;
+  if (pair.startsWith("Prix ×")) { xs = lin(-0.06, 0.06, 9); ys = lin(-0.15, 0.06, 8); xa = "price"; ya = "volume"; }
+  else if (pair.startsWith("CAPEX")) { xs = lin(0, 0.3, 7); ys = [0, 2, 4, 6, 8, 10, 12]; xa = "capex_overrun"; ya = "delay_months"; }
+  else { xs = lin(-0.06, 0.06, 9); ys = lin(-0.06, 0.06, 9); xa = "materials"; ya = "price"; }
+  const z = ys.map((y) => xs.map((x) => run(fin, Object.assign(T2.SHOCKS(), { [xa]: x, [ya]: y })).kpi[hm]));
+  const lab = (a, v) => a === "delay_months" ? v + " mois" : (v >= 0 ? "+" : "") + fmt(v * 100, 0) + " %";
+  plot("cHeat", [{ type: "heatmap", z, x: xs.map((v) => lab(xa, v)), y: ys.map((v) => lab(ya, v)), colorscale: "RdYlGn",
+    zmid: hm === "npv" ? 0 : hm === "dscrMin" ? 1.2 : 0.157, text: z.map((r) => r.map((v) => hm === "triEq" ? pct(v, 1) : fmt(v, hm === "npv" ? 0 : 2))),
+    texttemplate: "%{text}", hoverinfo: "skip", colorbar: { tickfont: { color: c.muted } } }],
+    { hovermode: false, margin: { l: 70, r: 10, t: 10, b: 50 }, xaxis: { title: { text: { price: "Prix de vente", capex_overrun: "Dépassement du CAPEX", materials: "Coût des matières" }[xa] }, color: c.muted },
+      yaxis: { title: { text: { volume: "Volumes", delay_months: "Retard", price: "Prix de vente" }[ya] }, color: c.muted } });
+  $("stTable").innerHTML = `<thead><tr><th>Cas</th><th>Scénario</th><th>VAN</th><th>TRI FP</th><th>DSCR min</th><th>Levier max</th><th>Besoin non financé</th><th>Verdict</th></tr></thead><tbody>`
+    + caseNames.flatMap((cn) => "ABC".split("").map((k) => { const q = run(S[k], CASES[cn]).kpi;
+      return `<tr><td>${cn}</td><td><span class="dot" style="background:${c[k]}"></span> ${k}</td><td class="n">${fmt(q.npv)}</td><td class="n">${pct(q.triEq)}</td><td class="n">${xx(q.dscrMin)}</td><td class="n">${xx(q.levMax)}</td><td class="n">${fmt(q.gap)}</td><td>${pill(q)}</td></tr>`; })).join("") + "</tbody>";
+}
+
+// ---------- Monte-Carlo ----------
+const MCP = [["price", "σ prix", 0, 0.08, 0.005, 0.02], ["volume", "σ volumes", 0, 0.2, 0.01, 0.06], ["materials", "σ matières", 0, 0.1, 0.005, 0.03],
+  ["energy", "σ énergie", 0, 0.4, 0.02, 0.10], ["rate", "σ taux", 0, 0.02, 0.001, 0.005], ["delay_mean", "Retard moyen (mois)", 0, 8, 0.5, 2],
+  ["capex_lo", "CAPEX minimum", -0.1, 0, 0.01, -0.03], ["capex_hi", "CAPEX maximum", 0.05, 0.5, 0.01, 0.25]];
+function mcVol() { const v = {}; MCP.forEach(([k]) => { v[k] = parseFloat($("mp_" + k).value); }); return { price: v.price, volume: v.volume, materials: v.materials, energy: v.energy, rate: v.rate, delay_mean: v.delay_mean, capex_tri: [v.capex_lo, 0, v.capex_hi] }; }
+const DEFAULT_VOL = { price: 0.02, volume: 0.06, materials: 0.03, energy: 0.10, rate: 0.005, delay_mean: 2, capex_tri: [-0.03, 0, 0.25] };
+function initMc() {
+  if (rendered.mc) return;
+  fillScen("mSc");
+  $("mParams").innerHTML = MCP.map(([k, l, mn, mx, st, v]) => `<div class="rng"><div class="row"><label for="mp_${k}">${l}</label><output id="mo_${k}">${v}</output></div><input type="range" id="mp_${k}" min="${mn}" max="${mx}" step="${st}" value="${v}"></div>`).join("");
+  $("mParams").addEventListener("input", (e) => { const k = e.target.id.slice(3); $("mo_" + k).value = e.target.value; });
+  $("mGo").addEventListener("click", runMc);
+  runMc();
+}
+let mcBusy = false;
+async function runMc() {
+  if (mcBusy) return; mcBusy = true; $("mGo").disabled = true;
+  const fin = S[$("mSc").value], n = +$("mN").value, draws = T2.drawMC(n, mcVol(), +$("mSeed").value || 1), res = [];
+  for (let i = 0; i < n; i++) { res.push(T2.mcRun(fin, draws[i], MK)); if (i % 100 === 99) { $("mGo").textContent = `Calcul… ${i + 1}/${n}`; await yieldUI(); } }
+  $("mGo").textContent = "Lancer la simulation"; $("mGo").disabled = false; mcBusy = false;
+  drawMc(res, $("mSc").value, "mTiles", "mHist", "mDscr", "mCorr", "mScatter");
+}
+const quant = (a, q) => { const s = a.slice().sort((x, y) => x - y); return s[Math.max(0, Math.min(s.length - 1, Math.floor(q * (s.length - 1))))]; };
+function rank(a) { const idx = a.map((v, i) => [v, i]).sort((x, y) => x[0] - y[0]); const r = new Array(a.length); idx.forEach(([, i], j) => { r[i] = j; }); return r; }
+function corr(a, b) { const ma = a.reduce((x, y) => x + y, 0) / a.length, mb = b.reduce((x, y) => x + y, 0) / b.length; let sxy = 0, sxx = 0, syy = 0;
+  for (let i = 0; i < a.length; i++) { sxy += (a[i] - ma) * (b[i] - mb); sxx += (a[i] - ma) ** 2; syy += (b[i] - mb) ** 2; } return sxy / Math.sqrt(sxx * syy || 1); }
+function drawMc(res, sc, tiles, hist, dscr, cor, scat) {
+  const c = COLS(), npv = res.map((r) => r.npv), ds = res.map((r) => r.dscrMin).filter(isFinite), n = res.length;
+  const share = (f) => res.filter(f).length / n;
+  $(tiles).innerHTML = tile("VAN moyenne (MDH)", fmt(npv.reduce((a, b) => a + b, 0) / n)) + tile("P(VAN < 0)", pct(share((r) => r.npv < 0), 1))
+    + tile("VaR 5 % de la VAN (MDH)", fmt(quant(npv, 0.05), 0)) + tile("P(DSCR < 1,20x)", pct(share((r) => r.dscrMin < 1.2), 1))
+    + tile("P(trésorerie < 0)", pct(share((r) => r.minCash < 0), 1));
+  plot(hist, [{ type: "histogram", x: npv, nbinsx: 50, marker: { color: c[sc] }, name: "VAN" }],
+    { shapes: [vline(0, c.ko, "solid"), vline(quant(npv, 0.05), c.ink)], hovermode: "closest", showlegend: false, bargap: 0.04 });
+  if (dscr) plot(dscr, [{ type: "histogram", x: ds, nbinsx: 50, marker: { color: c.X }, name: "DSCR" }], { shapes: [vline(1.2, c.ko, "solid")], hovermode: "closest", showlegend: false, bargap: 0.04 });
+  if (cor) {
+    const labels = { price: "Prix", volume: "Volumes", materials: "Matières", energy: "Énergie", capex_overrun: "CAPEX", delay_months: "Retard", rate: "Taux" };
+    const rN = rank(npv); const cs = T2.MC_VARS.map((k) => [labels[k], corr(rank(res.map((r) => r[k])), rN)]).sort((a, b) => a[1] - b[1]);
+    plot(cor, [{ type: "bar", orientation: "h", y: cs.map((x) => x[0]), x: cs.map((x) => x[1]), marker: { color: cs.map((x) => x[1] < 0 ? c.B : c.C) } }],
+      { hovermode: "closest", showlegend: false, margin: { l: 80, r: 16, t: 10, b: 40 }, xaxis: { range: [-1, 1], gridcolor: c.line, color: c.muted } });
+  }
+  if (scat) plot(scat, [{ type: "scatter", mode: "markers", x: res.map((r) => r.capex_overrun * 100), y: res.map((r) => r.delay_months),
+    marker: { color: npv, colorscale: "RdYlGn", cmid: 0, size: 6, opacity: 0.75, colorbar: { title: { text: "VAN" }, tickfont: { color: c.muted } } } }],
+    { hovermode: "closest", xaxis: { title: { text: "Dépassement du CAPEX (%)" }, gridcolor: c.line, color: c.muted }, yaxis: { title: { text: "Retard (mois)" }, gridcolor: c.line, color: c.muted } });
+}
+
+// ---------- Optimiseur ----------
+let optRes = null, optMetric = "triEq";
+function initOpt() {
+  if (rendered.opt) return;
+  fillSelect("oCase", caseNames, "1. Central");
+  $("oGo").addEventListener("click", runOpt);
+  seg("oSeg", [["triEq", "TRI FP"], ["dscrMin", "DSCR min"], ["npv", "VAN"], ["levMax", "Levier"]], "triEq", (v) => { optMetric = v; drawOpt(); });
+  runOpt();
+}
+async function runOpt() {
+  $("oGo").disabled = true; $("oGo").textContent = "Calcul…"; await yieldUI();
+  const sh = CASES[$("oCase").value], need = +$("oNeed").value, eqCap = +$("oEq").value, bank = +$("oBank").value, out = [];
+  for (let e = 250; e <= 500; e += 25) for (let l = 0; l <= 300; l += 30) {
+    const d = need - e - l; if (d < 0) continue;
+    const k = run(T2.FIN({ name: "opt", equity: e, debt: d, lease: l, lease_rate: l > 0 ? 0.065 : 0 }), sh).kpi;
+    out.push({ e, d, l, k, ok: d <= bank && e <= eqCap && k.ok });
+  }
+  optRes = out; $("oGo").disabled = false; $("oGo").textContent = "Optimiser"; drawOpt();
+}
+function drawOpt() {
+  if (!optRes) return;
+  const c = COLS(), feas = optRes.filter((r) => r.ok);
+  const card = (r, title, cls) => `<div class="verdict ${cls}"><b>${title}</b><br>Fonds propres ${fmt(r.e, 0)} · dette ${fmt(r.d, 0)} · crédit-bail ${fmt(r.l, 0)} MDH<br><span class="num">TRI FP ${pct(r.k.triEq)} · DSCR ${xx(r.k.dscrMin)} · levier ${xx(r.k.levMax)}</span></div>`;
+  $("oBest").innerHTML = feas.length ? card(feas.slice().sort((a, b) => b.k.triEq - a.k.triEq)[0], "Rendement maximal", "ok") + card(feas.slice().sort((a, b) => b.k.dscrMin - a.k.dscrMin)[0], "Robustesse maximale", "warn")
+    : '<div class="verdict ko">Aucune structure admissible dans ce cas : il faut des mesures correctrices ou des fonds propres supplémentaires.</div>';
+  const es = [...new Set(optRes.map((r) => r.e))], ls = [...new Set(optRes.map((r) => r.l))];
+  const get = (e, l) => optRes.find((r) => r.e === e && r.l === l);
+  const z = ls.map((l) => es.map((e) => { const r = get(e, l); return r ? r.k[optMetric] : null; }));
+  const tx = ls.map((l) => es.map((e) => { const r = get(e, l); if (!r) return ""; const v = r.k[optMetric]; return (r.ok ? "✓ " : "") + (optMetric === "triEq" ? pct(v, 1) : fmt(v, optMetric === "npv" ? 0 : 2)); }));
+  plot("oHeat", [{ type: "heatmap", z, x: es, y: ls, text: tx, texttemplate: "%{text}", colorscale: "Viridis", hoverinfo: "skip", colorbar: { tickfont: { color: c.muted } } }],
+    { hovermode: false, margin: { l: 60, r: 10, t: 10, b: 50 }, xaxis: { title: { text: "Fonds propres (MDH)" }, color: c.muted }, yaxis: { title: { text: "Crédit-bail (MDH)" }, color: c.muted } });
+  plot("oFront", [{ type: "scatter", mode: "markers", x: optRes.map((r) => r.k.dscrMin), y: optRes.map((r) => r.k.triEq * 100),
+    text: optRes.map((r) => `FP ${r.e} / dette ${r.d} / CB ${r.l}`), hovertemplate: "%{text}<br>DSCR %{x:.2f}x · TRI FP %{y:.1f} %<extra></extra>",
+    marker: { size: 9, color: optRes.map((r) => r.ok ? c.C : c.line), line: { color: c.muted, width: 0.5 } } }],
+    { hovermode: "closest", shapes: [vline(1.2, c.ko)], xaxis: { title: { text: "DSCR minimum (risque)" }, gridcolor: c.line, color: c.muted },
+      yaxis: { title: { text: "TRI des fonds propres (%)" }, gridcolor: c.line, color: c.muted } });
+}
+
+// ---------- En direct ----------
+let liveMode = "film", filmTimer = null;
+function initLive() {
+  if (rendered.live) return;
+  fillScen("lfSc"); fillScen("lmSc"); fillSelect("lfCase", caseNames, "1. Central");
+  seg("lSeg", [["film", "Film du projet"], ["mc", "Monte-Carlo en direct"], ["draw", "Épreuve finale"]], "film", (v) => {
+    liveMode = v; $("liveFilm").hidden = v !== "film"; $("liveMc").hidden = v !== "mc"; $("liveDraw").hidden = v !== "draw";
+    if (v === "film") filmFrame(11);
+  });
+  $("lfGo").addEventListener("click", playFilm);
+  ["lfSc", "lfCase"].forEach((id) => $(id).addEventListener("change", () => { stopFilm(); filmFrame(11); }));
+  $("lmGo").addEventListener("click", liveMc);
+  $("ldGo").addEventListener("click", drawShock);
+  $("ldManual").addEventListener("click", () => applyShock((parseFloat($("ldCapex").value) || 0) / 100, parseInt($("ldDelay").value) || 0));
+  filmFrame(11);
+}
+const EVENTS = { 2027: "Début des travaux, premiers tirages de fonds propres et de dette.", 2028: "Mise en service au 1er juillet (si aucun retard) et premiers loyers de crédit-bail.",
+  2029: "Montée en cadence ; la réserve de trésorerie absorbe le BFR.", 2030: "Fin du différé : remboursement de la dette et tests des covenants.",
+  2031: "Premiers investissements de renouvellement.", 2032: "Régime de croisière : 92 % de la capacité.", 2035: "Fin du crédit-bail, levée de l'option d'achat.",
+  2036: "Dernières échéances bancaires.", 2038: "Fin de l'horizon : valeur terminale des actifs et du BFR." };
+function filmFrame(i) {
+  const sc = $("lfSc").value, t = run(S[sc], CASES[$("lfCase").value]).table, c = COLS(), col = c[sc];
+  const yr = Y.slice(0, i + 1), cut = (a) => a.slice(0, i + 1);
+  $("lfTiles").innerHTML = tile("Année", Y[i]) + tile("Chiffre d'affaires (MDH)", fmt(t.ca[i], 0)) + tile("EBITDA (MDH)", fmt(t.ebitda[i], 0))
+    + tile("Trésorerie (MDH)", fmt(t.cash[i], 0), "", t.cash[i] < 0 ? "delta down" : "") + tile("Dette + crédit-bail (MDH)", fmt(t.debtBal[i] + t.leaseBal[i], 0));
+  $("lfEvent").textContent = EVENTS[Y[i]] || "Exploitation courante.";
+  const cmin = Math.min(-60, ...t.cash) * 1.1, cmax = Math.max(200, ...t.cash) * 1.1;
+  plot("lfChart", [{ type: "bar", x: yr, y: cut(t.ca), name: "Chiffre d'affaires", marker: { color: col, opacity: 0.3 } },
+    { type: "bar", x: yr, y: cut(t.ebitda), name: "EBITDA", marker: { color: col } },
+    { type: "scatter", x: yr, y: cut(t.cash), name: "Trésorerie", yaxis: "y2", line: { color: c.X, width: 4 } }],
+    { barmode: "overlay", xaxis: { range: [2026.5, 2038.5], gridcolor: c.line, color: c.muted }, yaxis: { range: [0, 1700], gridcolor: c.line, color: c.muted },
+      yaxis2: { overlaying: "y", side: "right", range: [cmin, cmax], showgrid: false, color: c.muted }, margin: { l: 48, r: 48, t: 10, b: 40 } });
+  const dv = t.dscr[i];
+  plot("lfGauge", [{ type: "indicator", mode: "gauge+number", value: isFinite(dv) ? dv : 0, number: { suffix: "x", valueformat: ".2f", font: { color: c.ink } },
+    title: { text: isFinite(dv) ? `DSCR ${Y[i]}` : `DSCR ${Y[i]} (pas encore de remboursement)`, font: { size: 14, color: c.muted } },
+    gauge: { axis: { range: [0, 3], tickcolor: c.muted, tickfont: { color: c.muted } }, bar: { color: col },
+      steps: [{ range: [0, 1.2], color: "rgba(185,58,42,.25)" }, { range: [1.2, 1.5], color: "rgba(163,107,7,.22)" }, { range: [1.5, 3], color: "rgba(47,125,74,.2)" }],
+      threshold: { line: { color: c.ko, width: 4 }, value: 1.2 } } }], { margin: { l: 30, r: 30, t: 50, b: 10 } });
+}
+function stopFilm() { if (filmTimer) { clearTimeout(filmTimer); filmTimer = null; } $("lfGo").textContent = "▶ Lancer"; }
+function playFilm() {
+  if (filmTimer) { stopFilm(); return; }
+  $("lfGo").textContent = "■ Arrêter"; let i = 0; const sp = +$("lfSpeed").value;
+  const step = () => { filmFrame(i); i++; if (i < Y.length) filmTimer = setTimeout(step, sp); else { filmTimer = null; $("lfGo").textContent = "▶ Rejouer"; } };
+  step();
+}
+let lmBusy = false;
+async function liveMc() {
+  if (lmBusy) return; lmBusy = true; $("lmGo").disabled = true;
+  const sc = $("lmSc").value, n = +$("lmN").value, draws = T2.drawMC(n, DEFAULT_VOL, (Date.now() % 100000) + 1), res = [], conv = { n: [], pv: [], pd: [] }, c = COLS();
+  for (let i = 0; i < n; i++) {
+    res.push(T2.mcRun(S[sc], draws[i], MK));
+    if ((i + 1) % 25 === 0 || i === n - 1) {
+      conv.n.push(res.length); conv.pv.push(res.filter((r) => r.npv < 0).length / res.length); conv.pd.push(res.filter((r) => r.dscrMin < 1.2).length / res.length);
+      drawMc(res, sc, "lmTiles", "lmHist");
+      plot("lmConv", [{ type: "scatter", x: conv.n, y: conv.pv.map((v) => v * 100), name: "P(VAN < 0)", line: { color: c.B, width: 3 } },
+        { type: "scatter", x: conv.n, y: conv.pd.map((v) => v * 100), name: "P(DSCR < 1,20x)", line: { color: c.X, width: 3 } }],
+        { xaxis: { range: [0, n], title: { text: "Nombre de tirages" }, gridcolor: c.line, color: c.muted }, yaxis: { ticksuffix: " %", rangemode: "tozero", gridcolor: c.line, color: c.muted } });
+      await sleep(40);
+    }
+  }
+  lmBusy = false; $("lmGo").disabled = false; $("lmGo").textContent = "▶ Relancer";
+}
+async function drawShock() {
+  $("ldGo").disabled = true;
+  const caps = [5, 10, 15, 20, 25, 30], dels = [0, 3, 6, 9, 12];
+  let cx = 20, dl = 6;
+  for (let i = 0; i < 16; i++) { cx = caps[Math.floor(Math.random() * caps.length)]; dl = dels[Math.floor(Math.random() * dels.length)];
+    $("ldTitle").textContent = `CAPEX +${cx} % · retard ${dl} mois`; await sleep(60 + i * 8); }
+  $("ldCapex").value = cx; $("ldDelay").value = dl; $("ldGo").disabled = false;
+  applyShock(cx / 100, dl);
+}
+function applyShock(cx, dl) {
+  const sh = Object.assign(T2.SHOCKS(), { capex_overrun: cx, delay_months: dl }), c = COLS();
+  $("ldTitle").textContent = `Choc : CAPEX +${fmt(cx * 100, 0)} % · retard ${dl} mois`;
+  $("ldCards").innerHTML = "ABC".split("").map((k) => { const q = run(S[k], sh).kpi;
+    return `<div class="panel scard"><h3><span class="dot" style="background:${c[k]}"></span> ${esc(S[k].name)}</h3><div class="kv"><span>VAN projet</span><span>${fmt(q.npv)} MDH</span><span>DSCR minimum</span><span>${xx(q.dscrMin)}</span><span>Besoin non financé</span><span>${fmt(q.gap)} MDH</span></div>${pill(q)}</div>`; }).join("");
+  let best = null;
+  for (const e of [0, 30, 60, 90, 120]) for (const sb of [0, 35, 70, 105]) for (const g of [0, 2]) for (const dc of [0, 25]) {
+    const q = run(S.B, Object.assign({}, sh, { extra_equity: e, standby_debt: sb, extra_grace: g, deferred_capex: dc })).kpi;
+    if (q.ok) { const cost = e * 1.6 + sb + g * 8 + dc * 0.5; if (!best || cost < best.cost) best = { cost, e, sb, g, dc, q }; }
+  }
+  $("ldFix").innerHTML = best ? `<div class="panel" style="display:grid;gap:12px"><h3>Mesures correctrices les moins coûteuses pour le scénario B</h3>
+    <div class="tiles">${tile("Apport complémentaire", fmt(best.e, 0) + " MDH")}${tile("Dette de réserve", fmt(best.sb, 0) + " MDH")}${tile("Différé supplémentaire", best.g + " sem.")}${tile("Investissements reportés", fmt(best.dc, 0) + " MDH")}</div>
+    <div class="verdict ok">Avec ces mesures : DSCR minimum ${xx(best.q.dscrMin)}, trésorerie minimum ${fmt(best.q.minCash, 0)} MDH, levier maximum ${xx(best.q.levMax)}, VAN ${fmt(best.q.npv, 0)} MDH. Les mesures rétablissent la solvabilité, pas forcément la création de valeur.</div></div>`
+    : '<div class="verdict ko">Aucun paquet de mesures testé ne suffit : il faut revoir le projet (phasage, renégociation du CAPEX) ou ouvrir le capital.</div>';
+}
+
+// ---------- Données Power BI ----------
+const IND = [["Chiffre d'affaires", "ca"], ["EBITDA économique", "ebitda"], ["Charges fixes", "fixed"], ["Loyers crédit-bail", "rents"], ["Intérêts", "interest"],
+  ["Impôt (IS)", "tax"], ["Résultat net", "net"], ["BFR", "bfr"], ["CAPEX", "capex"], ["FCFF projet", "fcff"], ["CFADS", "cfads"], ["Service de la dette", "service"],
+  ["DSCR", "dscr"], ["Dette bancaire (fin)", "debtBal"], ["Crédit-bail (encours)", "leaseBal"], ["Trésorerie (fin)", "cash"], ["Levier DN/EBITDA", "lev"], ["Dividendes", "div"]];
+const KPI = [["VAN projet", "npv"], ["TRI projet", "tri"], ["TRI FP", "triEq"], ["WACC", "wacc"], ["Coût FP", "ke"], ["DSCR min", "dscrMin"], ["Levier max", "levMax"], ["Trésorerie min", "minCash"], ["Besoin non financé", "gap"]];
+const num = (v) => isFinite(v) ? String(Math.round(v * 10000) / 10000).replace(".", ",") : "";
+function factCsv() { const rows = ["Scénario;Cas;Année;Indicateur;Valeur"];
+  caseNames.forEach((cn) => "ABC".split("").forEach((k) => { const t = run(S[k], CASES[cn]).table; IND.forEach(([l, f]) => Y.forEach((y, i) => rows.push(`${k};${cn};${y};${l};${num(t[f][i])}`))); }));
+  return rows.join("\n"); }
+function kpiCsv() { const rows = ["Scénario;Cas;Indicateur;Valeur"];
+  caseNames.forEach((cn) => "ABC".split("").forEach((k) => { const q = run(S[k], CASES[cn]).kpi; KPI.forEach(([l, f]) => rows.push(`${k};${cn};${l};${num(q[f])}`)); }));
+  return rows.join("\n"); }
+async function copy(text, label) {
+  try { await navigator.clipboard.writeText(text); $("copyMsg").textContent = `${label} copiée (${text.split("\n").length - 1} lignes). Collez-la dans Power BI ou Excel.`; }
+  catch (e) { const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "width:100%;height:160px"; ta.setAttribute("aria-label", label);
+    $("copyMsg").textContent = "La copie automatique est bloquée ici : sélectionnez le texte ci-dessous (Ctrl+A) puis copiez-le."; $("copyMsg").appendChild(ta); ta.select(); }
+}
+function renderData() {
+  if (!rendered.data) { $("dataCopy").addEventListener("click", () => copy(factCsv(), "Table de faits")); $("kpiCopy").addEventListener("click", () => copy(kpiCsv(), "Table des indicateurs")); }
+  const t = run(S.B, CASES["1. Central"]).table;
+  $("dataTable").innerHTML = `<thead><tr><th>Indicateur (MDH)</th>${Y.map((y) => `<th>${y}</th>`).join("")}</tr></thead><tbody>`
+    + IND.map(([l, f]) => `<tr><td>${l}</td>${Y.map((_, i) => `<td class="n">${f === "dscr" || f === "lev" ? (isFinite(t[f][i]) ? fmt(t[f][i], 2) : "—") : fmt(t[f][i], 1)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+}
+
+// thème : redessiner les graphiques quand le thème change
+const rerender = () => { if (!user) return; show(current); if (current === "opt") drawOpt(); if (current === "live" && liveMode === "film") filmFrame(11); };
+try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rerender); } catch (e) {}
+new MutationObserver(rerender).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
+</body>
+</html>
