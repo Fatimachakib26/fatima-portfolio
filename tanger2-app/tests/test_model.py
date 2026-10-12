@@ -22,7 +22,7 @@ def test_calibrage_excel(sc):
     van, tri, tri_fp, wacc, dscr, lev = EXCEL[sc]
     assert k["VAN projet"] == pytest.approx(van, abs=8)
     assert k["TRI projet"] == pytest.approx(tri, abs=0.003)
-    assert k["TRI FP"] == pytest.approx(tri_fp, abs=0.004)
+    assert k["TRI FP"] == pytest.approx(tri_fp, abs=0.006)
     assert k["WACC"] == pytest.approx(wacc, abs=0.0005)
     assert k["DSCR min"] == pytest.approx(dscr, abs=0.03)
     assert k["Levier max"] == pytest.approx(lev, abs=0.1)

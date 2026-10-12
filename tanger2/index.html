@@ -3,222 +3,257 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Dossier de financement interactif de l'unité industrielle Tanger II (cas pédagogique fictif).">
-<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<title>Tanger II · Dossier de financement</title>
+<meta name="description" content="Simulateur et dossier de financement de l'unité industrielle Tanger II (cas pédagogique fictif).">
+<style>html,body{height:100%}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Simulateur Tanger II</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;1,6..96,400;1,6..96,500&family=Manrope:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Mise en page : salle de comité de banque privée. Barre latérale (dossier / analyse / démonstration / annexes) + contenu éditorial.
-   Bleu nuit profond, filets et accents or champagne ; Bodoni pour les titres, Manrope pour le texte, DM Mono pour les chiffres. */
+/* Mise en page : barre d'outils d'usine (en-tête + onglets), contenu en grille fluide ; couleurs « acier » et « orange sécurité » */
 :root{
-  --bg:#f3f3f1; --bg2:#e9e8e4; --panel:#ffffff; --panel2:#f8f7f4; --ink:#121a2a; --muted:#5f6878; --line:rgba(18,26,42,.10); --hair:rgba(156,122,53,.38);
-  --gold:#9c7a35; --gold-soft:#b8955a; --onGold:#ffffff; --glow:rgba(156,122,53,.10);
-  --c-a:#2f5d8c; --c-b:#a8823a; --c-c:#3f7d63; --c-x:#7a5c95;
-  --ok:#2f7a54; --okbg:rgba(47,122,84,.10); --ko:#a7392c; --kobg:rgba(167,57,44,.09); --warn:#94650c; --warnbg:rgba(148,101,12,.10);
-  --shadow:0 1px 1px rgba(18,26,42,.04),0 10px 30px -12px rgba(18,26,42,.18);
-  --f-display:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;
-  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  --radius:14px;
+  --bg:#f4f5f3; --panel:#ffffff; --ink:#1b2428; --muted:#5d6a70; --line:#dde2e0;
+  --steel:#24566b; --orange:#d9622b; --sage:#4f8a5b; --plum:#7a5c86;
+  --ok:#2f7d4a; --okbg:#e3f1e7; --ko:#b93a2a; --kobg:#f8e5e1; --warn:#a36b07; --warnbg:#fbf0d9;
+  --chip:#eef1ef; --shadow:0 1px 2px rgba(20,35,40,.06),0 4px 14px rgba(20,35,40,.05);
+ --c-a:#24566b; --c-b:#d9622b; --c-c:#4f8a5b; --c-x:#7a5c86; --gold:#d9622b; --panel2:#eef1ef; --hair:rgba(217,98,43,.45); --glow:rgba(217,98,43,.08); --onGold:#ffffff;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0b111c; --bg2:#0f1726; --panel:#121b2b; --panel2:#172234; --ink:#ebe5d8; --muted:#97a0b0; --line:rgba(235,229,216,.09); --hair:rgba(212,180,118,.30);
-  --gold:#d4b476; --gold-soft:#e7d3a6; --onGold:#14110a; --glow:rgba(212,180,118,.09);
-  --c-a:#86acd9; --c-b:#d4b476; --c-c:#8cc6a6; --c-x:#b99ad8;
-  --ok:#86d1a6; --okbg:rgba(134,209,166,.12); --ko:#f29a8c; --kobg:rgba(242,154,140,.12); --warn:#f0c77a; --warnbg:rgba(240,199,122,.12);
-  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 40px -20px rgba(0,0,0,.7); color-scheme:dark}}
+  --bg:#12181b; --panel:#1a2226; --ink:#e6ecea; --muted:#9aa8ad; --line:#2c373c;
+  --steel:#6fb0cb; --orange:#f08a52; --sage:#7fc08b; --plum:#b796c4;
+  --ok:#7fd39a; --okbg:#1d3326; --ko:#ff8f7d; --kobg:#3a2020; --warn:#f2c46b; --warnbg:#3a2f17;
+  --chip:#222c31; --shadow:none;
+ --c-a:#6fb0cb; --c-b:#f08a52; --c-c:#7fc08b; --c-x:#b796c4; --gold:#f08a52; --panel2:#222c31; --hair:rgba(240,138,82,.45); --glow:rgba(240,138,82,.10); --onGold:#1a1a1a;
+  color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0b111c; --bg2:#0f1726; --panel:#121b2b; --panel2:#172234; --ink:#ebe5d8; --muted:#97a0b0; --line:rgba(235,229,216,.09); --hair:rgba(212,180,118,.30);
-  --gold:#d4b476; --gold-soft:#e7d3a6; --onGold:#14110a; --glow:rgba(212,180,118,.09);
-  --c-a:#86acd9; --c-b:#d4b476; --c-c:#8cc6a6; --c-x:#b99ad8;
-  --ok:#86d1a6; --okbg:rgba(134,209,166,.12); --ko:#f29a8c; --kobg:rgba(242,154,140,.12); --warn:#f0c77a; --warnbg:rgba(240,199,122,.12);
-  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 40px -20px rgba(0,0,0,.7); color-scheme:dark}
+  --bg:#12181b; --panel:#1a2226; --ink:#e6ecea; --muted:#9aa8ad; --line:#2c373c;
+  --steel:#6fb0cb; --orange:#f08a52; --sage:#7fc08b; --plum:#b796c4;
+  --ok:#7fd39a; --okbg:#1d3326; --ko:#ff8f7d; --kobg:#3a2020; --warn:#f2c46b; --warnbg:#3a2f17;
+  --chip:#222c31; --shadow:none;
+ --c-a:#6fb0cb; --c-b:#f08a52; --c-c:#7fc08b; --c-x:#b796c4; --gold:#f08a52; --panel2:#222c31; --hair:rgba(240,138,82,.45); --glow:rgba(240,138,82,.10); --onGold:#1a1a1a;
+  color-scheme:dark}
 *{box-sizing:border-box}
-html,body{height:100%}
-body{background:var(--bg);background-image:radial-gradient(1200px 600px at 85% -10%,var(--glow),transparent 60%);background-attachment:fixed;color:var(--ink);font:15px/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
-h1,h2,h3,.serif{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;letter-spacing:-.005em}
-h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.02}
-h2{font-size:clamp(1.5rem,2.6vw,2rem);line-height:1.1}
-h3{font-family:var(--f-body);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-em.g{font-style:italic;color:var(--gold)}
-p{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(1.4rem,2.6vw,2rem);font-weight:800}
+h2{font-size:1.15rem;font-weight:700}
+h3{font-size:.95rem;font-weight:700}
 .num,td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .muted{color:var(--muted)}
 button,select,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.eyebrow{font:600 .72rem var(--f-body);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
-.rule{height:1px;background:linear-gradient(90deg,var(--hair),transparent);border:0;margin:0}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 
-/* ---------- Connexion ---------- */
-#login{min-height:100%;display:grid;grid-template-columns:1.15fr minmax(320px,.85fr)}
-@media (max-width:860px){#login{grid-template-columns:1fr}}
-.lhero{padding:clamp(28px,6vw,72px);display:grid;align-content:space-between;gap:36px;border-right:1px solid var(--line);background:linear-gradient(160deg,var(--bg2),var(--bg))}
-.lhero .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:18px;border-top:1px solid var(--hair);padding-top:22px}
-.fact .v{font:400 clamp(1.6rem,3vw,2.2rem) var(--f-display)}
-.fact .l{font-size:.78rem;color:var(--muted);letter-spacing:.04em}
-.lside{display:grid;place-items:center;padding:32px 16px}
-.lcard{width:min(400px,100%);display:grid;gap:18px}
-.monogram{width:54px;height:54px;border:1px solid var(--hair);border-radius:50%;display:grid;place-items:center;font:italic 500 1.25rem var(--f-display);color:var(--gold)}
-label.f{display:grid;gap:6px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-input[type=text],input[type=password],input[type=number],select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px;width:100%;color:var(--ink);font-size:.95rem;letter-spacing:0;text-transform:none;font-weight:500}
-input:focus,select:focus{border-color:var(--hair)}
-.btn{border:1px solid var(--line);border-radius:999px;padding:10px 20px;font-weight:600;cursor:pointer;background:var(--panel);color:var(--ink);transition:transform .15s,border-color .15s}
-.btn:hover{border-color:var(--hair)}
-.btn.primary{background:var(--gold);color:var(--onGold);border-color:transparent}
-.btn.primary:hover{transform:translateY(-1px)}
-.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+/* Connexion */
+#login{min-height:100%;display:grid;place-items:center;padding:32px 16px}
+.lcard{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:var(--shadow);display:grid;gap:16px}
+.brand{display:flex;gap:12px;align-items:center}
+.mark{width:46px;height:46px;border-radius:10px;background:var(--steel);color:#fff;display:grid;place-items:center;font:800 1.1rem var(--f-display);position:relative;flex:none}
+.mark::after{content:"";position:absolute;right:-4px;bottom:-4px;width:14px;height:14px;border-radius:3px;background:var(--orange)}
+label.f{display:grid;gap:4px;font-size:.85rem;color:var(--muted)}
+input[type=text],input[type=password],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
+.btn{border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--chip);color:var(--ink)}
+.btn.primary{background:var(--orange);color:#fff}
+.btn.steel{background:var(--steel);color:#fff}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 .err{color:var(--ko);font-size:.9rem;min-height:1.2em}
-.demo{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;line-height:1.8}
-.demo code{font-family:var(--f-mono);background:var(--panel2);border:1px solid var(--line);padding:1px 7px;border-radius:6px;color:var(--ink)}
+.demo{font-size:.82rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
+.demo code{font-family:var(--f-mono);background:var(--chip);padding:1px 6px;border-radius:4px;color:var(--ink)}
 
-/* ---------- Application ---------- */
-#app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100%}
-aside.side{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--line);background:var(--bg2);padding:26px 18px;display:flex;flex-direction:column;gap:22px}
-.side .brand{display:flex;gap:12px;align-items:center}
-.side .brand b{font:400 1.45rem var(--f-display);display:block;line-height:1}
-.side .brand span{font-size:.72rem;color:var(--muted);letter-spacing:.06em}
-nav#tabs{display:flex;flex-direction:column;gap:18px}
-.navgrp{display:grid;gap:2px}
-.navgrp .gl{font-size:.66rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding:0 10px 6px}
-nav#tabs button{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--muted);font-weight:600;font-size:.9rem}
-nav#tabs button::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.35;flex:none}
-nav#tabs button:hover{color:var(--ink);background:var(--panel)}
-nav#tabs button[aria-selected=true]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--hair)}
-nav#tabs button[aria-selected=true]::before{background:var(--gold);opacity:1}
-.who{margin-top:auto;display:grid;gap:10px;font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
-.role{font:500 .7rem var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--gold)}
-@media (max-width:900px){
-  #app{grid-template-columns:minmax(0,1fr)}
-  aside.side{min-width:0;position:sticky;top:env(safe-area-inset-top,0px);height:auto;z-index:6;flex-direction:row;align-items:center;gap:12px;padding:10px 16px;border-right:0;border-bottom:1px solid var(--line);overflow:visible}
-  .side .brand span,.navgrp .gl,.who span{display:none}
-  nav#tabs{flex-direction:row;overflow-x:auto;gap:2px;flex:1;min-width:0}
-  .navgrp{display:flex;gap:2px}
-  nav#tabs button{white-space:nowrap;padding:7px 10px}
-  nav#tabs button::before{display:none}
-  .who{margin:0;border:0;padding:0}
-  .who .btn{padding:6px 12px;font-size:.8rem}
-}
-main{padding-block:clamp(24px,4vw,48px) 56px;padding-inline:clamp(16px,4vw,56px);display:grid;gap:26px;max-width:1380px;width:100%;margin:0 auto;min-width:0}
-section.page{display:grid;gap:26px;min-width:0}
-.lead{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:end;justify-content:space-between}
-.lead>div:not(.seg):not(.toolbar){display:grid;gap:8px;max-width:78ch}
-.lead p{color:var(--muted)}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);min-width:0;display:grid;gap:14px;align-content:start}
-.panel.gilt{border-color:var(--hair)}
-.grid2{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
-.grid3{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden}
-.tile{padding:16px 18px;display:grid;gap:3px;min-width:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
-.tile .lab{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.tile .val{font:400 1.75rem var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:lining-nums tabular-nums}
+/* Application */
+#app{display:grid;grid-template-rows:auto auto 1fr;min-height:100%}
+header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.who{display:flex;gap:10px;align-items:center;font-size:.88rem;color:var(--muted)}
+.role{font:600 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:var(--chip);padding:3px 8px;border-radius:99px;color:var(--ink)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav.tabs button{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--orange)}
+main{padding-block:20px 40px;padding-inline:max(16px,3vw);display:grid;gap:18px;max-width:1400px;width:100%;margin:0 auto}
+section.page{display:grid;gap:18px}
+.lead{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:end;justify-content:space-between}
+.lead p{margin:4px 0 0;color:var(--muted);max-width:75ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
+.grid3{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:2px;min-width:0}
+.tile .lab{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tile .val{font:600 1.45rem var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .sub{font-size:.8rem;color:var(--muted)}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:4px 11px;border-radius:12px;white-space:normal;max-width:100%;letter-spacing:.01em}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:3px 9px;border-radius:12px;white-space:normal;max-width:100%}
 .pill.ok{background:var(--okbg);color:var(--ok)} .pill.ko{background:var(--kobg);color:var(--ko)} .pill.warn{background:var(--warnbg);color:var(--warn)}
-.pill.gold{background:var(--glow);color:var(--gold);border:1px solid var(--hair)}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .tablewrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:.9rem}
-th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
-td.wrap,th.wrap{white-space:normal;text-align:left;min-width:170px}
-th{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
-tr.hl td{background:var(--glow)}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
 .chart{width:100%;height:340px}
-.chart.tall{height:440px} .chart.short{height:280px}
-.verdict{border-radius:12px;padding:14px 16px;border:1px solid var(--line);background:var(--panel2)}
-.verdict.ok{background:var(--okbg);border-color:transparent} .verdict.ko{background:var(--kobg);border-color:transparent} .verdict.warn{background:var(--warnbg);border-color:transparent}
-
-/* Héros de la synthèse */
-.hero{position:relative;border:1px solid var(--hair);border-radius:20px;padding:clamp(22px,4vw,44px);background:linear-gradient(140deg,var(--panel),var(--panel2));box-shadow:var(--shadow);display:grid;gap:22px;overflow:hidden}
-.hero::after{content:"T2";position:absolute;right:-10px;bottom:-60px;font:italic 400 clamp(9rem,20vw,16rem)/1 var(--f-display);color:var(--gold);opacity:.07;pointer-events:none}
-.hero .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:start}
-.hero p.sub{color:var(--muted);max-width:62ch;font-size:1.02rem}
-.decision{border-left:2px solid var(--gold);padding:4px 0 4px 18px;display:grid;gap:6px;max-width:90ch}
-.decision b{font:italic 500 1.2rem var(--f-display);color:var(--gold)}
-
-.sim{display:grid;gap:22px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}
-@media (max-width:1100px){.sim{grid-template-columns:1fr}}
+.chart.tall{height:440px}
+.verdict{border-radius:10px;padding:12px 14px;border:1px solid var(--line);background:var(--chip)}
+.verdict.ok{background:var(--okbg);border-color:transparent;color:var(--ink)} .verdict.ko{background:var(--kobg);border-color:transparent} .verdict.warn{background:var(--warnbg);border-color:transparent}
+.sim{display:grid;gap:18px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}
+@media (max-width:860px){.sim{grid-template-columns:1fr}}
 .ctrls{display:grid;gap:12px;align-content:start}
-.ctrls h3{margin-top:8px}
+.ctrls h3{margin-top:6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 .rng{display:grid;gap:2px}
-.rng .row{display:flex;justify-content:space-between;gap:8px;font-size:.88rem}
-.rng output{font:500 .82rem var(--f-mono);color:var(--gold)}
-input[type=range]{width:100%;accent-color:var(--gold)}
-.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
-.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:.85rem;color:var(--muted)}
-.seg button[aria-pressed=true]{background:var(--gold);color:var(--onGold)}
+.rng .row{display:flex;justify-content:space-between;gap:8px;font-size:.86rem}
+.rng output{font:600 .82rem var(--f-mono);color:var(--orange)}
+input[type=range]{width:100%;accent-color:var(--orange)}
+.seg{display:inline-flex;background:var(--chip);border-radius:8px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.scard{display:grid;gap:10px}
 .scard .hd{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.scard h3{font:400 1.15rem var(--f-display);letter-spacing:0;text-transform:none;color:var(--ink);display:flex;gap:8px;align-items:center}
-.kv{display:grid;grid-template-columns:1fr auto;gap:5px 12px;font-size:.9rem}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:.88rem}
 .kv span:nth-child(even){font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .delta.up{color:var(--ok)} .delta.down{color:var(--ko)}
-form.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
-fieldset{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:12px;min-width:0;align-content:start}
-legend{font:italic 500 1.05rem var(--f-display);color:var(--gold);padding:0 8px}
-.checks{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
-.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+form.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px;min-width:0}
+legend{font:700 .8rem var(--f-display);text-transform:uppercase;letter-spacing:.06em;color:var(--steel);padding:0 6px}
+.checks{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .toolbar>label{min-width:150px;flex:1 1 150px}
-details summary{cursor:pointer;color:var(--gold);font-weight:600}
-.big{font:400 clamp(1.4rem,3vw,2.1rem) var(--f-display)}
-.event{font:italic 400 1.1rem var(--f-display);padding:12px 18px;border-left:2px solid var(--gold);background:var(--panel)}
-pre.code{background:var(--panel2);border:1px solid var(--line);padding:14px;border-radius:10px;overflow-x:auto;font:.82rem/1.6 var(--f-mono)}
+details summary{cursor:pointer;color:var(--steel);font-weight:600}
+.big{font:800 clamp(1.3rem,3vw,1.9rem) var(--f-display)}
+.event{font-size:.95rem;padding:10px 14px;border-left:4px solid var(--orange);background:var(--chip);border-radius:6px}
+pre.code{background:var(--chip);padding:12px;border-radius:8px;overflow-x:auto;font:.82rem/1.5 var(--f-mono)}
 
-/* Dossier */
-.swot{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-.swot>div{background:var(--panel);padding:18px;display:grid;gap:8px;align-content:start}
-.swot h4{margin:0;font:italic 500 1.15rem var(--f-display);color:var(--gold)}
-ul.clean{margin:0;padding:0;list-style:none;display:grid;gap:7px}
-ul.clean li{padding-left:16px;position:relative}
-ul.clean li::before{content:"";position:absolute;left:0;top:.7em;width:6px;height:1px;background:var(--gold)}
-ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:12px}
-ol.steps li{counter-increment:s;display:grid;grid-template-columns:38px 1fr;gap:12px;align-items:start}
-ol.steps li::before{content:counter(s);font:italic 400 1.5rem/1 var(--f-display);color:var(--gold);border-right:1px solid var(--hair);padding-top:2px}
-blockquote.q{margin:0;padding:18px 22px;border-left:2px solid var(--gold);font:italic 400 clamp(1.1rem,2vw,1.35rem)/1.45 var(--f-display);background:var(--panel)}
-.formula{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
-.formula b{font:italic 500 1.05rem var(--f-display);color:var(--gold)}
-.formula code{font:.86rem/1.6 var(--f-mono);white-space:normal}
-footer{color:var(--muted);font-size:.78rem;text-align:center;padding:10px 16px 28px;grid-column:1/-1}
+/* Navigation groupée (dossier / analyse / modèle avancé / démonstration / annexes) */
+.navgrp{display:flex;gap:2px;align-items:center}
+.navgrp+.navgrp{border-left:1px solid var(--line);margin-left:6px;padding-left:6px}
+.navgrp .gl{display:none}
+/* Composants du dossier */
+.eyebrow{font:700 .72rem var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
+em.g{font-style:normal;color:var(--orange)}
+.rule{height:1px;background:var(--line);border:0;margin:0}
+.panel{display:grid;gap:12px;align-content:start}
+.panel.gilt{border-color:var(--hair)}
+.lead>div:not(.seg):not(.toolbar){display:grid;gap:6px}
+.hero{border:1px solid var(--line);border-radius:14px;padding:clamp(18px,3vw,30px);background:var(--panel);box-shadow:var(--shadow);display:grid;gap:16px;border-top:4px solid var(--orange)}
+.hero .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:start}
+.hero h1{font-size:clamp(1.7rem,3.6vw,2.6rem);line-height:1.08}
+.hero p.sub{color:var(--muted);max-width:70ch}
+.decision{border-left:4px solid var(--steel);background:var(--chip);border-radius:0 8px 8px 0;padding:12px 16px;display:grid;gap:4px}
+.decision b{font:700 1rem var(--f-display);color:var(--steel)}
+.swot{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.swot>div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:8px;align-content:start}
+.swot>div:nth-child(1){border-top:4px solid var(--ok)} .swot>div:nth-child(2){border-top:4px solid var(--ko)}
+.swot>div:nth-child(3){border-top:4px solid var(--steel)} .swot>div:nth-child(4){border-top:4px solid var(--warn)}
+.swot h4{margin:0;font:700 1rem var(--f-display)}
+ul.clean{margin:0;padding-left:18px;display:grid;gap:6px}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;gap:10px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start}
+ol.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;font:700 .85rem/26px var(--f-display);text-align:center}
+blockquote.q{margin:0;padding:14px 18px;border-left:4px solid var(--orange);background:var(--panel);border-radius:0 10px 10px 0;font-size:1.05rem;font-weight:500}
+.formula{display:grid;gap:4px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--steel);border-radius:10px;background:var(--panel)}
+.formula b{font:700 .95rem var(--f-display)}
+.formula code{font:.84rem/1.55 var(--f-mono);white-space:normal}
+.pill.gold{background:var(--glow);color:var(--orange);border:1px solid var(--hair)}
+tr.hl td{background:var(--glow)}
+td.wrap,th.wrap{white-space:normal;text-align:left;min-width:170px}
+th,td{vertical-align:top}
+.chart.short{height:280px}
+.scard h3{display:flex;gap:8px;align-items:center}
+.docbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:normal;max-width:100%}
+.seg{flex-wrap:wrap;max-width:100%}
+.lead>*{min-width:0;max-width:100%}
+
+/* Au quotidien : éléments mis en évidence */
+mark{background:linear-gradient(transparent 55%,var(--glow) 55%);color:inherit;font-weight:700;padding:0 2px;border-bottom:2px solid var(--orange)}
+.keys{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.key{display:grid;gap:2px;padding:12px 14px;border-radius:10px;background:var(--chip);border-left:4px solid var(--orange)}
+.key.ko{border-left-color:var(--ko)} .key.warn{border-left-color:var(--warn)} .key.ok{border-left-color:var(--ok)}
+.key .lab{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.key mark{font:700 1.15rem var(--f-mono);justify-self:start}
+.key .muted{font-size:.82rem}
+.tasks{display:grid;gap:8px}
+.task{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);cursor:pointer}
+.task input{margin-top:4px;accent-color:var(--orange);width:18px;height:18px}
+.task .t{display:block;font-weight:600}
+.task .meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:.84rem;margin-top:2px}
+.task .role{font:600 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--steel)}
+.task.done{opacity:.6} .task.done .t{text-decoration:line-through}
+.task .date{font:600 .8rem var(--f-mono);color:var(--orange);white-space:nowrap;padding-top:2px}
+.calc{display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--chip);align-content:start}
+.calc b{font:700 .95rem var(--f-display)}
+.calc .out{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:2.2em}
+.calc .res{font:700 1.3rem var(--f-mono)}
+input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
+footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 
 <div id="login">
-  <div class="lhero">
-    <div style="display:grid;gap:18px">
-      <span class="eyebrow">Rapport au comité de financement · Octobre 2026</span>
-      <h1>Unité industrielle<br><em class="g">Tanger II</em></h1>
-      <p class="muted" style="max-width:52ch;font-size:1.05rem">Optimisation du financement d'une usine de pièces plastiques injectées et peintes pour l'automobile, province de Fahs-Anjra, à proximité de Tanger Med.</p>
-    </div>
-    <div class="facts">
-      <div class="fact"><div class="v">960 MDH</div><div class="l">besoin de financement</div></div>
-      <div class="fact"><div class="v">500 000</div><div class="l">kits par an</div></div>
-      <div class="fact"><div class="v">750</div><div class="l">emplois en croisière</div></div>
-      <div class="fact"><div class="v">01/07/2028</div><div class="l">mise en service</div></div>
-    </div>
-  </div>
-  <div class="lside">
-    <form class="lcard" id="loginForm" autocomplete="off">
-      <div class="monogram">T2</div>
-      <div style="display:grid;gap:4px"><h2>Accès au dossier</h2><p class="muted">Détroit Plasturgie Automobile S.A. · société et projet fictifs, cas pédagogique</p></div>
-      <label class="f" for="lu">Identifiant<input type="text" id="lu" placeholder="admin" required></label>
-      <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
-      <div class="err" id="lerr" role="alert"></div>
-      <button class="btn primary" id="lbtn" type="submit">Entrer dans le dossier</button>
-      <div class="demo">Comptes de démonstration<br><code>admin</code> / <code>Tanger2026!</code> accès complet<br><code>jury</code> / <code>Jury2026</code> lecture et simulations</div>
-    </form>
-  </div>
+  <form class="lcard" id="loginForm" autocomplete="off">
+    <div class="brand"><div class="mark">T2</div>
+      <div><h2>Simulateur Tanger II</h2><div class="muted" style="font-size:.86rem">Montage financier de l'usine de composants automobiles · cas pédagogique fictif</div></div></div>
+    <label class="f" for="lu">Identifiant<input type="text" id="lu" placeholder="admin" required></label>
+    <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
+    <div class="err" id="lerr" role="alert"></div>
+    <button class="btn primary" id="lbtn" type="submit">Se connecter</button>
+    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations</div>
+  </form>
 </div>
 
 <div id="app" hidden>
-  <aside class="side">
-    <div class="brand"><div class="monogram" style="width:42px;height:42px;font-size:1rem">T2</div><div><b>Tanger II</b><span>Dossier de financement</span></div></div>
-    <nav id="tabs" aria-label="Sections"></nav>
-    <div class="who"><span><span id="whoName"></span> · <span class="role" id="whoRole"></span></span><button class="btn" id="logout" type="button">Se déconnecter</button></div>
-  </aside>
+  <header class="top">
+    <div class="brand"><div class="mark">T2</div>
+      <div><h1>Tanger II</h1><div class="muted" style="font-size:.84rem">Détroit Plasturgie Automobile · 500 000 kits/an · mise en service 01/07/2028 · besoin ≈ 960 MDH</div></div></div>
+    <div class="who"><span id="whoName"></span><span class="role" id="whoRole"></span><button class="btn" id="logout" type="button">Se déconnecter</button></div>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   <main id="main">
+
+
+    <!-- ===================== AU QUOTIDIEN ===================== -->
+    <section class="page" data-page="daily" hidden>
+      <div class="lead"><div><span class="eyebrow">Espace équipe</span><h2>Au <em class="g">quotidien</em></h2>
+        <p>L'essentiel pour l'équipe projet et finance : les seuils à surveiller, les tâches de chaque période, les calculs les plus fréquents et les prochaines échéances.</p></div>
+        <label class="f" for="dyRole" style="min-width:220px">Mon rôle<select id="dyRole"><option value="all">Tous les rôles</option><option>Directeur financier</option><option>Directeur de projet</option><option>Directeur d'usine</option><option>Secrétaire général</option><option>Comptabilité</option></select></label></div>
+
+      <div class="panel gilt"><h3>À retenir · les seuils qui déclenchent une alerte</h3><div class="keys" id="dyKeys"></div></div>
+
+      <div class="grid2">
+        <div class="panel"><div class="lead"><h3>Mes tâches</h3><div class="seg" id="dyFreq"></div></div>
+          <div id="dyTasks" class="tasks"></div>
+          <div class="toolbar"><span class="muted" id="dyProgress" style="font-size:.88rem"></span><button class="btn" id="dyReset" type="button">Tout décocher</button></div></div>
+        <div class="panel"><h3>Prochaines échéances</h3><div id="dyNext" class="tasks"></div></div>
+      </div>
+
+      <div class="panel"><h3>Calculs rapides</h3>
+        <div class="grid3">
+          <div class="calc"><b>DSCR d'une période</b>
+            <label class="f" for="cCfads">CFADS (MDH)<input type="number" id="cCfads" value="150" step="1"></label>
+            <label class="f" for="cServ">Service de la dette + loyers (MDH)<input type="number" id="cServ" value="110" step="1"></label>
+            <div class="out" id="oDscr"></div></div>
+          <div class="calc"><b>Levier (covenant)</b>
+            <label class="f" for="cDebt">Dette bancaire + crédit-bail (MDH)<input type="number" id="cDebt" value="520" step="1"></label>
+            <label class="f" for="cCash">Trésorerie (MDH)<input type="number" id="cCash" value="145" step="1"></label>
+            <label class="f" for="cEbitda">EBITDA sur 12 mois (MDH)<input type="number" id="cEbitda" value="215" step="1"></label>
+            <div class="out" id="oLev"></div></div>
+          <div class="calc"><b>Impôt sur les sociétés</b>
+            <label class="f" for="cRf">Résultat fiscal (MDH)<input type="number" id="cRf" value="120" step="1"></label>
+            <label class="f" for="cCa">Chiffre d'affaires (MDH)<input type="number" id="cCa" value="1500" step="10"></label>
+            <div class="out" id="oIs"></div></div>
+          <div class="calc"><b>Échéance d'une facture</b>
+            <label class="f" for="cDate">Date de facture<input type="date" id="cDate"></label>
+            <label class="f" for="cDays">Délai convenu (jours)<input type="number" id="cDays" value="60" step="1" min="0"></label>
+            <div class="out" id="oDue"></div></div>
+          <div class="calc"><b>Conversion EUR / MAD</b>
+            <label class="f" for="cEur">Montant en euros<input type="number" id="cEur" value="1000000" step="1000"></label>
+            <label class="f" for="cRate">Cours EUR/MAD<input type="number" id="cRate" value="11.0448" step="0.0001"></label>
+            <div class="out" id="oFx"></div></div>
+          <div class="calc"><b>Dépassement du budget CAPEX</b>
+            <label class="f" for="cCost">Coût à terminaison estimé (MDH)<input type="number" id="cCost" value="815" step="1"></label>
+            <label class="f" for="cBudget">Budget (MDH)<input type="number" id="cBudget" value="791" step="1"></label>
+            <div class="out" id="oCapex"></div></div>
+        </div></div>
+    </section>
 
     <!-- ===================== SYNTHÈSE ===================== -->
     <section class="page" data-page="dash">
@@ -318,6 +353,117 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;padding:10px 16px 2
         <tr><td>Matières premières</td><td class="wrap">Indexation contractuelle des prix ; approvisionnement local en compounds</td><td class="wrap">Protège la marge, variable la plus sensible</td></tr>
         <tr><td>Taux d'intérêt</td><td class="wrap">Taux fixe sur la dette et le crédit-bail</td><td class="wrap">Sensibilité déjà faible (+1 pt ≈ −11 MDH de VAN)</td></tr>
         <tr><td>Aide non obtenue</td><td class="wrap">Aucune dépendance : la prime est un supplément</td><td class="wrap">Sans objet dans B</td></tr></tbody></table></div></div>
+    </section>
+
+
+    <!-- ===================== CADRE JURIDIQUE ===================== -->
+    <section class="page" data-page="legal" hidden>
+      <div class="lead"><div><span class="eyebrow">Partie 2.3, partie 4.6, annexes 4 et 5</span><h2>Cadre juridique et fiscal <em class="g">marocain</em></h2>
+        <p>Les textes de loi, les articles du Code général des impôts et les règles contractuelles appliqués dans le modèle, avec la formule utilisée, son incidence chiffrée et la source officielle. Sources consultées le 11 octobre 2026.</p></div>
+        <div class="seg" id="lgSeg"></div></div>
+
+      <div class="panel gilt"><h3>Textes officiels à ouvrir pendant la soutenance</h3>
+        <div class="docbar">
+          <a class="btn primary" href="https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf" target="_blank" rel="noopener">📄 Code général des impôts 2026 (PDF officiel, DGI)</a>
+          <a class="btn" href="https://www.casainvest.ma/sites/default/files/D%C3%A9cret%20charte%2020%2025.pdf" target="_blank" rel="noopener">Décret n° 2-23-1 · Charte de l'investissement</a>
+          <a class="btn" href="https://www.casainvest.ma/sites/default/files/Charte_Investissement_vFR.pdf" target="_blank" rel="noopener">Brochure de la Charte (AMDIE)</a>
+          <a class="btn" href="https://www.cri-invest.ma/procedures/3" target="_blank" rel="noopener">Procédure de convention (CRI-Invest)</a>
+          <a class="btn" href="https://www.oc.gov.ma/fr/actualites/publication-de-l-instruction-generale-des-operations-de-change-2026" target="_blank" rel="noopener">Instruction des opérations de change 2026</a>
+          <a class="btn" href="https://leconomiste.com/sites/default/files/eco7/public/note_circulaire_717_tome1.pdf" target="_blank" rel="noopener">Note circulaire n° 717 (amortissements)</a>
+          <a class="btn" href="https://www.tgr.gov.ma/wps/wcm/connect/33c059d4-b7db-4904-83ca-762e8efeaa30/dahir+1-07-195+portant+loi+47-06.pdf?MOD=AJPERES" target="_blank" rel="noopener">Loi n° 47-06 (fiscalité locale)</a>
+          <a class="btn" href="https://www.lavieeco.com/wp-content/uploads/2022/12/circulaire_91289.pdf" target="_blank" rel="noopener">Circulaire des douanes n° 6398/210</a>
+        </div>
+        <p class="muted" style="font-size:.85rem">Articles du CGI utilisés : 6-II-B-4° (exonération 5 ans), 9-II (subventions), 10-II-A et 10-III-C (intérêts, dégressif), 12 (déficits), 19-I (taux d'IS), 92 et 123 (TVA), 144 (cotisation minimale), 267 à 273 (contribution sociale de solidarité).</p>
+      </div>
+      <div id="lg-textes" style="display:grid;gap:22px">
+        <div class="tiles">
+          <div class="tile"><span class="lab">Impôt sur les sociétés</span><span class="val">20 % / 35 %</span><span class="sub">35 % dès 100 MDH de bénéfice · CGI art. 19-I</span></div>
+          <div class="tile"><span class="lab">Cotisation minimale</span><span class="val">0,25 %</span><span class="sub">du CA, dès le 4e exercice · art. 144</span></div>
+          <div class="tile"><span class="lab">Exonération d'IS</span><span class="val">5 ans</span><span class="sub">sociétés industrielles nouvelles · art. 6-II-B-4°</span></div>
+          <div class="tile"><span class="lab">Prime de la Charte</span><span class="val">≤ 30 %</span><span class="sub">loi-cadre 03-22 · décret 2-23-1</span></div>
+          <div class="tile"><span class="lab">Délais de paiement</span><span class="val">60 j</span><span class="sub">120 j au plus par accord · loi 69-21</span></div>
+        </div>
+        <div class="panel"><h3>Textes appliqués dans le modèle</h3><div class="tablewrap"><table>
+          <thead><tr><th>Domaine</th><th class="wrap">Texte de référence</th><th class="wrap">Règle</th><th class="wrap">Traitement dans le modèle</th><th>Source</th></tr></thead><tbody>
+          <tr><td>Impôt sur les sociétés</td><td class="wrap">CGI 2026 (loi de finances n° 50-25), art. 19-I</td><td class="wrap">20 % ; 35 % sur la totalité du bénéfice dès 100 MDH ; retour à 20 % après 3 exercices consécutifs sous le seuil</td><td class="wrap">Seuil testé chaque année ; le projet le franchit dès 2030 (effet de seuil marqué)</td><td class="n">S01</td></tr>
+          <tr><td>Cotisation minimale</td><td class="wrap">CGI, art. 144</td><td class="wrap">0,25 % du CA (minimum 3 000 DH) ; exonération les 36 premiers mois d'exploitation</td><td class="wrap">Plancher d'impôt à partir du 4e exercice</td><td class="n">S02</td></tr>
+          <tr><td>Sociétés industrielles nouvelles</td><td class="wrap">CGI, art. 6-II-B-4° ; décrets n° 2-17-743 et 2-24-966</td><td class="wrap">Exonération totale d'IS pendant 5 exercices pour les activités listées, dont les équipements automobiles (rubrique 17)</td><td class="wrap">Retenue dans le seul scénario C ; testée pour A et B</td><td class="n">S03</td></tr>
+          <tr><td>Déficits</td><td class="wrap">CGI, art. 12</td><td class="wrap">Report sur 4 exercices ; fraction liée aux amortissements reportable sans limite</td><td class="wrap">Déficits de démarrage imputés sur les bénéfices suivants</td><td class="n">S06</td></tr>
+          <tr><td>Intérêts d'emprunt</td><td class="wrap">CGI, art. 10-II-A</td><td class="wrap">Déductibles sans plafond pour les emprunts bancaires ; pas de règle de sous-capitalisation</td><td class="wrap">Bouclier fiscal au taux marginal de 35 % dans le WACC et le bêta</td><td class="n">S05</td></tr>
+          <tr><td>Amortissements</td><td class="wrap">Note circulaire n° 717 ; CGI, art. 10-III-C</td><td class="wrap">Bâtiments 5 %, matériel 10-15 %, informatique et mobilier 20 %, non-valeurs sur 5 ans, terrain non amortissable ; dégressif 1,5 / 2 / 3</td><td class="wrap">Linéaire par poste ; intérêts intercalaires et frais en non-valeurs à 20 %</td><td class="n">S07</td></tr>
+          <tr><td>Crédit-bail</td><td class="wrap">CGNC ; note circulaire n° 717</td><td class="wrap">Bien hors bilan du preneur ; redevances déductibles</td><td class="wrap">Loyers en charges ; retraités en dette pour les ratios</td><td class="n">S07</td></tr>
+          <tr><td>Subventions d'investissement</td><td class="wrap">CGI, art. 9-II</td><td class="wrap">Imposition étalée, sur option, sur la durée d'amortissement des biens financés</td><td class="wrap">Prime reprise au rythme des amortissements</td><td class="n">S06</td></tr>
+          <tr><td>Contribution sociale de solidarité</td><td class="wrap">CGI, art. 267 à 273</td><td class="wrap">1,5 % à 5 % du bénéfice selon le barème ; prorogée jusqu'en 2028 ; non déductible</td><td class="wrap">Paramètre « dernier exercice d'application » = 2028</td><td class="n">S08</td></tr>
+          <tr><td>TVA sur investissements</td><td class="wrap">CGI, art. 92-I-6°, 123-22° et 103</td><td class="wrap">Exonération des biens d'investissement pendant 36 mois, prorogeable de 24 mois</td><td class="wrap">CAPEX hors taxes, sans préfinancement d'environ 150 MDH de TVA</td><td class="n">S04</td></tr>
+          <tr><td>Droits de douane</td><td class="wrap">Circulaire des douanes n° 6398/210</td><td class="wrap">Programmes ≥ 50 MDH sous convention : exonération du droit d'importation 36 mois (+24)</td><td class="wrap">CAPEX importé sans droits (à confirmer selon l'origine)</td><td class="n">S20</td></tr>
+          <tr><td>Dividendes</td><td class="wrap">CGI, art. 19-IV-B, 6-I-C-1° et 247-XXXVII-C</td><td class="wrap">Retenue de 10 % à compter de 2027 ; exonération entre sociétés résidentes soumises à l'IS</td><td class="wrap">Aucun frottement sur les remontées : TRI des fonds propres sans retenue</td><td class="n">S09</td></tr>
+          <tr><td>Taxe professionnelle</td><td class="wrap">Loi n° 47-06 (fiscalité des collectivités territoriales)</td><td class="wrap">Exonération de 5 ans pour toute activité nouvelle ; réduction de 50 % dans l'ex-province de Tanger</td><td class="wrap">Impact inférieur à 0,3 MDH par an : non modélisé</td><td class="n">S19</td></tr>
+          <tr><td>Charte de l'investissement</td><td class="wrap">Loi-cadre n° 03-22 ; décret n° 2-23-1 ; arrêtés 3-12-23, 3-13-23, 3-14-23</td><td class="wrap">≥ 50 MDH et 50 emplois stables (ou ≥ 150 emplois) ; primes cumulées plafonnées à 30 % de l'assiette primable</td><td class="wrap">11 % × 513 MDH = 56,4 MDH, scénario C seulement</td><td class="n">S10, S11</td></tr>
+          <tr><td>Convention d'investissement</td><td class="wrap">Procédure CRI-Invest ; Commission nationale des investissements</td><td class="wrap">Dépôt en ligne au CRI ; approbation par la Commission au-delà de 250 MDH ; réalisation sous 5 ans ; versement par tranches</td><td class="wrap">Prime encaissée en 2029-2030, préfinancée par un crédit relais</td><td class="n">S12</td></tr>
+          <tr><td>Délais de paiement</td><td class="wrap">Loi n° 69-21</td><td class="wrap">60 jours à défaut d'accord, 120 jours au plus par convention ; amende au-delà</td><td class="wrap">Clients et fournisseurs à 60 jours</td><td class="n">S37</td></tr>
+          <tr><td>Change</td><td class="wrap">Instruction générale des opérations de change 2026, art. 211 à 218</td><td class="wrap">Acomptes à l'importation jusqu'à 30 % ; couverture autorisée si adossée à une opération réelle</td><td class="wrap">45 % du CAPEX exposé à l'euro : achats à terme recommandés</td><td class="n">S28</td></tr>
+          <tr><td>Sociétés anonymes</td><td class="wrap">Loi n° 17-95 relative aux sociétés anonymes</td><td class="wrap">Réserve légale : 5 % du bénéfice net jusqu'à 10 % du capital</td><td class="wrap">Déduite du résultat distribuable avant dividendes</td><td class="n">—</td></tr>
+          <tr><td>Salaires</td><td class="wrap">SMIG 2026 ; barème CNSS</td><td class="wrap">17,92 DH/h depuis le 01/01/2026 ; charges patronales de 21,09 %</td><td class="wrap">Coût de la main-d'œuvre directe et dérive de 3,5 % par an</td><td class="n">S34</td></tr>
+          </tbody></table></div></div>
+      </div>
+
+      <div id="lg-formules" hidden style="display:grid;gap:22px">
+        <p class="muted" style="max-width:80ch">Les formules ci-dessous sont celles que la loi ou l'usage contractuel autorise. Chacune indique son fondement et sa valeur calculée par le moteur pour le scénario B, cas central.</p>
+        <div class="grid3" id="lgFormulas"></div>
+      </div>
+
+      <div id="lg-prime" hidden style="display:grid;gap:22px">
+        <div class="grid2">
+          <div class="panel gilt"><h3>Calculateur de la prime · Charte de l'investissement</h3>
+            <p class="muted" style="font-size:.9rem">Loi-cadre n° 03-22 et décret n° 2-23-1. Éligibilité : investissement ≥ 50 MDH et ≥ 50 emplois stables, ou ≥ 150 emplois. Le cumul des primes est plafonné à 30 %.</p>
+            <div id="lgPrimeForm" style="display:grid;gap:10px"></div>
+            <label class="f" for="lgTerr">Localisation (prime territoriale)<select id="lgTerr">
+              <option value="0">Fahs-Anjra ou Tanger-Assilah · 0 %</option>
+              <option value="0.10">Province de catégorie A (Tétouan, M'diq-Fnideq, Larache, Ouazzane, Chefchaouen) · 10 %</option>
+              <option value="0.15">Province de catégorie B (Al Hoceima) · 15 %</option></select></label>
+            <label for="lgLease" style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="lgLease"> Matériel en crédit-bail admis dans l'assiette (H53, à trancher)</label>
+          </div>
+          <div class="panel"><h3>Résultat · scénario C</h3><div class="tiles" id="lgPrimeOut"></div><div id="lgPrimeNote" class="verdict"></div></div>
+        </div>
+        <div class="panel"><h3>Dispositifs d'appui · existence, éligibilité, conditions, statut</h3><div class="tablewrap"><table>
+          <thead><tr><th>Dispositif</th><th>Organisme</th><th class="wrap">Conditions principales</th><th class="wrap">Montant ou calcul</th><th class="wrap">Statut dans le modèle</th></tr></thead><tbody>
+          <tr><td class="wrap">Prime de la Charte · loi-cadre 03-22, décret 2-23-1</td><td class="wrap">CRI, AMDIE, Commission nationale</td><td class="wrap">≥ 50 MDH et 50 emplois stables, ou ≥ 150 emplois ; convention signée ; réalisation sous 5 ans</td><td class="wrap">Sectorielle 5 % + intégration locale 3 % + durabilité 3 % = 11 % × 513 MDH = 56,4 MDH ; prime emploi nulle (ratio 0,95) ; territoriale nulle à Tanger</td><td class="wrap"><span class="pill warn">Potentiellement éligible · C seulement</span></td></tr>
+          <tr><td class="wrap">Exonération d'IS de 5 ans · CGI art. 6-II-B-4°</td><td class="wrap">Direction générale des impôts</td><td class="wrap">Société industrielle nouvellement créée ; activité listée (équipements automobiles)</td><td class="wrap">Économie d'IS d'environ 146 MDH sur 2028-2032</td><td class="wrap"><span class="pill warn">Éligible en droit, à confirmer · C seulement</span></td></tr>
+          <tr><td class="wrap">TVA et droits d'importation · CGI art. 92 et 123 ; code des douanes</td><td class="wrap">DGI, Douane</td><td class="wrap">36 mois à compter du début d'activité ; convention ≥ 50 MDH pour les droits de douane</td><td class="wrap">Évite le préfinancement d'environ 150 MDH de TVA</td><td class="wrap"><span class="pill ok">Retenu · à sécuriser</span></td></tr>
+          <tr><td class="wrap">Aides à la formation</td><td class="wrap">ANAPEC, ministère de l'Industrie</td><td class="wrap">Recrutements dans les métiers du secteur automobile</td><td class="wrap">16 500 à 33 000 DH par recrue, soit 15 à 20 MDH</td><td class="wrap"><span class="pill gold">Non intégré · supplément</span></td></tr>
+          <tr><td class="wrap">CapAccess · Fonds Mohammed VI</td><td class="wrap">FM6I, banques</td><td class="wrap">Dette subordonnée ≤ 30 MDH ; entreprises de 10 à 500 MDH de CA et 3 ans d'activité</td><td class="wrap">Plafond marginal pour une société nouvelle</td><td class="wrap"><span class="pill ko">Non retenu</span></td></tr>
+          <tr><td class="wrap">Damane Istitmar</td><td class="wrap">Tamwilcom</td><td class="wrap">Garantie des crédits d'investissement</td><td class="wrap">Plafond d'environ 15 MDH par opération</td><td class="wrap"><span class="pill ko">Non pertinent à cette échelle</span></td></tr>
+          </tbody></table></div></div>
+      </div>
+
+      <div id="lg-is" hidden style="display:grid;gap:22px">
+        <div class="tiles" id="lgIsTiles"></div>
+        <div class="panel"><h3>Impôt sur les sociétés du scénario B · droit commun ou exonération de 5 ans</h3><div class="chart tall" id="lgIsChart"></div>
+          <p class="muted" style="font-size:.9rem">Effet de seuil de l'article 19 : dès que le bénéfice atteint 100 MDH, le taux de 35 % s'applique à la totalité du bénéfice. C'est pourquoi un CAPEX majoré de 10 % peut améliorer le DSCR de 2030 : des amortissements plus élevés ramènent le bénéfice sous le seuil.</p></div>
+      </div>
+
+      <div id="lg-verif" hidden style="display:grid;gap:22px">
+        <div class="panel"><h3>Points réglementaires restant à vérifier (annexe 5)</h3><div class="tablewrap"><table>
+          <thead><tr><th class="wrap">Point non vérifié</th><th class="wrap">Organisme à consulter</th><th class="wrap">Enjeu pour le montage</th></tr></thead><tbody>
+          <tr><td class="wrap">Éligibilité de la société de projet à l'exonération d'IS de 5 ans ; cotisation minimale pendant l'exonération</td><td class="wrap">Direction générale des impôts (demande de position)</td><td class="wrap">≈ 120 MDH de VAN</td></tr>
+          <tr><td class="wrap">Taux de prime, assiette, sort du matériel en crédit-bail, calendrier de versement</td><td class="wrap">CRI Tanger-Tétouan-Al Hoceima, AMDIE</td><td class="wrap">56 MDH de prime ; +20 MDH si le crédit-bail est admis</td></tr>
+          <tr><td class="wrap">Dépenses engagées avant la signature de la convention</td><td class="wrap">CRI, AMDIE</td><td class="wrap">Calendrier de dépôt du dossier</td></tr>
+          <tr><td class="wrap">Statut de zone d'accélération industrielle ; régime des ventes locales</td><td class="wrap">Tanger Med Zones, Douane, DGI</td><td class="wrap">IS à 20 % au lieu de 35 % après exonération</td></tr>
+          <tr><td class="wrap">Prix du terrain et conditions d'attribution</td><td class="wrap">Aménageur de la zone</td><td class="wrap">46 MDH au budget</td></tr>
+          <tr><td class="wrap">Grille tarifaire de l'électricité en moyenne tension</td><td class="wrap">ONEE, régulateur de l'électricité</td><td class="wrap">±37 MDH de VAN pour ±20 %</td></tr>
+          <tr><td class="wrap">Taux, durée, franchise et valeur résiduelle du crédit-bail</td><td class="wrap">Sociétés de crédit-bail (cotations)</td><td class="wrap">Coût du financement ; DSCR de 2029</td></tr>
+          <tr><td class="wrap">Taux, quotité, différé, covenants et sûretés de la dette</td><td class="wrap">Banques (lettres d'offre)</td><td class="wrap">Dimensionnement de la dette</td></tr>
+          <tr><td class="wrap">Barème 2026 des aides à la formation</td><td class="wrap">ANAPEC, ministère de l'Industrie</td><td class="wrap">15 à 20 MDH non intégrés</td></tr>
+          <tr><td class="wrap">Droits de douane selon l'origine des équipements</td><td class="wrap">Douane</td><td class="wrap">Coût du CAPEX importé</td></tr>
+          <tr><td class="wrap">Prorogation de la contribution sociale de solidarité après 2028</td><td class="wrap">Lois de finances à venir</td><td class="wrap">Jusqu'à 5 % du bénéfice</td></tr>
+          </tbody></table></div></div>
+      </div>
+
+      <div id="lg-sources" hidden style="display:grid;gap:22px">
+        <div class="lead"><p class="muted">40 sources consultées le 11/10/2026. Fiabilité : VO = vérifiée sur source officielle ; VS = vérifiée sur source secondaire.</p>
+          <label class="f" for="lgFilter" style="min-width:260px">Filtrer<input type="text" id="lgFilter" placeholder="ex. CGI, Bank Al-Maghrib, crédit-bail"></label></div>
+        <div class="panel"><div class="tablewrap"><table id="lgSources"></table></div></div>
+      </div>
     </section>
 
     <!-- ===================== MISE EN ŒUVRE ===================== -->
@@ -536,7 +682,7 @@ const T2 = (() => {
     ["Mobilier / véhicules", 6, 0.20, [0, 0, 0.5, 0.5], true],
     ["Ingénierie / mise en service", 30, 0.10, [0.1, 0.3, 0.4, 0.2], true],
     ["Frais préopérationnels", 22, 0.20, [0.1, 0.2, 0.4, 0.3], false],
-    ["Provision pour aléas", 30, 0.10, [0.1, 0.3, 0.4, 0.2], true],
+    ["Provision pour aléas", 30, 0.10, [0.1, 0.3, 0.4, 0.2], false],
   ];
   const CAPEX_BASE = CAPEX_ITEMS.reduce((a, i) => a + i[1], 0);
   const ELIGIBLE_BASE = CAPEX_ITEMS.filter(i => i[4]).reduce((a, i) => a + i[1], 0);
@@ -676,24 +822,29 @@ const T2 = (() => {
     const debtAmt = fin.debt + s.standby_debt, fees = fin.arrangement_fee * debtAmt;
     const reserve = (60 + 52 + 0.02 * MAINT_BASE * cm) * 5 / 12;
     const leaseSem = zeros(NS); CAPEX_ITEMS[4][3].forEach((p, i) => { leaseSem[i] = leaseVal * p; });
-    const uses = [0, 1, 2, 3].map(i => capexSem[i] - leaseSem[i]);
-    uses[0] += fees; uses[3] += Math.max(bfr[1], 0) + reserve;
-    const tot = sum(uses); const prof = uses.map(u => u / tot);
+    const baseUses = [0, 1, 2, 3].map(i => capexSem[i] - leaseSem[i]);
+    baseUses[0] += fees; baseUses[3] += Math.max(bfr[1], 0) + reserve;
     const equityTot = fin.equity + s.extra_equity;
-    const eqSem = zeros(NS), draws = zeros(NS);
-    for (let i = 0; i < 4; i++) { eqSem[i] = fin.equity * prof[i]; draws[i] = fin.debt * prof[i]; }
-    eqSem[3] += s.extra_equity; draws[3] += s.standby_debt;
     const grace = fin.grace_sem + s.extra_grace, nrep = fin.n_repay_sem + s.extra_tenor;
-    const dInt = zeros(NS), dPrin = zeros(NS), dBal = zeros(NS);
-    let bal = 0, pay = null, lin = 0;
-    for (let i = 0; i < NS; i++) {
-      bal += draws[i]; dInt[i] = bal * rsm;
-      if (i >= grace && bal > 1e-9) {
-        if (pay === null) { pay = annuity(bal, rsm, nrep); lin = bal / nrep; }
-        const p = Math.min(fin.annuity ? pay - dInt[i] : lin, bal);
-        dPrin[i] = p; bal -= p;
+    let idcSem = [0, 0, 0, 0], prof, eqSem, draws, dInt, dPrin, dBal;
+    for (let pass = 0; pass < 2; pass++) {
+      const uses = baseUses.map((u, i) => u + idcSem[i]);
+      const tot = sum(uses); prof = uses.map(u => u / tot);
+      eqSem = zeros(NS); draws = zeros(NS);
+      for (let i = 0; i < 4; i++) { eqSem[i] = fin.equity * prof[i]; draws[i] = fin.debt * prof[i]; }
+      eqSem[3] += s.extra_equity; draws[3] += s.standby_debt;
+      dInt = zeros(NS); dPrin = zeros(NS); dBal = zeros(NS);
+      let bal = 0, pay = null, lin = 0;
+      for (let i = 0; i < NS; i++) {
+        bal += draws[i]; dInt[i] = bal * rsm;
+        if (i >= grace && bal > 1e-9) {
+          if (pay === null) { pay = annuity(bal, rsm, nrep); lin = bal / nrep; }
+          const p = Math.min(fin.annuity ? pay - dInt[i] : lin, bal);
+          dPrin[i] = p; bal -= p;
+        }
+        dBal[i] = bal;
       }
-      dBal[i] = bal;
+      idcSem = [0, 1, 2, 3].map(i => (i + 1) / 2 <= U.start - 0.5 + 1e-9 ? dInt[i] : 0);
     }
     const lRent = zeros(NS), lBal = zeros(NS);
     if (leaseVal > 0) {
@@ -707,9 +858,10 @@ const T2 = (() => {
       }
       lBal[0] = lBal[1] = lBal[2] = leaseVal;
     }
-    const prime = fin.prime_rate ? fin.prime_rate * ELIGIBLE_BASE * cm * s.prime_obtained : 0;
+    const eligible = ELIGIBLE_BASE * cm - leaseVal; // assiette primable : 513 MDH pour B et C (crédit-bail exclu, H53 = 0)
+    const prime = fin.prime_rate ? fin.prime_rate * eligible * s.prime_obtained : 0;
     const primeY = zeros(N); primeY[2] = primeY[3] = prime / 2;
-    const bridge = fin.bridge_share * fin.prime_rate * ELIGIBLE_BASE * cm;
+    const bridge = fin.bridge_share * fin.prime_rate * eligible;
     const brDraw = zeros(N); brDraw[0] = bridge * (prof[0] + prof[1]); brDraw[1] = bridge * (prof[2] + prof[3]);
     const brRep = zeros(N), brBal = zeros(N), brInt = zeros(N);
     let bb = 0;
@@ -719,7 +871,7 @@ const T2 = (() => {
       brRep[k] = rep; bb -= rep; brBal[k] = bb;
     }
     const interest = agg(dInt).map((v, k) => v + brInt[k]);
-    const idc = agg(dInt.map((v, i) => (i + 1) / 2 <= U.start + 1e-9 ? v : 0));
+    const idc = agg(dInt.map((v, i) => (i + 1) / 2 <= U.start - 0.5 + 1e-9 ? v : 0));
     const nvBase = sum(idc) + fees; const nvDep = zeros(N);
     let remNv = nvBase; for (let k = 0; k < N; k++) { const d = Math.min(remNv, nvBase * 0.2 * frac[k]); nvDep[k] = d; remNv -= d; }
     const principal = agg(dPrin), rents = agg(lRent), debtBal = endY(dBal), leaseBal = endY(lBal);
@@ -885,7 +1037,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 });
 $("logout").addEventListener("click", () => { user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
 
-const PAGES = [["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["daily", "Au quotidien", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -909,7 +1061,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); if (b.dataset.page === id) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
 }
 function fillSelect(id, names, sel) { const el = $(id); if (el.options.length) return; names.forEach((n) => { const o = document.createElement("option"); o.value = o.textContent = n; el.appendChild(o); }); if (sel) el.value = sel; }
@@ -1366,7 +1518,7 @@ function renderOeuvre() {
     ["DSCR et dette nette / EBITDA", "Semestrielle", "DSCR < 1,30x ; levier > 3,0x", "Directeur financier", `${xx(k.dscrMin)} · ${xx(k.levMax)}`],
     ["BFR en jours de CA", "Trimestrielle", "> 55 jours", "Directeur financier", `${fmt(t.bfr[i32] / t.ca[i32] * 360, 0)} jours en 2032`],
     ["Convention et versement de la prime", "Trimestrielle", "Retard > 6 mois", "Secrétaire général", "Hors montage de base"]];
-  $("oGov").innerHTML = gov.map((r) => `<tr>${r.map((v, j) => `<td class="${j === 4 ? "n" : ""}">${v}</td>`).join("")}</tr>`).join("");
+  $("oGov").innerHTML = gov.map((r) => `<tr>${r.map((v, j) => `<td class="${j === 4 ? "n" : ""}">${j === 2 ? `<mark>${v}</mark>` : v}</td>`).join("")}</tr>`).join("");
 }
 
 // ---------- Seuils de rupture ----------
@@ -1403,6 +1555,167 @@ function renderMethode() {
   const lab = { npv: "VAN projet (MDH)", tri: "TRI projet", triEq: "TRI fonds propres", wacc: "WACC", dscrMin: "DSCR minimum", levMax: "Dette nette / EBITDA max" };
   $("meCal").innerHTML = `<thead><tr><th>Indicateur</th><th>Excel A / B / C</th><th>Application A / B / C</th></tr></thead><tbody>`
     + Object.keys(X).map((k) => `<tr><td>${lab[k]}</td><td class="n">${X[k].map(f[k]).join(" / ")}</td><td class="n">${"ABC".split("").map((s) => f[k](K[s][k])).join(" / ")}</td></tr>`).join("") + "</tbody>";
+}
+
+// ---------- Cadre juridique ----------
+const SOURCES = [{"ref": "S01", "org": "DGI / ministère de l'Économie et des Finances", "doc": "Code général des impôts 2026 (intègre la loi de finances n° 50-25) — art. 19-I", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "IS au taux normal de 20 % ; 35 % si le bénéfice net est ≥ 100 MDH (retour à 20 % après 3 exercices consécutifs sous le seuil).", "use": "Taux d'IS du modèle ; test automatique du seuil de 100 MDH chaque année."}, {"ref": "S02", "org": "DGI / MEF", "doc": "Code général des impôts 2026 — art. 144", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "Cotisation minimale de 0,25 % (minimum 3 000 DH) ; exonération pendant les 36 premiers mois d'exploitation ; les subventions entrent dans la base.", "use": "Plancher d'impôt appliqué à partir du 4e exercice d'exploitation."}, {"ref": "S03", "org": "DGI / MEF", "doc": "CGI 2026 — art. 6-II-B-4° et décret n° 2-17-743 (complété par le décret n° 2-24-966)", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "Exonération totale d'IS pendant les 5 premiers exercices des sociétés industrielles nouvelles exerçant une activité listée ; la rubrique 17 « industrie automobile » vise notamment la fabrication d'équipements et accessoires automobiles.", "use": "Avantage fiscal retenu dans le seul scénario conditionnel C ; test de son extension à A et B (onglet 22, table 11)."}, {"ref": "S04", "org": "DGI / MEF", "doc": "CGI 2026 — art. 92-I-6°, 123-22°, 103", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "TVA au taux normal de 20 % ; exonération des biens d'investissement pendant 36 mois (prorogeable de 24 mois) ; seuil de 50 MDH pour les conventions.", "use": "CAPEX modélisé hors taxes, sans préfinancement de TVA."}, {"ref": "S05", "org": "DGI / MEF", "doc": "CGI 2026 — art. 10-II-A", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "Intérêts des emprunts bancaires déductibles sans plafond ; pas de règle de sous-capitalisation ; comptes courants d'associés : taux plafonné par arrêté.", "use": "Bouclier fiscal de la dette pris en compte dans le résultat fiscal et le WACC."}, {"ref": "S06", "org": "DGI / MEF", "doc": "CGI 2026 — art. 9-II, 10-I-F et 12", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "Subventions d'investissement : imposition étalée, sur option, sur la durée d'amortissement des biens financés. Déficits : report sur 4 exercices ; fraction correspondant aux amortissements reportable sans limite.", "use": "Reprise de la prime au rythme des amortissements ; traitement des déficits de démarrage."}, {"ref": "S07", "org": "DGI", "doc": "Note circulaire n° 717, tome 1 (taux d'amortissement usuels, crédit-bail) ; CGI art. 10-III-C (dégressif)", "date": "2011 / 31/12/2025", "url": "https://leconomiste.com/sites/default/files/eco7/public/note_circulaire_717_tome1.pdf", "fiab": "VO", "info": "Immeubles industriels 5 % ; matériel et installations 10-15 % ; informatique 20-25 % ; mobilier 20 % ; non-valeurs sur 5 ans ; terrains non amortissables ; redevances de crédit-bail déductibles ; dégressif : coefficients 1,5 / 2 / 3.", "use": "Taux d'amortissement par poste ; redevances de crédit-bail en charges ; option dégressive chiffrée à titre d'information."}, {"ref": "S08", "org": "DGI / MEF", "doc": "CGI 2026 — art. 267 à 273 (contribution sociale de solidarité)", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "Contribution prorogée jusqu'en 2028 ; barème de 1,5 % à 5 % du bénéfice (5 % à partir de 40 MDH) ; non déductible.", "use": "Paramètre « dernier exercice d'application » (2028) ; test possible d'une prorogation."}, {"ref": "S09", "org": "DGI / MEF", "doc": "CGI 2026 — art. 19-IV-B, 6-I-C-1° et 247-XXXVII-C", "date": "31/12/2025", "url": "https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "fiab": "VO", "info": "Retenue à la source sur dividendes : 11,25 % en 2026, 10 % à compter de 2027 ; exonération si le bénéficiaire est une société résidente soumise à l'IS.", "use": "Les dividendes remontant à la maison mère ne subissent pas de retenue : TRI des fonds propres calculé sans frottement fiscal."}, {"ref": "S10", "org": "Bulletin officiel (portail Adala et fac-similés du CRI Casablanca-Settat)", "doc": "Loi-cadre n° 03-22 formant charte de l'investissement ; décret n° 2-23-1 du 16/02/2023", "date": "12/2022 ; 02/03/2023", "url": "https://www.casainvest.ma/sites/default/files/D%C3%A9cret%20charte%2020%2025.pdf", "fiab": "VO", "info": "Dispositif principal : ≥ 50 MDH et ≥ 50 emplois stables, ou ≥ 150 emplois stables. Primes communes (emploi 5-10 % si ratio emplois/investissement > 1 ; genre 3 % ; métiers d'avenir 3 % ; durabilité 3 % ; intégration locale 3 %), prime territoriale 10 % ou 15 %, prime sectorielle 5 % ; cumul plafonné à 30 %.", "use": "Taux de prime du scénario C : 5 % + 3 % + 3 % = 11 % ; prime emploi nulle (ratio ≈ 0,9) ; prime territoriale nulle à Tanger."}, {"ref": "S11", "org": "Bulletin officiel / AMDIE", "doc": "Arrêtés n° 3-12-23, 3-13-23 et 3-14-23 ; brochure « Charte de l'investissement »", "date": "04/2023", "url": "https://www.casainvest.ma/sites/default/files/Charte_Investissement_vFR.pdf", "fiab": "VO", "info": "Assiette primable hors taxes (études, bâtiments, génie civil, équipements) ; foncier public exclu, foncier privé plafonné à 20 % ; catégorie A en TTA : Larache, M'diq-Fnideq, Ouazzane, Tétouan, Chefchaouen ; catégorie B : Al Hoceima ; Tanger-Assilah et Fahs-Anjra sans prime territoriale.", "use": "Assiette primable de 693 MDH (hors terrain, frais préopérationnels et aléas) ; levier de localisation : +10 % de prime dans la province de Tétouan."}, {"ref": "S12", "org": "CRI-Invest (plateforme des centres régionaux d'investissement)", "doc": "Convention d'investissement avec le Gouvernement — procédure", "date": "consultée le 11/10/2026", "url": "https://www.cri-invest.ma/procedures/3", "fiab": "VO", "info": "Dépôt en ligne auprès du CRI ; approbation par la Commission nationale des investissements à partir de 250 MDH ; réalisation sous 5 ans ; versement de la prime par tranches selon la convention.", "use": "Calendrier de versement supposé (2029-2030) et crédit relais ; la prime n'est jamais comptée comme ressource ferme."}, {"ref": "S13", "org": "Portail officiel maroc.ma", "doc": "11e Commission nationale des investissements (02/07/2026)", "date": "02/07/2026", "url": "https://www.maroc.ma/fr/actualites/11eme-commission-nationale-des-investissements-approbation-de-29-projets-de-pres-de-42-mmdh", "fiab": "VO", "info": "29 conventions et 9 avenants approuvés, près de 42 milliards de DH ; sessions trimestrielles en 2026.", "use": "Le dispositif est actif : l'instruction peut être calée sur une session de la Commission."}, {"ref": "S14", "org": "Fonds Mohammed VI pour l'investissement ; BMCI", "doc": "CapAccess ; fonds thématiques et sectoriels", "date": "consultées le 11/10/2026", "url": "https://www.fm6i.ma/fr/capaccess", "fiab": "VO", "info": "Dette subordonnée plafonnée à 30 MDH par projet (un tiers du crédit conjoint), entreprises de 10 à 500 MDH de chiffre d'affaires et 3 ans d'activité ; fonds sectoriels « industrie » pour des prises de participation.", "use": "CapAccess non retenu (plafond marginal, société nouvelle) ; fonds sectoriels = co-investisseur possible du scénario A."}, {"ref": "S15", "org": "Tamwilcom ; Crédit du Maroc", "doc": "Damane Istitmar — garantie des crédits d'investissement", "date": "consultées le 11/10/2026", "url": "https://www.tamwilcom.ma/nos-solutions/petites-et-moyennes-entreprises", "fiab": "VS", "info": "Garantie plafonnée à environ 15 MDH par opération (plafond 2026 non vérifié).", "use": "Non pertinent à l'échelle du projet : non retenu."}, {"ref": "S16", "org": "ANAPEC / IFMIA ; CRI Fès-Meknès", "doc": "Aides directes à la formation dans le secteur automobile", "date": "2018 (barème) ; 2021", "url": "https://fesmeknesinvest.ma/incitations/aide-a-la-formation-aux-secteurs-porteurs/", "fiab": "VS", "info": "Aide de 16 500 à 33 000 DH par recrue selon le profil, plus formation continue ; barème 2026 non vérifié.", "use": "Potentiel de 15 à 20 MDH non intégré au modèle (supplément éventuel)."}, {"ref": "S17", "org": "Tanger Med", "doc": "Tanger Automotive City et zones d'activités", "date": "30/09/2025", "url": "https://www.tangermed.ma/en/industrial-clusters/", "fiab": "VO", "info": "Tanger Automotive City : environ 720 ha ; près de 120 opérateurs automobiles dans les zones ; prix du foncier non publiés.", "use": "Localisation de référence ; prix du terrain (≈ 575 DH/m²) = hypothèse à confirmer auprès de l'aménageur."}, {"ref": "S18", "org": "Hespress", "doc": "Automobile : un renfort technique pour accélérer le versement des aides de l'État", "date": "02/10/2026", "url": "https://fr.hespress.com/490860-automobile-un-renfort-technique-pour-accelerer-le-versement-des-aides-de-letat.html", "fiab": "VS", "info": "Le ministère de l'Industrie cherche à accélérer le traitement des dossiers d'aides du secteur automobile.", "use": "Indice de délais de versement : justifie le crédit relais et le test « prime non accordée »."}, {"ref": "S19", "org": "Trésorerie Générale du Royaume", "doc": "Loi n° 47-06 relative à la fiscalité des collectivités territoriales (taxe professionnelle)", "date": "version consolidée", "url": "https://www.tgr.gov.ma/wps/wcm/connect/33c059d4-b7db-4904-83ca-762e8efeaa30/dahir+1-07-195+portant+loi+47-06.pdf?MOD=AJPERES", "fiab": "VO", "info": "Exonération de 5 ans pour toute activité nouvelle ; base plafonnée à 50 MDH ; réduction de 50 % dans l'ex-province de Tanger.", "use": "Impact inférieur à 0,3 MDH par an : non modélisé."}, {"ref": "S20", "org": "Administration des douanes (circulaire n° 6398/210)", "doc": "Exonération du droit d'importation des biens d'équipement sous convention", "date": "29/12/2022", "url": "https://www.lavieeco.com/wp-content/uploads/2022/12/circulaire_91289.pdf", "fiab": "VO", "info": "Programmes d'investissement ≥ 50 MDH sous convention : exonération pendant 36 mois, prorogeable de 24 mois.", "use": "CAPEX importé modélisé sans droits de douane (à confirmer selon l'origine des équipements)."}, {"ref": "S21", "org": "Bank Al-Maghrib", "doc": "Communiqué du Conseil du 22 septembre 2026", "date": "22/09/2026", "url": "https://www.bkam.ma/content/download/851045/9186656/CdP_ConseilBAM_T3_2026_fr.pdf", "fiab": "VO", "info": "Taux directeur maintenu à 2,25 % ; exportations automobiles projetées à 202,2 milliards de DH en 2027.", "use": "Contexte de taux ; perspectives du secteur."}, {"ref": "S22", "org": "Bank Al-Maghrib ; HCP", "doc": "Prévisions d'inflation et de croissance", "date": "22/09/2026 ; 20/07/2026", "url": "https://www.hcp.ma/file/248542/", "fiab": "VO", "info": "Inflation : 0,8 % en 2025, 0,7 % prévu en 2026, 1,5 % en 2027 ; croissance : 4,4 % en 2026, 2,9 % en 2027.", "use": "Indexation des charges fixes à 2 %/an (hypothèse prudente)."}, {"ref": "S23", "org": "Bank Al-Maghrib", "doc": "Taux de référence des bons du Trésor (marché secondaire)", "date": "09/10/2026", "url": "https://www.bkam.ma/fr/Marches/Principaux-indicateurs/Marche-obligataire/Marche-des-bons-de-tresor/Marche-secondaire/Taux-de-reference-des-bons-du-tresor", "fiab": "VO", "info": "3,02 % à 5 ans ; 3,41 % à 8,7 ans ; 3,87 % à 12,8 ans ; soit environ 3,56 % à 10 ans par interpolation.", "use": "Taux sans risque du coût des fonds propres : 3,55 %."}, {"ref": "S24", "org": "Bank Al-Maghrib", "doc": "Enquête trimestrielle sur les taux débiteurs — T2 2026", "date": "11/08/2026", "url": "https://www.bkam.ma/fr/Statistiques/Taux-d-interet/Taux-debiteurs", "fiab": "VO", "info": "Crédits à l'équipement : 4,65 % ; grandes entreprises : 4,56 % ; TPME : 5,20 % ; taux global : 4,81 %.", "use": "Taux de la dette bancaire fixé à 5,25 % (marge pour la maturité de 10 ans et le risque de projet) ; à confirmer par cotation."}, {"ref": "S25", "org": "Bank Al-Maghrib", "doc": "Cours de référence et régime de change", "date": "09/10/2026", "url": "https://www.bkam.ma/fr/Marches/Principaux-indicateurs/Marche-des-changes/Cours-de-change/Cours-de-reference", "fiab": "VO", "info": "EUR/MAD 11,0448 ; USD/MAD 9,8499 ; panier 60 % EUR / 40 % USD ; bande de fluctuation de ±5 %.", "use": "Conversion des prix en euros ; analyse du risque de change."}, {"ref": "S26", "org": "APSF ; Wafabail (document de référence enregistré par l'AMMC)", "doc": "Statistiques du crédit-bail à fin 2025 ; conditions des contrats", "date": "06/2026 ; 29/07/2026", "url": "https://apsf.ma/wp-content/uploads/2026/06/APSF_STATS_CREDIT-BAIL-DEC.2025.pdf", "fiab": "VO", "info": "Crédit-bail mobilier : 20,9 milliards de DH de financements en 2025, dont 3,9 milliards pour les machines et équipements industriels ; financement jusqu'à 100 %, durée de 24 à 84 mois. Taux et valeur résiduelle : usages non publiés.", "use": "Crédit-bail de 180 MDH sur 7 ans ; taux de 6,50 % et valeur résiduelle de 1 % = hypothèses à confirmer."}, {"ref": "S27", "org": "Groupe BCP ; Managem (document de référence AMMC)", "doc": "Brochure « BP Bladi Invest » ; document de référence 2025", "date": "consultées le 11/10/2026", "url": "https://www.ammc.ma/sites/default/files/DR_MANAGEM_006_2026.pdf", "fiab": "VO", "info": "Crédit long terme jusqu'à 12 ans dont 4 de différé, quotité bancaire jusqu'à 70 % ; emprunts d'un industriel à 4,80-5,00 % sur 7 ans. Covenants et garanties : usage de marché non documenté publiquement.", "use": "Maturité de 10 ans dont 3 de différé ; covenants (DSCR ≥ 1,20x ; levier ≤ 3,5x) = hypothèses à négocier."}, {"ref": "S28", "org": "Office des Changes", "doc": "Instruction générale des opérations de change 2026", "date": "31/12/2025", "url": "https://www.oc.gov.ma/fr/actualites/publication-de-l-instruction-generale-des-operations-de-change-2026", "fiab": "VO", "info": "Acomptes à l'importation jusqu'à 30 % ; couverture du risque de change autorisée si elle est adossée à une opération réelle (art. 211 à 218).", "use": "Calendrier de paiement des équipements importés ; couverture à terme recommandée."}, {"ref": "S29", "org": "A. Damodaran (NYU Stern) ; Attijari Global Research", "doc": "Bêtas sectoriels et primes de risque pays ; enquête sur la prime de risque actions", "date": "01/2026 ; 07/2026 ; 10/2025", "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/Betas.html", "fiab": "VO", "info": "Bêta désendetté « Auto Parts » mondial : 1,20 ; prime de risque actions totale du Maroc : 7,30 % (juillet 2026) ; enquête locale : 6,7 % (octobre 2025).", "use": "Coût des fonds propres et WACC."}, {"ref": "S30", "org": "Ministère de l'Économie et des Finances ; Boursenews", "doc": "Notations souveraines du Maroc", "date": "26/09/2025 ; 06/03/2026 ; 17/09/2026", "url": "https://www.finances.gov.ma/fr/pages/detail-actualite.aspx?fiche=7577", "fiab": "VO", "info": "S&P : BBB- (stable) ; Moody's : Ba1 (perspective positive) ; Fitch : BB+ (stable).", "use": "Contexte du risque pays."}, {"ref": "S31", "org": "Hespress ; Le Matin", "doc": "Résultats 2025 de Renault Group Maroc ; extension de Stellantis Kénitra", "date": "27/01/2026 ; 17/07/2025", "url": "https://fr.hespress.com/460014-en-2025-renault-group-maroc-renforce-son-role-de-leader-de-la-filiere-automobile-nationale.html", "fiab": "VS", "info": "Renault : 394 474 véhicules produits au Maroc en 2025 (Tanger 299 395), intégration locale de 65,5 %, objectif de 80 % en 2030 ; Stellantis Kénitra : 535 000 unités par an dont 400 000 voitures.", "use": "Dimensionnement de la capacité (500 000 kits) et crédibilité des débouchés locaux."}, {"ref": "S32", "org": "Office des Changes", "doc": "Indicateurs mensuels des échanges extérieurs", "date": "01/2026 ; 09/2026", "url": "https://www.oc.gov.ma/sites/default/files/2026-09/IMEE_Ao%C3%BBt_2026_0.pdf", "fiab": "VO", "info": "Exportations du secteur automobile : 154,5 milliards de DH en 2025 (−2,0 %) ; 116,1 milliards sur janvier-août 2026 (+14,5 %).", "use": "Diagnostic sectoriel : marché porteur mais cyclique (repli de 2025)."}, {"ref": "S33", "org": "Ministère de l'Industrie et du Commerce ; Le Matin", "doc": "Usine de compounds Ravago-Repsol à Tanger ; chiffres de la filière", "date": "2022 ; 25/06/2026", "url": "https://www.mcinet.gov.ma/fr/actualites/ravago-et-repsol-inaugurent-une-nouvelle-usine-de-compoundage-pour-lindustrie-automobile", "fiab": "VO", "info": "Production locale de compounds de polypropylène (18 500 t/an) ; plus de 260 équipementiers, intégration locale de 69 %.", "use": "Part des matières importées (70 %) ; éligibilité à la prime d'intégration locale."}, {"ref": "S34", "org": "Hespress ; CNSS", "doc": "SMIG 2026 ; taux de cotisations sociales", "date": "18/12/2025", "url": "https://www.cnss.ma/fr/content/paiement-de-vos-cotisations-sociales", "fiab": "VS", "info": "SMIG non agricole : 17,92 DH/h depuis le 01/01/2026 (+5 %) ; charges patronales : 21,09 %.", "use": "Coût de la main-d'œuvre et dérive salariale de 3,5 %/an."}, {"ref": "S35", "org": "HCP ; Tanger Med", "doc": "Comptes régionaux 2024 ; bilan portuaire 2025", "date": "07/2026 ; 02/02/2026", "url": "https://www.hcp.ma/attachment/2891118/", "fiab": "VO", "info": "Région TTA : 172 milliards de DH de PIB (10,7 % du PIB national) ; Tanger Med : 11,1 millions de conteneurs EVP en 2025.", "use": "Facteurs clés de succès régionaux."}, {"ref": "S36", "org": "Bank Al-Maghrib ; Hespress", "doc": "Prix de l'électricité", "date": "22/09/2026 ; 03/03/2026", "url": "https://fr.hespress.com/464441-maroc-lelectricite-a-bas-cout-un-levier-discret-pour-lindustrie.html", "fiab": "VS", "info": "Prix de l'électricité maintenus en 2026 ; repère d'environ 0,118 USD/kWh pour les entreprises. Grille moyenne tension de l'ONEE non vérifiée.", "use": "Coût de l'énergie par kit : hypothèse à confirmer (catégorie C)."}, {"ref": "S37", "org": "Bulletin officiel ; Hespress", "doc": "Loi n° 69-21 relative aux délais de paiement", "date": "15/06/2023", "url": "https://fr.hespress.com/321891-delais-de-paiement-ce-quil-faut-savoir-pour-les-entreprises.html", "fiab": "VS", "info": "Délai de 60 jours à défaut d'accord, 120 jours au maximum par convention ; amende pécuniaire au-delà.", "use": "Délais clients et fournisseurs de 60 jours."}, {"ref": "S38", "org": "Hespress ; Le Matin ; ministère de l'Industrie", "doc": "Investissements comparables d'équipementiers à Tanger", "date": "2022 à 2026", "url": "https://fr.hespress.com/397621-mp-industry-group-investit-437623-mdh-dans-une-usine-a-tanger-med-et-cree-150-emplois-directs.html", "fiab": "VS", "info": "MP Industry (injection plastique) : 437,6 MDH, 150 emplois, 35 000 m² ; SFC Automotive : 28 M€ pour 85 M€ de chiffre d'affaires visé ; Lear : 271 MDH pour 168 emplois.", "use": "Cohérence des ratios du cas : 1,05 MDH de CAPEX par emploi ; chiffre d'affaires de croisière ≈ 2,0 × CAPEX."}, {"ref": "S39", "org": "OPmobility ; Forvia ; Roland Berger / Lazard", "doc": "Résultats annuels 2025 ; Global Automotive Supplier Study 2025", "date": "25/02/2026 ; 02/05/2025", "url": "https://www.rolandberger.com/en/Insights/Publications/Global-Automotive-Supplier-Study-2025.html", "fiab": "VO", "info": "OPmobility : marge d'EBITDA de 9,8 %, investissements de 4,4 % du chiffre d'affaires ; Forvia : marge opérationnelle de 5,6 % ; marge d'EBIT moyenne des équipementiers : 4,7 % à 5,3 %.", "use": "La marge d'EBITDA de croisière du cas (≈ 16-17 %, niveau usine sans frais de groupe) est supérieure aux moyennes de groupe : testée à −3 points."}, {"ref": "S40", "org": "Roland Berger ; Le360 ; FNH", "doc": "Risques sectoriels : électrification, « Made in Europe », MACF", "date": "2025-2026", "url": "https://fr.le360.ma/economie/industrie-automobile-le-made-in-europe-ouvre-une-nouvelle-negociation-strategique-entre-rabat-et_3BMWNZZBERBMHK6ZYDNG5SOY7E/", "fiab": "VS", "info": "Part des véhicules électriques attendue à 50-55 % en Europe en 2030 ; proposition européenne de critères d'origine (mars 2026, non adoptée) ; effet indirect du mécanisme carbone aux frontières.", "use": "Baisse de prix de 0,5 %/an et scénario prudent ; pièces de carrosserie et d'intérieur peu sensibles à la motorisation."}];
+let lgView = "textes";
+function renderLegal() {
+  if (!rendered.legal) {
+    seg("lgSeg", [["textes", "Textes"], ["formules", "Formules autorisées"], ["prime", "Prime et aides"], ["is", "Impôt"], ["verif", "À vérifier"], ["sources", "Sources"]], "textes", (v) => { lgView = v; renderLegal(); });
+    const P = [["sect", "Prime sectorielle (automobile)", 0.05, true], ["integ", "Intégration locale", 0.03, true], ["dur", "Durabilité", 0.03, true], ["genre", "Parité hommes-femmes", 0.03, false], ["avenir", "Métiers d'avenir", 0.03, false]];
+    $("lgPrimeForm").innerHTML = P.map(([k, l, r, on]) => `<label for="lgp_${k}" style="display:flex;gap:8px;align-items:center;font-size:.92rem"><input type="checkbox" id="lgp_${k}" data-rate="${r}" ${on ? "checked" : ""}> ${l} · ${fmt(r * 100, 0)} %</label>`).join("")
+      + `<label style="display:flex;gap:8px;align-items:center;font-size:.92rem;color:var(--muted)"><input type="checkbox" disabled> Prime emploi 5 à 10 % · non éligible (ratio emplois / investissement de 0,95 &lt; 1)</label>`;
+    ["lgPrimeForm", "lgTerr", "lgLease"].forEach((id) => $(id).addEventListener("change", renderPrime));
+    $("lgFilter").addEventListener("input", renderSources);
+  }
+  ["textes", "formules", "prime", "is", "verif", "sources"].forEach((v) => { $("lg-" + v).hidden = v !== lgView; });
+  if (lgView === "formules") renderFormulas();
+  if (lgView === "prime") renderPrime();
+  if (lgView === "is") renderIS();
+  if (lgView === "sources") renderSources();
+}
+function renderFormulas() {
+  const r = run(S.B, T2.SHOCKS()), t = r.table, k = r.kpi, i32 = Y.indexOf(2032);
+  const ebt32 = t.net[i32] + t.tax[i32], first100 = Y.find((y, i) => t.net[i] + t.tax[i] >= 100);
+  const hol = run(T2.FIN(Object.assign({}, S.B, { tax_holiday: true })), T2.SHOCKS()).table;
+  const saving = sum0(t.tax) - sum0(hol.tax), intTot = sum0(t.interest);
+  const i = 0.0525 / 2, sem = 450 * i / (1 - Math.pow(1 + i, -14));
+  const li = 0.065 / 2, rent = (180 - 1.8 / Math.pow(1 + li, 14)) * li / (1 - Math.pow(1 + li, -14));
+  const F = [
+    ["Impôt sur les sociétés", "IS = max(t × RF ; CM), avec t = 35 % si RF ≥ 100 MDH, sinon 20 %", "CGI art. 19-I et 144", `2032 : RF ≈ ${fmt(ebt32, 1)} MDH → IS ${fmt(t.tax[i32], 1)} MDH`],
+    ["Seuil du taux majoré", "35 % sur la totalité du bénéfice ; retour à 20 % après 3 exercices consécutifs sous 100 MDH", "CGI art. 19-I", `Premier exercice au-delà du seuil : ${first100 || "aucun"}`],
+    ["Cotisation minimale", "CM = max(0,25 % × CA ; 3 000 DH), à partir du 4e exercice d'exploitation", "CGI art. 144", `CA 2032 ${fmt(t.ca[i32], 0)} MDH → CM ${fmt(0.0025 * t.ca[i32], 1)} MDH`],
+    ["Exonération temporaire", "IS = 0 pendant les 5 premiers exercices (2028-2032) des sociétés industrielles nouvelles", "CGI art. 6-II-B-4°", `Économie pour B si elle était accordée : ${fmt(saving, 0)} MDH`],
+    ["Report des déficits", "Déficit imputable sur les 4 exercices suivants ; part liée aux amortissements sans limite", "CGI art. 12", "Déficits de démarrage imputés automatiquement"],
+    ["Bouclier fiscal des intérêts", "Économie d'impôt = intérêts déductibles × taux d'IS (35 % marginal)", "CGI art. 10-II-A", `Intérêts 2027-2038 ${fmt(intTot, 0)} MDH → ≈ ${fmt(intTot * 0.35, 0)} MDH d'économie`],
+    ["Amortissement linéaire", "Dotation = base × taux ; première année au prorata de la mise en service (01/07/2028)", "Note circulaire n° 717", "70,6 MDH par an en année pleine (base de 791 MDH)"],
+    ["Amortissement dégressif (option)", "Taux = taux linéaire × 1,5 (3-4 ans), × 2 (5-6 ans), × 3 (plus de 6 ans)", "CGI art. 10-III-C", "Machines : 10 % × 3 = 30 % la première année (information)"],
+    ["Reprise de la subvention", "Reprise annuelle = prime × dotation des biens financés / coût des biens", "CGI art. 9-II", "Scénario C : 56,4 MDH × 10 % ≈ 5,6 MDH par an"],
+    ["Prime de la Charte", "Prime = min(Σ taux des primes ; 30 %) × assiette primable hors taxes", "Loi-cadre 03-22 ; décret 2-23-1", "11 % × 513 MDH = 56,4 MDH (scénario C)"],
+    ["Contribution sociale de solidarité", "1,5 % (1 à 5 MDH), 2,5 % (5 à 10), 3,5 % (10 à 40), 5 % (≥ 40 MDH) du bénéfice", "CGI art. 267 à 273", "Applicable jusqu'en 2028, non déductible"],
+    ["Réserve légale", "Dotation = 5 % × bénéfice net, jusqu'à ce que la réserve atteigne 10 % du capital", "Loi n° 17-95", "Scénario B : plafond de 35 MDH"],
+    ["Retenue sur dividendes", "Retenue = 10 % × dividende (dès 2027) ; 0 % entre sociétés résidentes soumises à l'IS", "CGI art. 6-I-C-1°, 19-IV-B", `Dividendes 2030-2038 de B : ${fmt(sum0(t.div), 0)} MDH, sans retenue`],
+    ["Délais de paiement", "Créances = CA × 60 / 360 ; délai contractuel ≤ 120 jours", "Loi n° 69-21", `Créances clients 2032 ≈ ${fmt(t.ca[i32] * 60 / 360, 0)} MDH`],
+    ["Semestrialité de la dette", "a = D × i / (1 − (1 + i)^−n), i = 5,25 % / 2, n = 14, après 6 semestres de différé", "Contrat de crédit (offre à obtenir)", `450 MDH → ${fmt(sem, 1)} MDH par semestre`],
+    ["Loyer de crédit-bail", "L = VPM(6,5 % / 2 ; 14 ; −valeur ; valeur résiduelle 1 %)", "Contrat de crédit-bail ; CGNC (hors bilan)", `180 MDH → ${fmt(rent, 1)} MDH par semestre`],
+    ["Covenants bancaires", "DSCR = CFADS / (intérêts + capital + loyers) ≥ 1,20x ; (dette + crédit-bail − trésorerie) / EBITDA ≤ 3,5x", "Contrat de crédit (à négocier)", `B : DSCR min ${xx(k.dscrMin)} · levier max ${xx(k.levMax)}`],
+    ["Couverture de change", "Acompte ≤ 30 % de la commande ; achat à terme = montant EUR × cours à terme, adossé à la commande", "IGOC 2026, art. 211 à 218", "45 % du CAPEX exposé, soit ≈ 356 MDH ; EUR/MAD 11,0448"],
+  ];
+  $("lgFormulas").innerHTML = F.map(([ti, f, base, v]) => `<div class="formula"><b>${ti}</b><code>${f}</code><span class="muted" style="font-size:.85rem">${base}</span><span class="num" style="color:var(--gold);font-size:.88rem">${v}</span></div>`).join("");
+}
+const sum0 = (a) => a.reduce((x, y) => x + (isFinite(y) ? y : 0), 0);
+function renderPrime() {
+  let rate = 0; document.querySelectorAll("#lgPrimeForm input[data-rate]").forEach((c) => { if (c.checked) rate += +c.dataset.rate; });
+  rate += +$("lgTerr").value; const capped = Math.min(rate, 0.30);
+  const base = $("lgLease").checked ? 693 : 513, prime = capped * base;
+  const withP = run(T2.FIN(Object.assign({}, S.C, { prime_rate: prime / 513 })), T2.SHOCKS()).kpi, noP = run(S.C, CASES["8. Sans prime (C)"]).kpi;
+  $("lgPrimeOut").innerHTML = tile("Taux cumulé", pct(capped, 0), rate > 0.30 ? "plafonné à 30 %" : "plafond 30 %") + tile("Assiette primable", fmt(base, 0) + " MDH", base === 513 ? "hors terrain, préopérationnel, aléas, crédit-bail" : "crédit-bail admis")
+    + tile("Prime", fmt(prime, 1) + " MDH", "versée en 2029-2030") + tile("VAN de C", fmt(withP.npv, 0) + " MDH", `${fmt(withP.npv - noP.npv, 0)} MDH apportés par la prime`);
+  $("lgPrimeNote").innerHTML = `<b>Lecture.</b> La prime améliore la VAN mais n'entre jamais dans les ressources fermes : le montage recommandé (B) tient sans elle. Si la convention est signée, elle sert à annuler les lignes de sécurité ou à rembourser par anticipation.`;
+}
+function renderIS() {
+  const c = COLS(), t = run(S.B, T2.SHOCKS()).table, h = run(T2.FIN(Object.assign({}, S.B, { tax_holiday: true })), T2.SHOCKS()).table;
+  const ebt = t.net.map((n, i) => n + t.tax[i]);
+  const effRate = sum0(t.tax) / Math.max(sum0(ebt.map((v) => Math.max(v, 0))), 1e-9);
+  $("lgIsTiles").innerHTML = tile("IS 2027-2038 · droit commun", fmt(sum0(t.tax), 0) + " MDH") + tile("Avec exonération de 5 ans", fmt(sum0(h.tax), 0) + " MDH")
+    + tile("Économie potentielle", fmt(sum0(t.tax) - sum0(h.tax), 0) + " MDH", "non retenue dans B") + tile("Taux effectif moyen", pct(effRate, 1), "cotisation minimale incluse");
+  plot("lgIsChart", [{ type: "bar", x: Y, y: t.tax, name: "IS · droit commun", marker: { color: c.A } }, { type: "bar", x: Y, y: h.tax, name: "IS · avec exonération", marker: { color: c.gold } },
+    { type: "scatter", x: Y, y: ebt, name: "Résultat avant impôt", yaxis: "y2", line: { color: c.X, width: 3 } }],
+    { barmode: "group", yaxis2: { overlaying: "y", side: "right", showgrid: false, color: c.muted }, margin: { l: 48, r: 48, t: 10, b: 40 },
+      shapes: [{ type: "line", xref: "paper", yref: "y2", x0: 0, x1: 1, y0: 100, y1: 100, line: { color: c.ko, dash: "dash", width: 1.5 } }],
+      annotations: [{ xref: "paper", yref: "y2", x: 0, y: 100, text: "seuil de 100 MDH (art. 19)", showarrow: false, yanchor: "bottom", xanchor: "left", font: { color: c.ko, size: 11 } }] });
+}
+function renderSources() {
+  const q = ($("lgFilter").value || "").toLowerCase().trim();
+  const rows = SOURCES.filter((s) => !q || JSON.stringify(s).toLowerCase().includes(q));
+  $("lgSources").innerHTML = `<thead><tr><th>Réf.</th><th class="wrap">Organisme</th><th class="wrap">Document</th><th>Fiabilité</th><th class="wrap">Information utilisée</th><th class="wrap">Incidence dans le modèle</th></tr></thead><tbody>`
+    + rows.map((s) => `<tr><td class="n">${s.ref}</td><td class="wrap">${esc(s.org)}</td><td class="wrap">${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--gold)">${esc(s.doc)}</a>` : esc(s.doc)}<div class="muted" style="font-size:.8rem">${esc(s.date)}</div></td>`
+      + `<td><span class="pill ${s.fiab === "VO" ? "ok" : "warn"}">${s.fiab}</span></td><td class="wrap" style="min-width:260px">${esc(s.info)}</td><td class="wrap" style="min-width:220px">${esc(s.use)}</td></tr>`).join("")
+    + (rows.length ? "" : '<tr><td colspan="6" class="muted">Aucune source ne correspond à ce filtre.</td></tr>') + "</tbody>";
+}
+
+// ---------- Au quotidien ----------
+const KEYS = [["DSCR", "≥ 1,20x", "covenant ; alerte interne sous 1,30x", "ko"], ["Dette nette / EBITDA", "≤ 3,5x", "covenant ; alerte interne au-dessus de 3,0x", "ko"],
+  ["Trésorerie", "≥ 40 MDH", "minimum avant tout dividende", "warn"], ["BFR", "≤ 55 jours de CA", "≈ 44 jours prévus", "warn"],
+  ["Délais de paiement", "60 j, 120 j au plus", "loi n° 69-21 ; amende au-delà", "warn"], ["Chantier", "≤ 5 % de dépassement", "et moins d'un mois de glissement", "ko"],
+  ["Taux d'utilisation", "écart ≤ 5 points", "par rapport au plan de montée en cadence", "warn"], ["Couverture de change", "45 % du CAPEX", "achats à terme adossés aux commandes", "ok"]];
+const TASKS = [
+  ["jour", "Directeur financier", "Vérifier la position de trésorerie et les encaissements du jour", "Trésorerie ≥ 40 MDH"],
+  ["jour", "Comptabilité", "Saisir les factures fournisseurs et contrôler leur date d'échéance", "Délai ≤ 60 jours (120 jours au plus)"],
+  ["jour", "Comptabilité", "Relancer les clients dont la facture a dépassé 60 jours", "Loi n° 69-21"],
+  ["jour", "Directeur d'usine", "Suivre la production, le taux d'utilisation et le taux de rebut", "Écart ≤ 5 points au plan"],
+  ["jour", "Directeur de projet", "Mettre à jour l'avancement du chantier et les réceptions d'équipements", "Glissement < 1 mois"],
+  ["semaine", "Directeur financier", "Mettre à jour la prévision de trésorerie à 13 semaines", "Aucun mois sous 40 MDH"],
+  ["semaine", "Directeur financier", "Rapprocher les commandes d'équipements en euros et les couvertures à terme", "45 % du CAPEX couvert"],
+  ["semaine", "Comptabilité", "Préparer les paiements fournisseurs de la semaine", "Respect des échéances"],
+  ["semaine", "Directeur de projet", "Revue des risques du chantier avec le constructeur", "Pénalités de retard activables"],
+  ["mois", "Directeur de projet", "Calculer le coût à terminaison et le comparer au budget de 791 MDH", "Alerte au-delà de 5 %"],
+  ["mois", "Directeur financier", "Comité de pilotage : trésorerie, prévision à 12 mois, indicateurs", "Compte rendu à la direction"],
+  ["mois", "Comptabilité", "Clôture mensuelle et mise à jour du modèle Excel (onglet 24 à « OK »)", "56 contrôles au vert"],
+  ["mois", "Directeur d'usine", "Revue mensuelle des rebuts et de la montée en cadence", "Plan : 50 %, 72 %, 85 %, 92 %"],
+  ["trimestre", "Directeur financier", "Calculer le BFR en jours de chiffre d'affaires", "Alerte au-delà de 55 jours"],
+  ["trimestre", "Secrétaire général", "Suivre l'instruction de la convention d'investissement et de la prime", "Alerte si retard > 6 mois"],
+  ["trimestre", "Directeur financier", "Verser les acomptes provisionnels d'IS (25 % chacun, CGI art. 170)", "Avant la fin des 3e, 6e, 9e et 12e mois"],
+  ["trimestre", "Directeur financier", "Rendre compte au conseil d'administration", "Rapport trimestriel"],
+  ["semestre", "Directeur financier", "Calculer le DSCR et la dette nette / EBITDA ; rapport aux prêteurs", "DSCR ≥ 1,30x ; levier ≤ 3,0x"],
+  ["semestre", "Comptabilité", "Payer les échéances de dette et les loyers de crédit-bail (30/06 et 31/12)", "≈ 39 MDH de dette + 16,1 MDH de loyer"],
+  ["annee", "Directeur financier", "Test annuel des covenants et décision de dividende", "DSCR N−1 ≥ 1,20x et trésorerie > 40 MDH"],
+  ["annee", "Comptabilité", "Déclaration fiscale et liquidation de l'IS (seuil de 100 MDH, cotisation minimale)", "Dans les 3 mois suivant la clôture"],
+];
+const FREQ = [["jour", "Chaque jour"], ["semaine", "Chaque semaine"], ["mois", "Chaque mois"], ["trimestre", "Chaque trimestre"], ["semestre", "Chaque semestre"], ["annee", "Chaque année"]];
+let dyFreq = "jour", dyDone = {};
+try { dyDone = JSON.parse(localStorage.getItem("t2tasks") || "{}"); } catch (e) { dyDone = {}; }
+const saveDone = () => { try { localStorage.setItem("t2tasks", JSON.stringify(dyDone)); } catch (e) {} };
+function renderDaily() {
+  if (!rendered.daily) {
+    $("dyKeys").innerHTML = KEYS.map(([l, v, n, cls]) => `<div class="key ${cls}"><span class="lab">${l}</span><mark>${v}</mark><span class="muted">${n}</span></div>`).join("");
+    seg("dyFreq", FREQ, "jour", (v) => { dyFreq = v; drawTasks(); });
+    $("dyRole").addEventListener("change", drawTasks);
+    $("dyTasks").addEventListener("change", (e) => { if (e.target.dataset.task) { dyDone[e.target.dataset.task] = e.target.checked; saveDone(); drawTasks(); } });
+    $("dyReset").addEventListener("click", () => { dyDone = {}; saveDone(); drawTasks(); });
+    const d = new Date(); $("cDate").value = d.toISOString().slice(0, 10);
+    document.querySelectorAll(".calc input").forEach((el) => el.addEventListener("input", drawCalcs));
+  }
+  drawTasks(); drawNext(); drawCalcs();
+}
+function drawTasks() {
+  const role = $("dyRole").value;
+  const list = TASKS.map((t, i) => [i, ...t]).filter(([, f, r]) => f === dyFreq && (role === "all" || r === role));
+  const done = list.filter(([i]) => dyDone[i]).length;
+  $("dyTasks").innerHTML = list.length ? list.map(([i, , r, task, crit]) => `<label class="task ${dyDone[i] ? "done" : ""}" for="tk${i}"><input type="checkbox" id="tk${i}" data-task="${i}" ${dyDone[i] ? "checked" : ""}>
+    <span><span class="t">${task}</span><span class="meta"><span class="role">${r}</span> <mark>${crit}</mark></span></span></label>`).join("") : '<p class="muted">Aucune tâche pour ce rôle à cette fréquence.</p>';
+  $("dyProgress").textContent = list.length ? `${done} sur ${list.length} tâche(s) faite(s). Les cases cochées restent enregistrées dans ce navigateur.` : "";
+}
+function drawNext() {
+  const now = new Date(), ev = [];
+  for (let y = now.getFullYear(); y <= now.getFullYear() + 3; y++) {
+    [3, 6, 9, 12].forEach((m) => ev.push([new Date(y, m, 0), `Acompte provisionnel d'IS n° ${m / 3} (25 %)`, "Directeur financier"]));
+    ev.push([new Date(y, 2, 31), "Déclaration fiscale et liquidation de l'IS de l'exercice précédent", "Comptabilité"]);
+    if (y >= 2028) { ev.push([new Date(y, 5, 30), "Échéance semestrielle : loyer de crédit-bail" + (y >= 2030 ? " et dette bancaire" : ""), "Comptabilité"]); ev.push([new Date(y, 11, 31), "Échéance semestrielle : loyer de crédit-bail" + (y >= 2030 ? " et dette bancaire" : ""), "Comptabilité"]); }
+    if (y >= 2030) ev.push([new Date(y, 3, 30), "Test annuel des covenants (DSCR ≥ 1,20x ; levier ≤ 3,5x) et rapport aux prêteurs", "Directeur financier"]);
+  }
+  ev.push([new Date(2026, 11, 31), "Décision du comité ; lettres de nomination ; dépôt du dossier de convention", "Secrétaire général"]);
+  ev.push([new Date(2027, 2, 31), "Signature des crédits ; premier appel de fonds propres ; premier tirage", "Directeur financier"]);
+  ev.push([new Date(2028, 6, 1), "Mise en service de l'usine et homologation des pièces", "Directeur d'usine"]);
+  const next = ev.filter((e) => e[0] >= new Date(now.getFullYear(), now.getMonth(), now.getDate())).sort((a, b) => a[0] - b[0]).slice(0, 7);
+  $("dyNext").innerHTML = next.map(([d, l, r]) => { const days = Math.ceil((d - now) / 864e5);
+    return `<div class="task"><span class="date">${d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</span><span><span class="t">${l}</span><span class="meta"><span class="role">${r}</span> ${days <= 30 ? `<mark>dans ${days} jour(s)</mark>` : `<span class="muted">dans ${days} jours</span>`}</span></span></div>`; }).join("");
+}
+function drawCalcs() {
+  const v = (id) => parseFloat($(id).value) || 0;
+  const st = (ok, warn, txt) => `<span class="pill ${ok ? "ok" : warn ? "warn" : "ko"}">${txt}</span>`;
+  const d = v("cServ") > 0 ? v("cCfads") / v("cServ") : NaN;
+  $("oDscr").innerHTML = `<span class="res">${xx(d)}</span> ${st(d >= 1.3, d >= 1.2, d >= 1.3 ? "Conforme" : d >= 1.2 ? "Sous l'alerte de 1,30x" : "Covenant non respecté")}`;
+  const lev = v("cEbitda") > 0 ? (v("cDebt") - v("cCash")) / v("cEbitda") : NaN;
+  $("oLev").innerHTML = `<span class="res">${xx(lev)}</span> ${st(lev <= 3, lev <= 3.5, lev <= 3 ? "Conforme" : lev <= 3.5 ? "Au-dessus de l'alerte de 3,0x" : "Covenant non respecté")}`;
+  const rf = v("cRf"), rate = rf >= 100 ? 0.35 : 0.20, is = Math.max(Math.max(rf, 0) * rate, 0.0025 * v("cCa"));
+  $("oIs").innerHTML = `<span class="res">${fmt(is, 1)} MDH</span> <span class="muted">taux ${rf >= 100 ? "35 % (seuil de 100 MDH atteint)" : "20 %"} ; cotisation minimale ${fmt(0.0025 * v("cCa"), 1)} MDH</span>`;
+  const days = v("cDays"), dt = new Date($("cDate").value || Date.now()); dt.setDate(dt.getDate() + Math.min(days, 120));
+  $("oDue").innerHTML = `<span class="res">${dt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}</span> ${days > 120 ? st(false, false, "Au-delà de 120 jours : interdit, ramené à 120") : days > 60 ? st(false, true, "Plus de 60 jours : accord écrit requis") : st(true, false, "Conforme à la loi 69-21")}`;
+  $("oFx").innerHTML = `<span class="res">${fmt(v("cEur") * v("cRate"), 0)} MAD</span> <span class="muted">soit ${fmt(v("cEur") * v("cRate") / 1e6, 2)} MDH</span>`;
+  const over = v("cBudget") > 0 ? v("cCost") / v("cBudget") - 1 : NaN;
+  $("oCapex").innerHTML = `<span class="res">${over >= 0 ? "+" : ""}${pct(over, 1)}</span> ${st(over <= 0.05, over <= 0.11, over <= 0.05 ? "Dans la tolérance" : over <= 0.11 ? "Alerte : le montage absorbe jusqu'à ≈ 11 %" : "Activer les lignes de sécurité")}`;
 }
 
 // thème : redessiner les graphiques quand le thème change

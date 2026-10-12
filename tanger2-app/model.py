@@ -36,10 +36,11 @@ CAPEX_ITEMS = [
     ("Mobilier / véhicules", 6, 0.20, (0.00, 0.00, 0.50, 0.50), True),
     ("Ingénierie / mise en service", 30, 0.10, (0.10, 0.30, 0.40, 0.20), True),
     ("Frais préopérationnels", 22, 0.20, (0.10, 0.20, 0.40, 0.30), False),
-    ("Provision pour aléas", 30, 0.10, (0.10, 0.30, 0.40, 0.20), True),
+    ("Provision pour aléas", 30, 0.10, (0.10, 0.30, 0.40, 0.20), False),
 ]
 CAPEX_BASE = sum(i[1] for i in CAPEX_ITEMS)               # 791
-ELIGIBLE_BASE = sum(i[1] for i in CAPEX_ITEMS if i[4])    # 723 (hors terrain & préop.)
+ELIGIBLE_BASE = sum(i[1] for i in CAPEX_ITEMS if i[4])    # 693 (hors terrain, préop. et aléas)
+LEASE_IN_BASE = False  # H53 : matériel en crédit-bail exclu de l'assiette primable
 MAINT_BASE = 355 + 64 + 28                                # machines + install. + logistique
 
 
@@ -316,37 +317,41 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     machine_split = np.array(CAPEX_ITEMS[4][3])
     lease_sem = np.zeros(NS)
     lease_sem[:4] = lease_val * machine_split
-    uses = capex_sem[:4] - lease_sem[:4]
-    uses[0] += fees
-    uses[3] += max(bfr[1], 0) + reserve
-    need_profile = uses / uses.sum()
-
+    base_uses = capex_sem[:4] - lease_sem[:4]
+    base_uses[0] += fees
+    base_uses[3] += max(bfr[1], 0) + reserve
     equity_total = fin.equity + sh.extra_equity
-    eq_sem = np.zeros(NS)
-    eq_sem[:4] = fin.equity * need_profile
-    eq_sem[3] += sh.extra_equity
-
-    # dette senior : tirages au prorata des besoins + tranche de réserve en S2-28
-    draws = np.zeros(NS)
-    draws[:4] = fin.debt * need_profile
-    draws[3] += sh.standby_debt
     grace = fin.grace_sem + sh.extra_grace
     nrep = fin.n_repay_sem + sh.extra_tenor
-    bal = 0.0
-    d_int, d_prin, d_bal = np.zeros(NS), np.zeros(NS), np.zeros(NS)
-    pay = None
-    for s in range(NS):
-        bal += draws[s]
-        d_int[s] = bal * rs
-        if s >= grace and bal > 1e-9:
-            if pay is None:
-                pay = _annuity(bal, rs, nrep) if fin.annuity else None
-                lin = bal / nrep
-            prin = (pay - d_int[s]) if fin.annuity else lin
-            prin = min(prin, bal)
-            d_prin[s] = prin
-            bal -= prin
-        d_bal[s] = bal
+    sem_end = (np.arange(NS) + 1) / 2
+    idc_sem = np.zeros(4)
+    # deux passes : les intérêts intercalaires font partie des emplois qui règlent le rythme des tirages
+    for _ in range(2):
+        uses = base_uses + idc_sem
+        need_profile = uses / uses.sum()
+        eq_sem = np.zeros(NS)
+        eq_sem[:4] = fin.equity * need_profile
+        eq_sem[3] += sh.extra_equity
+        # dette senior : tirages au prorata des besoins + tranche de réserve en S2-28
+        draws = np.zeros(NS)
+        draws[:4] = fin.debt * need_profile
+        draws[3] += sh.standby_debt
+        bal = 0.0
+        d_int, d_prin, d_bal = np.zeros(NS), np.zeros(NS), np.zeros(NS)
+        pay = None
+        for s_ in range(NS):
+            bal += draws[s_]
+            d_int[s_] = bal * rs
+            if s_ >= grace and bal > 1e-9:
+                if pay is None:
+                    pay = _annuity(bal, rs, nrep) if fin.annuity else None
+                    lin = bal / nrep
+                prin = (pay - d_int[s_]) if fin.annuity else lin
+                prin = min(prin, bal)
+                d_prin[s_] = prin
+                bal -= prin
+            d_bal[s_] = bal
+        idc_sem = np.where(sem_end[:4] <= start_t - 0.5 + 1e-9, d_int[:4], 0.0)
 
     # crédit-bail : loyers semestriels à terme échu dès S2-28 (H61)
     l_rent, l_int, l_bal = np.zeros(NS), np.zeros(NS), np.zeros(NS)
@@ -368,11 +373,12 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
         l_bal[2] = lease_val
 
     # prime à l'investissement + crédit relais
-    prime = fin.prime_rate * ELIGIBLE_BASE * capex_mult * sh.prime_obtained if fin.prime_rate else 0.0
+    eligible = ELIGIBLE_BASE * capex_mult - (0.0 if LEASE_IN_BASE else lease_val)   # 513 MDH pour B et C
+    prime = fin.prime_rate * eligible * sh.prime_obtained if fin.prime_rate else 0.0
     prime_y = np.zeros(N)
     prime_y[2] = prime * 0.5
     prime_y[3] = prime * 0.5
-    bridge = fin.bridge_share * fin.prime_rate * ELIGIBLE_BASE * capex_mult
+    bridge = fin.bridge_share * fin.prime_rate * eligible
     br_draw = np.zeros(N); br_draw[:2] = bridge * need_profile.reshape(2, 2).sum(1)
     br_rep = np.zeros(N)
     br_bal = np.zeros(N)
@@ -389,8 +395,7 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     agg = lambda x: x.reshape(N, 2).sum(1)
     end_y = lambda x: x.reshape(N, 2)[:, 1]
     interest = agg(d_int) + br_int
-    sem_end = (np.arange(NS) + 1) / 2
-    idc = agg(np.where(sem_end <= start_t + 1e-9, d_int, 0.0))   # intérêts de la période de construction
+    idc = agg(np.where(sem_end <= start_t - 0.5 + 1e-9, d_int, 0.0))   # intérêts de la période de construction
     nv_base = idc.sum() + fees
     nv_dep = np.zeros(N)
     rem_nv = nv_base

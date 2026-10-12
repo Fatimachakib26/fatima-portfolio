@@ -55,16 +55,19 @@ Calibrage par rapport à l'Excel (cas central, onglet 21_Comparaison) :
 
 | Indicateur | Excel A / B / C | Python A / B / C |
 |---|---|---|
-| VAN projet (MDH) | 107,5 / 114,2 / 272,5 | 107,6 / 113,7 / 278,1 |
-| TRI projet | 12,98 % / 12,98 % / 16,86 % | 12,98 % / 12,98 % / 17,07 % |
-| TRI des fonds propres | 15,41 % / 17,20 % / 22,41 % | 15,16 % / 16,94 % / 22,41 % |
+| Besoin de financement (MDH) | 962,1 / 960,0 / 960,5 | 961,8 / 959,7 / 958,9 |
+| VAN projet (MDH) | 107,5 / 114,2 / 272,5 | 107,6 / 113,7 / 265,7 |
+| TRI projet | 12,98 % / 12,98 % / 16,86 % | 12,98 % / 12,98 % / 16,71 % |
+| TRI des fonds propres | 15,41 % / 17,20 % / 22,41 % | 15,09 % / 16,87 % / 21,93 % |
 | WACC | 10,51 % / 10,37 % / 10,35 % | 10,51 % / 10,38 % / 10,36 % |
-| DSCR minimum | 1,58x / 1,37x / 1,64x | 1,59x / 1,38x / 1,63x |
-| Dette nette retraitée / EBITDA max | 1,33x / 1,73x / 1,47x | 1,36x / 1,75x / 1,39x |
+| DSCR minimum | 1,58x / 1,37x / 1,64x | 1,58x / 1,37x / 1,64x |
+| Dette nette retraitée / EBITDA max | 1,33x / 1,73x / 1,47x | 1,33x / 1,74x / 1,46x |
+| Prime à l'investissement C (MDH) | 56,4 | 56,4 |
 
 Mécanismes repris de l'Excel : tirages des fonds propres, de la dette et du relais au prorata des emplois
-(le crédit-bailleur règle sa part des machines au rythme de leurs décaissements), intérêts intercalaires et frais
-immobilisés en non-valeurs amortis à 20 %, dividendes versés en N sur le résultat de N−1 après réserve légale
+(le crédit-bailleur règle sa part des machines au rythme de leurs décaissements ; les intérêts intercalaires font partie des emplois),
+prime de la Charte calculée sur l'assiette primable de 513 MDH (hors terrain, frais préopérationnels, aléas et matériel en crédit-bail, H53 = 0), intérêts intercalaires et frais
+immobilisés en non-valeurs amortis à 20 % (intérêts de 2027, avant la mise en service), dividendes versés en N sur le résultat de N−1 après réserve légale
 et dans la limite de la trésorerie au-delà de 40 MDH. En stress, les besoins non financés diffèrent de
 quelques dizaines de MDH (stress combiné B : 126 contre 137 MDH ; VAN −89 contre −82 MDH).
 **L'Excel reste la référence** pour les chiffres du rapport.
