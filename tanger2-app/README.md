@@ -44,18 +44,25 @@ report des déficits), dette semestrielle (différé, annuités constantes), cr�
 cascade de trésorerie avec blocage des dividendes, DSCR, dette nette retraitée / EBITDA,
 WACC (CAPM, bêta réendetté de Hamada), VAN / TRI projet, TRI des fonds propres, point mort.
 
-Calibrage par rapport à l'Excel (cas central) :
+Calibrage par rapport à l'Excel (cas central, onglet 21_Comparaison) :
 
-| Indicateur | Excel | Python |
+| Indicateur | Excel A / B / C | Python A / B / C |
 |---|---|---|
-| VAN A / B / C (MDH) | 107,5 / 114,2 / 272,5 | 107,6 / 113,8 / 278,2 |
-| TRI projet A-B | 12,98 % | 12,98 % |
-| WACC A / B | 10,51 % / 10,37 % | 10,51 % / 10,38 % |
-| Stress combiné B : besoin non financé / VAN | 137 / −82 | 130 / −89 |
+| VAN projet (MDH) | 107,5 / 114,2 / 272,5 | 107,6 / 113,7 / 278,1 |
+| TRI projet | 12,98 % / 12,98 % / 16,86 % | 12,98 % / 12,98 % / 17,07 % |
+| TRI des fonds propres | 15,41 % / 17,20 % / 22,41 % | 15,16 % / 16,94 % / 22,41 % |
+| WACC | 10,51 % / 10,37 % / 10,35 % | 10,51 % / 10,38 % / 10,36 % |
+| DSCR minimum | 1,58x / 1,37x / 1,64x | 1,59x / 1,38x / 1,63x |
+| Dette nette retraitée / EBITDA max | 1,33x / 1,73x / 1,47x | 1,36x / 1,75x / 1,39x |
 
-Écarts connus : le DSCR minimum du scénario B (1,37x dans l'Excel, 1,54x ici) et les TRI des fonds propres
-diffèrent légèrement (calendrier semestriel du crédit-bail et règles de distribution simplifiés).
+Mécanismes repris de l'Excel : tirages des fonds propres, de la dette et du relais au prorata des emplois
+(le crédit-bailleur règle sa part des machines au rythme de leurs décaissements), intérêts intercalaires et frais
+immobilisés en non-valeurs amortis à 20 %, dividendes versés en N sur le résultat de N−1 après réserve légale
+et dans la limite de la trésorerie au-delà de 40 MDH. En stress, les besoins non financés diffèrent de
+quelques dizaines de MDH (stress combiné B : 126 contre 137 MDH ; VAN −89 contre −82 MDH).
 **L'Excel reste la référence** pour les chiffres du rapport.
+
+Tests de non-régression (calage sur l'Excel, stress, Monte-Carlo) : `pip install pytest` puis `python -m pytest tests`.
 
 ## Power BI
 

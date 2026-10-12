@@ -306,12 +306,20 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     # ---- Financement : dette, crédit-bail, relais -----------------------------
     r = fin.debt_rate + sh.rate
     rs = r / 2
-    on_bs_capex = capex_sem.copy()
     lease_val = fin.lease * capex_mult if fin.lease > 0 else 0.0
-    on_bs_capex[2] -= lease_val * 0.6
-    on_bs_capex[3] -= lease_val * 0.4
-    on_bs_capex = np.maximum(on_bs_capex, 0)
-    need_profile = on_bs_capex[:4] / on_bs_capex[:4].sum()
+    debt_amt = fin.debt + sh.standby_debt
+    fees = fin.arrangement_fee * debt_amt
+    # réserve de trésorerie : 5 mois de charges fixes en année pleine (H39)
+    reserve = (60 + 52 + 0.02 * MAINT_BASE * capex_mult) * 5 / 12
+    # emplois par semestre (CAPEX y compris matériel en crédit-bail, frais, BFR et réserve à la mise en service)
+    # le crédit-bailleur règle sa part des machines au rythme de leurs décaissements (onglet 09)
+    machine_split = np.array(CAPEX_ITEMS[4][3])
+    lease_sem = np.zeros(NS)
+    lease_sem[:4] = lease_val * machine_split
+    uses = capex_sem[:4] - lease_sem[:4]
+    uses[0] += fees
+    uses[3] += max(bfr[1], 0) + reserve
+    need_profile = uses / uses.sum()
 
     equity_total = fin.equity + sh.extra_equity
     eq_sem = np.zeros(NS)
@@ -322,7 +330,6 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     draws = np.zeros(NS)
     draws[:4] = fin.debt * need_profile
     draws[3] += sh.standby_debt
-    debt_amt = fin.debt + sh.standby_debt
     grace = fin.grace_sem + sh.extra_grace
     nrep = fin.n_repay_sem + sh.extra_tenor
     bal = 0.0
@@ -340,7 +347,6 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
             d_prin[s] = prin
             bal -= prin
         d_bal[s] = bal
-    fees = fin.arrangement_fee * debt_amt
 
     # crédit-bail : loyers semestriels à terme échu dès S2-28 (H61)
     l_rent, l_int, l_bal = np.zeros(NS), np.zeros(NS), np.zeros(NS)
@@ -367,14 +373,14 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     prime_y[2] = prime * 0.5
     prime_y[3] = prime * 0.5
     bridge = fin.bridge_share * fin.prime_rate * ELIGIBLE_BASE * capex_mult
-    br_draw = np.zeros(N); br_draw[1] = bridge
+    br_draw = np.zeros(N); br_draw[:2] = bridge * need_profile.reshape(2, 2).sum(1)
     br_rep = np.zeros(N)
     br_bal = np.zeros(N)
     br_int = np.zeros(N)
     bb = 0.0
     for k in range(N):
         bb += br_draw[k]
-        br_int[k] = bb * (r + fin.bridge_spread) * (0.5 if k == 1 else 1)
+        br_int[k] = bb * (r + fin.bridge_spread) * (0.5 if k <= 1 else 1)
         rep = min(bb, prime_y[k]) if YEARS[k] < 2031 else (bb if YEARS[k] == 2031 else 0)
         br_rep[k] = rep
         bb -= rep
@@ -383,6 +389,13 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     agg = lambda x: x.reshape(N, 2).sum(1)
     end_y = lambda x: x.reshape(N, 2)[:, 1]
     interest = agg(d_int) + br_int
+    sem_end = (np.arange(NS) + 1) / 2
+    idc = agg(np.where(sem_end <= start_t + 1e-9, d_int, 0.0))   # intérêts de la période de construction
+    nv_base = idc.sum() + fees
+    nv_dep = np.zeros(N)
+    rem_nv = nv_base
+    for k in range(N):
+        d = min(rem_nv, nv_base * 0.20 * frac[k]); nv_dep[k] = d; rem_nv -= d
     principal = agg(d_prin)
     rents = agg(l_rent)
     lease_int = agg(l_int)
@@ -390,6 +403,7 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     lease_bal = end_y(l_bal)
     eq_in = agg(eq_sem)
     debt_draw = agg(draws)
+    lease_y = agg(lease_sem)
 
     # ---- Compte de résultat de la société de projet --------------------------
     # matériel en crédit-bail hors bilan : loyers en charges, pas d'amortissement
@@ -398,14 +412,14 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
         rem = lease_val
         for k in range(N):
             d = min(rem, lease_val * 0.10 * frac[k]); lease_dep[k] = d; rem -= d
-    dep_co = dep - lease_dep
+    dep_co = dep - lease_dep + nv_dep
     ebitda_co = ebitda - rents
     prime_reco = np.zeros(N)
     if prime > 0:
         for k in range(N):
             prime_reco[k] = prime * 0.10 * frac[k] if YEARS[k] >= 2029 else 0
     fees_y = np.zeros(N); fees_y[0] = fees
-    ebt = ebitda_co - dep_co - interest - fees_y + prime_reco
+    ebt = ebitda_co - dep_co - (interest - idc) + prime_reco
     tax = corporate_tax(ebt, fin.tax_holiday)
     net = ebt - tax
 
@@ -415,27 +429,31 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     cfads = np.zeros(N)
     service = np.zeros(N)
     dscr = np.full(N, np.nan)
-    retained = 0.0
+    distributable = 0.0
+    legal = 0.0
     c = 0.0
     min_cash = np.inf
     for k in range(N):
+        if YEARS[k] >= 2030 and k > 0:
+            ok = np.isnan(dscr[k - 1]) or dscr[k - 1] >= DSCR_COVENANT
+            if ok and distributable > 0 and c > MIN_CASH:
+                d = min(distributable, c - MIN_CASH)
+                div[k] = d
+                c -= d
+                distributable -= d
         cfads[k] = ebitda[k] - tax[k] - dbfr[k] - renew[k] - (capex_init[k] if YEARS[k] >= 2029 else 0)
         service[k] = interest[k] + principal[k] + rents[k]
         if service[k] > 1e-6 and YEARS[k] >= 2029:
             dscr[k] = cfads[k] / service[k]
         flow = (eq_in[k] + debt_draw[k] + br_draw[k] + prime_y[k]
-                - (capex_init[k] - (lease_val if k == 1 else 0)) - renew[k]
+                - (capex_init[k] - lease_y[k]) - renew[k]
                 + ebitda[k] - tax[k] - dbfr[k] - interest[k] - principal[k] - rents[k]
                 - br_rep[k] - fees_y[k])
         c += flow
-        retained += net[k]
-        if YEARS[k] >= 2030:
-            ok = (np.isnan(dscr[k]) or dscr[k] >= DSCR_COVENANT)
-            if ok and c > MIN_CASH and retained > 0:
-                d = min(c - MIN_CASH, retained)
-                div[k] = d
-                c -= d
-                retained -= d
+        # réserve légale : 5 % du bénéfice jusqu'à 10 % du capital (H59-H60)
+        alloc = min(max(net[k], 0) * 0.05, max(0.1 * equity_total - legal, 0))
+        legal += alloc
+        distributable += net[k] - alloc
         cash[k] = c
         min_cash = min(min_cash, c)
 
@@ -523,7 +541,7 @@ def run(fin: Financing, sh: Shocks | None = None, mk: Market | None = None) -> d
     return {
         "table": table,
         "kpi": {
-            "Besoin de financement": float(capex_init.sum() + bfr[1] + 50 + fees + interest[:2].sum() * 0.0),
+            "Besoin de financement": float(capex_init.sum() + bfr[1] + reserve + fees + idc.sum()),
             "WACC": wacc,
             "Coût FP (Ke)": ke,
             "Bêta endetté": beta_l,
