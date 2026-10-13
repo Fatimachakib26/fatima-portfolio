@@ -2,7 +2,7 @@
 <style>html,body{height:100%}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Département financier DPA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:ital,wght@1,600;1,700&display=swap">
 <style>
 /* Mise en page : barre d'outils d'usine (en-tête + onglets), contenu en grille fluide ; couleurs « acier » et « orange sécurité » */
 :root{
@@ -453,6 +453,30 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
 td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:var(--f-mono)}
 .sev.maj{background:var(--kobg);color:var(--ko)} .sev.sig{background:var(--warnbg);color:var(--warn)} .sev.min{background:var(--chip);color:var(--muted)}
 .rpitem .desc{font-size:.9rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+/* ===== Écran de devise après la connexion ===== */
+#intro{position:fixed;inset:0;z-index:80;display:grid;place-items:center;overflow:hidden;color:#f2f4f5;
+  background:radial-gradient(120% 80% at 50% 110%,rgba(240,128,60,.28) 0%,rgba(240,128,60,0) 55%),radial-gradient(90% 60% at 50% 40%,#151b20 0%,#07090b 70%);
+  padding:max(24px,env(safe-area-inset-top,0px)) 24px max(24px,env(safe-area-inset-bottom,0px));transition:opacity .7s ease}
+#intro.out{opacity:0;pointer-events:none}
+#intro::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 1px,transparent 1px 120px)}
+.intro-in{display:grid;gap:clamp(18px,3vh,32px);justify-items:center;text-align:center;position:relative;z-index:1;max-width:100%}
+.intro-in img.logo{width:84px;height:84px;border-radius:22px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 70px rgba(240,138,82,.25);animation:ilogo 1s ease both}
+.motto{display:grid;gap:clamp(2px,1vh,10px);margin:0;font:italic 700 clamp(2.6rem,9vw,6.4rem)/1.02 "Playfair Display","Didot","Bodoni 72",Georgia,serif;letter-spacing:-.01em}
+.motto .w{display:block;overflow:hidden;padding:0 .08em .06em}
+.motto .w span{display:inline-block;background:linear-gradient(180deg,#ffffff 0%,#d9dee1 45%,#8f9aa0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:iword 1s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.35s + var(--i) * .9s)}
+.motto .w b{color:#f08a52;-webkit-text-fill-color:#f08a52;font-style:normal}
+.motto .w:nth-child(3) span{background:linear-gradient(180deg,#ffd2ae 0%,#f08a52 60%,#c4561f 100%);-webkit-background-clip:text;background-clip:text}
+.intro-rule{width:min(320px,60vw);height:2px;background:linear-gradient(90deg,transparent,#f08a52,transparent);transform-origin:center;animation:irule .9s ease both;animation-delay:3s}
+.intro-sub{margin:0;font:600 .78rem var(--f-body);letter-spacing:.22em;text-transform:uppercase;color:#c3cbcf;animation:ifade .8s ease both;animation-delay:3.2s}
+.intro-hello{margin:0;font:500 1.05rem var(--f-body);color:#e6ecee;animation:ifade .8s ease both;animation-delay:3.4s}
+#introSkip{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:2;background:rgba(255,255,255,.08);color:#e6ecee;border:1px solid rgba(255,255,255,.18)}
+#introSkip:hover{background:rgba(255,255,255,.16)}
+@keyframes iword{from{opacity:0;transform:translateY(105%) skewY(4deg);filter:blur(10px);letter-spacing:.12em}to{opacity:1;transform:none;filter:none;letter-spacing:inherit}}
+@keyframes ilogo{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes irule{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes ifade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.motto .w span,.intro-rule,.intro-sub,.intro-hello,.intro-in img.logo{animation:none!important}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -475,6 +499,21 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
     <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation<br><code>analyste</code> / <code>Analyste2026</code> — analyste financière<br><code>controleur</code> / <code>Gestion2026</code> — contrôleur de gestion<br><code>interne</code> / <code>Interne2026</code> — contrôle interne<br><code>auditeur</code> / <code>Audit2026</code> — auditeur interne (lecture seule)<br><code>rh</code> / <code>RH2026</code> — ressources humaines</div>
   </form>
   <p class="lcredit">Illustration : site industriel de DPA · cas pédagogique fictif</p>
+</div>
+
+<div id="intro" hidden role="dialog" aria-label="Devise de Détroit Plasturgie Automobile">
+  <div class="intro-in">
+    <img class="logo" alt="Logo DPA">
+    <p class="motto" aria-label="Imaginer. Transformer. Avancer.">
+      <span class="w" style="--i:0" aria-hidden="true"><span>Imaginer<b>.</b></span></span>
+      <span class="w" style="--i:1" aria-hidden="true"><span>Transformer<b>.</b></span></span>
+      <span class="w" style="--i:2" aria-hidden="true"><span>Avancer<b>.</b></span></span>
+    </p>
+    <div class="intro-rule"></div>
+    <p class="intro-sub">Détroit Plasturgie Automobile · Département financier</p>
+    <p class="intro-hello" id="introHello"></p>
+  </div>
+  <button class="btn" id="introSkip" type="button">Entrer</button>
 </div>
 
 <div id="app" hidden>
@@ -1817,7 +1856,7 @@ $("loginForm").addEventListener("submit", async (e) => {
   if (Date.now() < lockedUntil) { $("lerr").textContent = `Trop de tentatives. Réessayez dans ${Math.ceil((lockedUntil - Date.now()) / 1000)} s.`; return; }
   const u = USERS[$("lu").value.trim().toLowerCase()];
   const h = await sha("tg2|" + $("lp").value);
-  if (u && u.hash && h === u.hash) { attempts = 0; user = u; enterApp(); }
+  if (u && u.hash && h === u.hash) { attempts = 0; user = u; enterApp(); playIntro(); }
   else {
     attempts++;
     if (attempts >= 5) { lockedUntil = Date.now() + 60000; attempts = 0; $("lerr").textContent = "Accès bloqué pendant 60 secondes après 5 échecs."; }
@@ -4306,6 +4345,25 @@ async function decideLeave(id, statut) {
   else { l.statut = statut; lsSet("t2conges", leaves); renderRh(); }
   logAudit(`Congé ${statut === "accepte" ? "accepté" : "refusé"}`, `${l.who} · ${l.from} au ${l.to}`);
 }
+
+// ---------- Devise de l'entreprise après la connexion ----------
+let introTimer = null;
+function playIntro() {
+  const el = $("intro"), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.querySelectorAll(".w span, .intro-rule, .intro-sub, .intro-hello").forEach((n) => { n.style.animation = "none"; void n.offsetWidth; n.style.animation = ""; });
+  $("introHello").textContent = `Bienvenue, ${(myFiche && myFiche.nom) || user.name}`;
+  el.classList.remove("out"); el.hidden = false; document.body.style.overflow = "hidden";
+  homeP && homeP.then(() => { if (!el.hidden && user) $("introHello").textContent = `Bienvenue, ${(myFiche && myFiche.nom) || user.name}`; });
+  clearTimeout(introTimer); introTimer = setTimeout(closeIntro, reduce ? 2500 : 6500);
+  setTimeout(() => $("introSkip").focus(), 50);
+}
+function closeIntro() {
+  const el = $("intro"); if (el.hidden) return; clearTimeout(introTimer);
+  el.classList.add("out"); setTimeout(() => { el.hidden = true; el.classList.remove("out"); document.body.style.overflow = ""; }, 700);
+}
+$("introSkip").addEventListener("click", closeIntro);
+$("intro").addEventListener("click", (e) => { if (e.target === $("intro")) closeIntro(); });
+addEventListener("keydown", (e) => { if (!$("intro").hidden && (e.key === "Escape" || e.key === "Enter")) { e.preventDefault(); closeIntro(); } });
 
 // thème : redessiner les graphiques quand le thème change
 const rerender = () => { if (!user) return; show(current); if (current === "opt") drawOpt(); if (current === "live" && liveMode === "film") filmFrame(11); };
