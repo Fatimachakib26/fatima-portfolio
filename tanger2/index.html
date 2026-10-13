@@ -3433,7 +3433,7 @@ const CHANNELS = [["general", "Général", "Annonces et coordination de toute l'
   ["compta", "Comptabilité", "Factures, TVA, clôtures et paiements"], ["direction", "Direction", "Décisions à prendre et validations"], ["stagiaires", "Stagiaires", "Questions des stagiaires et réponses de l'encadrant"]];
 let chInit = false, chWatch = false, chCur = "general", chRows = [], meUid = null, lastSend = 0, chNames = {};
 const chOf = (id) => CHANNELS.find((c) => c[0] === id) || CHANNELS[0];
-const isMine = (m) => (meUid ? m.by === meUid : (!m.by && user && m.who === user.name));
+const isMine = (m) => (meUid ? m.by === meUid && (!m.role || m.role === user.role) : (!m.by && user && m.who === user.name));
 function unreadOf(ch) { const lr = lsGet("t2read", {})[ch] || ""; return chRows.filter((m) => m.ch === ch && (m.at || "") > lr && !isMine(m)).length; }
 function navBadge() {
   const b = $("tabs").querySelector('[data-page="chat"]'); if (!b) return;
@@ -3477,7 +3477,7 @@ async function renderChat() {
   const rows = chRows.filter((m) => m.ch === chCur).sort((a, b) => (a.at || "").localeCompare(b.at || ""));
   const st = await getStore(), ids = [...new Set(rows.map((m) => m.by).filter(Boolean))];
   if (st.u && ids.length) { try { const ps = await st.u.profiles(ids); ids.forEach((i) => { chNames[i] = (ps[i] && ps[i].name) || ""; }); } catch (e) {} }
-  const nameOf = (m) => { const f = people[m.by || "local-" + m.role]; return (f && f.nom) || (m.by && chNames[m.by]) || m.who || "Membre"; };
+  const nameOf = (m) => { const f = people[m.by ? m.by + "|" + m.role : "local-" + m.role]; return (f && f.nom) || m.who || "Membre"; };
   const pins = rows.filter((m) => m.pinned);
   $("chPinned").hidden = !pins.length;
   $("chPinned").innerHTML = pins.length ? `<b style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase">Épinglé</b>` + pins.slice(-3).map((m) => `<div><b>${esc(nameOf(m))}</b> · ${fmtMsg(m.text.length > 180 ? m.text.slice(0, 180) + "…" : m.text)}</div>`).join("") : "";
@@ -3701,7 +3701,7 @@ async function openReport(type, saved) {
     $("rpType").value = t; $("rpTitle").dataset.touched = "";
     ["rpTo", "rpPeriod", "rpDone", "rpIssues", "rpNext", "rpSummary"].forEach((id) => { $(id).value = ""; });
     $("rpStatus").value = "Terminé";
-    let me = user ? user.name : ""; if (st.u) { try { const p = await st.u.me(); if (p && p.name) me = p.name + " (" + user.name + ")"; } catch (e) {} }
+    const me = (myFiche && myFiche.nom) || (user ? user.name : "");
     $("rpAuthor").value = me;
     $("rpPeriod").value = new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
     rpPreview(); rpLoadType();
@@ -3767,13 +3767,13 @@ async function renderReports() {
 const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur", analyste: "Analyste financière", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "Ressources humaines" };
 const DEFAULT_FICHE = { admin: { nom: "Fatima Zahrae Chakib", poste: "Directrice financière" }, analyste: { poste: "Analyste financière" }, controleur: { poste: "Contrôleur de gestion" }, interne: { poste: "Responsable du contrôle interne" }, auditeur: { poste: "Auditeur interne" }, rh: { poste: "Chargée des ressources humaines" } };
 let hmInit = false, hmWatch = false, myKey = null, loginAt = null, people = {}, myFiche = null, roomNs = null, online = new Map(), events = [], hmDay = "today", hmPhotoData = undefined, profCache = {};
-const keyFor = (uid) => uid || "local-" + (user ? user.role : "");
+const keyFor = (uid) => (uid ? uid + "|" : "local-") + (user ? user.role : "");
 const todayISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const hhmm = (d) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 const durTxt = (ms) => { const m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")}`; };
 function avHtml(f, prof, cls) {
-  const photo = f && typeof f.photo === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(f.photo) ? f.photo : f && f.role === "admin" && ADMIN_PHOTO ? ADMIN_PHOTO : prof && prof.avatarUrl && prof.name ? prof.avatarUrl : "";
-  const nm = (f && f.nom) || (prof && prof.name) || "?";
+  const photo = f && typeof f.photo === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(f.photo) ? f.photo : f && f.role === "admin" && ADMIN_PHOTO ? ADMIN_PHOTO : "";
+  const nm = (f && f.nom) || "?";
   return photo ? `<img src="${esc(photo)}" alt="">` : esc(initials(nm));
 }
 async function profilesFor(ids) {
@@ -3787,25 +3787,25 @@ async function startHome1() {
   if (!hmWatch) {
     hmWatch = true;
     if (st.db) {
-      st.db.collection("annuaire").limit(300).onSnapshot((s) => { people = {}; s.docs.forEach((d) => { people[d.id] = d.data(); }); myFiche = people[myKey] || myFiche; refreshHome(); }, () => {});
+      st.db.collection("annuaire").limit(300).onSnapshot((s) => { people = {}; s.docs.forEach((d) => { const v = d.data(); if (v && v.fiches && typeof v.fiches === "object") Object.entries(v.fiches).forEach(([r, f]) => { if (f && typeof f === "object") people[d.id + "|" + r] = Object.assign({}, f, { role: r }); }); }); myFiche = people[myKey] || myFiche; refreshHome(); }, () => {});
       st.db.collection("agenda").orderBy("date", "desc").limit(500).onSnapshot((s) => { events = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (current === "home") { renderAgenda(); renderNext(); renderTodo(); } }, () => {});
     } else { people = lsGet("t2annuaire", {}); events = lsGet("t2agenda", []); }
     try { roomNs = window.claude ? await window.claude.use("room") : null; } catch (e) { roomNs = null; }
-    if (roomNs) roomNs.onPeers((ch) => { online = new Map(); ch.peers.forEach((p) => { if (p.kind === "viewer" && p.by && p.presence && p.presence.since && !p.presence.off) { const o = online.get(p.by); if (!o || p.presence.since < o.since) online.set(p.by, { since: p.presence.since, me: p.isMe }); } }); renderTeam(); }, () => { roomNs = null; renderTeam(); });
+    if (roomNs) roomNs.onPeers((ch) => { online = new Map(); ch.peers.forEach((p) => { if (p.kind === "viewer" && p.by && p.presence && p.presence.since && !p.presence.off) { const k = p.by + "|" + (p.presence.role || ""), o = online.get(k); if (!o || p.presence.since < o.since) online.set(k, { since: p.presence.since, me: p.isMe }); } }); renderTeam(); }, () => { roomNs = null; renderTeam(); });
   }
   if (!st.db) { people = lsGet("t2annuaire", {}); events = lsGet("t2agenda", []); }
   myFiche = people[myKey] || null;
-  if (roomNs) roomNs.presence({ since: loginAt.toISOString(), off: null }).catch(() => {});
+  if (roomNs) roomNs.presence({ since: loginAt.toISOString(), role: user.role, off: null }).catch(() => {});
   // fiche minimale à la connexion pour apparaître dans l'équipe ; mise à jour de la dernière connexion
   const patch = { role: user.role, lastLogin: loginAt.toISOString() };
-  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: (DEFAULT_FICHE[user.role] || {}).nom || nm || "", poste: (DEFAULT_FICHE[user.role] || {}).poste || "", service: { stagiaire: "Stage", comptable: "Comptabilité", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "Ressources humaines" }[user.role] || "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
+  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: (DEFAULT_FICHE[user.role] || {}).nom || "", poste: (DEFAULT_FICHE[user.role] || {}).poste || "", service: { stagiaire: "Stage", comptable: "Comptabilité", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "Ressources humaines" }[user.role] || "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
   else myFiche = Object.assign({}, myFiche, patch);
   await saveFiche(myFiche, true);
   updateWho();
 }
 async function saveFiche(f, quiet) {
   const st = await getStore(), clean = JSON.parse(JSON.stringify(f));
-  if (st.db) { try { await st.db.doc("annuaire/" + myKey).set(clean); if (!quiet) $("hmMsg").textContent = "Fiche enregistrée."; } catch (e) { if (!quiet) $("hmMsg").textContent = e && e.code === "too_large" ? "Photo trop lourde : choisissez une image plus petite." : "Enregistrement refusé : vous n'avez peut-être pas le droit d'écrire sur cette page."; return false; } }
+  if (st.db) { try { const ref = st.db.doc("annuaire/" + meUid), patch = { fiches: { [user.role]: clean } }; try { await ref.update(patch); } catch (x) { if (x && x.code === "invalid_argument") await ref.set(patch); else throw x; } if (!quiet) $("hmMsg").textContent = "Fiche enregistrée."; } catch (e) { if (!quiet) $("hmMsg").textContent = e && e.code === "too_large" ? "Photo trop lourde : choisissez une image plus petite." : "Enregistrement refusé : vous n'avez peut-être pas le droit d'écrire sur cette page."; return false; } }
   else { people[myKey] = clean; lsSet("t2annuaire", people); if (!quiet) $("hmMsg").textContent = "Fiche enregistrée dans ce navigateur."; }
   people[myKey] = clean; myFiche = clean; refreshHome(); updateWho(); return true;
 }
@@ -3858,8 +3858,8 @@ function pickPhoto(file) {
 }
 async function refreshHome() {
   if (!user || !hmInit) { renderTeam(); return; }
-  await profilesFor(Object.keys(people).concat(meUid ? [meUid] : []));
-  const f = myFiche || {}, prof = profCache[meUid] || null, nm = f.nom || (prof && prof.name) || user.name;
+  await profilesFor(Object.keys(people).filter((i) => !i.startsWith("local-")).map((i) => i.split("|")[0]).concat(meUid ? [meUid] : []));
+  const f = myFiche || {}, prof = null, nm = f.nom || user.name;
   const h = new Date().getHours();
   $("hmName").textContent = `${h < 18 ? "Bonjour" : "Bonsoir"}, ${nm}`;
   $("hmAv").innerHTML = avHtml(f, prof);
@@ -3919,9 +3919,9 @@ async function renderTeam() {
   const st = await getStore(), ids = new Set(Object.keys(people));
   online.forEach((_, by) => ids.add(by));
   if (!roomNs) { ids.add(myKey); }
-  await profilesFor([...ids].filter((i) => !i.startsWith("local-")));
+  await profilesFor([...ids].filter((i) => !i.startsWith("local-")).map((i) => i.split("|")[0]));
   const isOn = (id) => (roomNs ? online.has(id) : id === myKey);
-  const card = (id, on) => { const f = people[id] || {}, p = profCache[id] || null, nm = f.nom || (p && p.name) || ROLE_LABEL[f.role] || "Membre", me = id === myKey;
+  const card = (id, on) => { const f = people[id] || {}, p = null, nm = f.nom || ROLE_LABEL[f.role || id.split("|")[1]] || "Membre", me = id === myKey;
     const since = on ? (roomNs && online.get(id) ? new Date(online.get(id).since) : me ? loginAt : null) : null;
     const desc = on ? `${esc(f.poste || ROLE_LABEL[f.role] || "")}${since ? ` · depuis ${hhmm(since)}` : ""}` : `${esc(f.poste || ROLE_LABEL[f.role] || "")}${f.lastLogin ? ` · vu le ${esc(new Date(f.lastLogin).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }))} à ${esc(hhmm(new Date(f.lastLogin)))}` : ""}`;
     return `<div class="person${on ? "" : " off"}"><div class="pav">${avHtml(f, p)}<span class="ldot${on ? "" : " off"}"></span></div><div style="min-width:0"><div class="nm">${esc(nm)}${me ? ' <span class="muted" style="font-weight:500">(vous)</span>' : ""}</div><div class="ds">${desc}</div></div></div>`; };
