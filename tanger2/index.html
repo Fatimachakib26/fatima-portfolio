@@ -325,7 +325,7 @@ footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);li
 .msg.cont{margin-top:calc(-1 * var(--s3))}
 .msg.cont .av{visibility:hidden;height:0}
 .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 .85rem var(--f-display);color:#fff;background:var(--steel)}
-.av.comptable{background:var(--sage)} .av.superviseur{background:var(--plum)} .av.admin{background:var(--orange)} .av.stagiaire{background:#5d7a8a} .av.lecteur{background:var(--muted)} .av.analyste{background:#2f7a8c}
+.av.comptable{background:var(--sage)} .av.superviseur{background:var(--plum)} .av.admin{background:var(--orange)} .av.stagiaire{background:#5d7a8a} .av.lecteur{background:var(--muted)} .av.analyste{background:#2f7a8c} .av.controleur{background:#6b7d2f} .av.interne{background:#8c5a2f} .av.auditeur{background:#4a4f8c} .av.rh{background:#8c3f6b}
 .mhd{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:.86rem}
 .mhd b{font-size:.95rem}
 .mtxt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;margin-top:2px}
@@ -449,6 +449,10 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
 .lauthors b{color:#fff}
 @media (max-width:900px){.lauthors{border-left:0;padding-left:0}}
 .margin.ko{color:var(--ko);font-weight:700} .margin.warn{color:var(--warn);font-weight:700} .margin.ok{color:var(--ok);font-weight:700}
+.ecart.ko{color:var(--ko);font-weight:700} .ecart.ok{color:var(--ok)}
+td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:var(--f-mono)}
+.sev.maj{background:var(--kobg);color:var(--ko)} .sev.sig{background:var(--warnbg);color:var(--warn)} .sev.min{background:var(--chip);color:var(--muted)}
+.rpitem .desc{font-size:.9rem;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -468,7 +472,7 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
     <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn primary" id="lbtn" type="submit">Se connecter</button>
-    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation<br><code>inass</code> / <code>Analyste2026</code> — Inass Mouichou, analyste financière</div>
+    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation<br><code>inass</code> / <code>Analyste2026</code> — Inass Mouichou, analyste financière<br><code>controleur</code> / <code>Gestion2026</code> — contrôleur de gestion<br><code>interne</code> / <code>Interne2026</code> — contrôle interne<br><code>auditeur</code> / <code>Audit2026</code> — auditeur interne (lecture seule)<br><code>rh</code> / <code>RH2026</code> — ressources humaines</div>
   </form>
   <p class="lcredit">Illustration : site industriel de DPA · cas pédagogique fictif</p>
 </div>
@@ -515,7 +519,7 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
               <div class="formgrid">
                 <label class="f" for="hmNom">Nom complet<input type="text" id="hmNom" maxlength="60" required placeholder="Prénom Nom"></label>
                 <label class="f" for="hmPoste">Poste<input type="text" id="hmPoste" maxlength="60" placeholder="ex. Comptable fournisseurs"></label>
-                <label class="f" for="hmService">Service<select id="hmService"><option>Direction financière</option><option>Comptabilité</option><option>Contrôle de gestion</option><option>Direction générale</option><option>Production</option><option>Achats</option><option>Ressources humaines</option><option>Stage</option></select></label>
+                <label class="f" for="hmService">Service<select id="hmService"><option>Direction financière</option><option>Comptabilité</option><option>Contrôle de gestion</option><option>Direction générale</option><option>Production</option><option>Achats</option><option>Ressources humaines</option><option>Contrôle interne</option><option>Audit interne</option><option>Stage</option></select></label>
                 <label class="f" for="hmMatricule">Matricule<input type="text" id="hmMatricule" maxlength="20" placeholder="ex. DPA-0142"></label>
                 <label class="f" for="hmSite">Site<select id="hmSite"><option>Tanger Automotive City</option><option>Siège · Casablanca</option><option>Télétravail</option></select></label>
                 <label class="f" for="hmTel">Poste téléphonique<input type="text" id="hmTel" maxlength="20" placeholder="ex. 2214"></label>
@@ -541,7 +545,7 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
                   <label class="f" for="evDebut">Début<input type="time" id="evDebut" required value="09:00"></label>
                   <label class="f" for="evFin">Fin<input type="time" id="evFin" required value="10:00"></label>
                   <label class="f" for="evLieu">Lieu<input type="text" id="evLieu" maxlength="60" placeholder="ex. Salle B2 ou visioconférence"></label>
-                  <label class="f" for="evPour">Pour<select id="evPour"><option value="all">Toute l'équipe</option><option value="comptable">Les comptables</option><option value="superviseur">Les encadrants</option><option value="stagiaire">Les stagiaires</option><option value="admin">La direction</option><option value="analyste">Les analystes</option><option value="me">Moi seulement</option></select></label>
+                  <label class="f" for="evPour">Pour<select id="evPour"><option value="all">Toute l'équipe</option><option value="comptable">Les comptables</option><option value="superviseur">Les encadrants</option><option value="stagiaire">Les stagiaires</option><option value="admin">La direction</option><option value="analyste">Les analystes</option><option value="controleur">Le contrôle de gestion</option><option value="interne">Le contrôle interne</option><option value="auditeur">L'audit interne</option><option value="rh">Les RH</option><option value="me">Moi seulement</option></select></label>
                 </div>
                 <div class="toolbar"><button class="btn primary" type="submit" id="evSave">Ajouter au programme</button><span class="muted" id="evMsg" aria-live="polite"></span></div>
               </form>
@@ -582,6 +586,31 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
 
       <div class="panel"><div class="lead"><h3>Mes rapports</h3><button class="btn" id="anAll" type="button">Tous les rapports</button></div>
         <div class="rplist" id="anReports"></div></div>
+    </section>
+
+    <!-- ===================== RESSOURCES HUMAINES ===================== -->
+    <section class="page" data-page="rh" hidden>
+      <div class="lead"><div><span class="eyebrow">Équipe</span><h2>Ressources <em class="g">humaines</em></h2>
+        <p>Le plan d'effectif du Département financier, les postes pourvus et à recruter, la masse salariale et les demandes de congé de l'équipe.</p></div></div>
+      <div class="tiles" id="rhTiles"></div>
+      <div class="panel"><div class="lead"><h3>Plan d'effectif du département</h3><span class="muted" style="font-size:.86rem">Postes pourvus d'après les fiches employés</span></div>
+        <div class="tablewrap"><table id="rhPlan"></table></div>
+        <p class="muted" style="font-size:.84rem;margin:0">Salaires bruts mensuels indicatifs ; coût employeur = brut × 1,2109 (charges patronales de 21,09 %), sans charges sur les indemnités de stage. Hypothèses à valider avec la direction.</p></div>
+      <div class="grid2">
+        <div class="panel"><h3>Demander un congé</h3>
+          <form id="cgForm" autocomplete="off" style="display:grid;gap:18px">
+            <div class="formgrid">
+              <label class="f" for="lvType">Type<select id="lvType"><option>Congé annuel</option><option>Congé maladie</option><option>Formation</option><option>Absence exceptionnelle</option></select></label>
+              <label class="f" for="lvFrom">Du<input type="date" id="lvFrom" required></label>
+              <label class="f" for="lvTo">Au<input type="date" id="lvTo" required></label>
+            </div>
+            <label class="f" for="lvWhy">Motif ou commentaire<input type="text" id="lvWhy" maxlength="200"></label>
+            <div class="toolbar"><button class="btn primary" type="submit" id="lvSend">Envoyer la demande</button><span class="muted" id="lvMsg" aria-live="polite"></span></div>
+            <p class="muted" style="font-size:.84rem;margin:0">Congé annuel : 1,5 jour ouvrable par mois de service, soit 18 jours par an (Code du travail, art. 231).</p>
+          </form>
+          <h3 style="margin-top:8px">Mes demandes</h3><div class="rplist" id="lvMine"></div></div>
+        <div class="panel"><h3 id="lvAllTitle">Demandes de l'équipe</h3><div class="rplist" id="lvAll"></div></div>
+      </div>
     </section>
 
     <!-- ===================== AU QUOTIDIEN ===================== -->
@@ -1135,6 +1164,68 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
       </div>
     </section>
 
+    <!-- ===================== CONTRÔLE DE GESTION ===================== -->
+    <section class="page" data-page="cdg" hidden>
+      <div class="lead"><div><span class="eyebrow">Pilotage &amp; contrôle</span><h2>Contrôle de <em class="g">gestion</em></h2>
+        <p>Le budget du mois comparé aux factures réellement saisies, le coût de revient d'un kit année par année et le seuil de rentabilité de l'usine.</p></div>
+        <div class="toolbar"><button class="btn steel" id="cgReport" type="button">Rapport budget / réalisé</button></div></div>
+
+      <div class="panel gilt">
+        <div class="lead"><h3>Budget et réalisé du mois</h3>
+          <div class="toolbar"><label class="f" for="cgMonth" style="min-width:180px">Mois<input type="month" id="cgMonth"></label></div></div>
+        <div class="tiles" id="cgTiles"></div>
+        <div class="tablewrap"><table id="cgBudget"></table></div>
+        <div class="toolbar"><button class="btn primary" id="cgSave" type="button">Enregistrer le budget du mois</button><span class="muted" id="cgMsg" aria-live="polite"></span></div>
+        <p class="muted" style="font-size:.84rem;margin:0">Le réalisé additionne les montants hors taxes des factures du journal pour ce mois. Un écart au-delà de ±5 % est signalé.</p>
+      </div>
+
+      <div class="panel"><div class="lead"><h3>Coût de revient d'un kit · montage B, cas central</h3><span class="muted" style="font-size:.86rem">En MAD par kit, d'après le modèle</span></div>
+        <div class="tablewrap"><table id="cgCost"></table></div></div>
+
+      <div class="grid2">
+        <div class="panel"><h3>Marge d'EBITDA et EBITDA par kit</h3><div class="chart short" id="cgChart"></div></div>
+        <div class="panel"><h3>Seuil de rentabilité</h3><div class="tiles" id="cgBe"></div>
+          <p class="muted" style="font-size:.86rem;margin:0" id="cgBeNote"></p></div>
+      </div>
+    </section>
+
+    <!-- ===================== CONTRÔLE INTERNE ===================== -->
+    <section class="page" data-page="ci" hidden>
+      <div class="lead"><div><span class="eyebrow">Pilotage &amp; contrôle</span><h2>Contrôle <em class="g">interne</em></h2>
+        <p>La matrice des risques et des contrôles du département, testée automatiquement sur les données de la plateforme, avec les anomalies relevées et le plan d'action.</p></div>
+        <div class="toolbar"><button class="btn steel" id="ciNew" type="button">Signaler une anomalie</button></div></div>
+      <div class="tiles" id="ciTiles"></div>
+      <div class="panel"><div class="lead"><h3>Matrice des risques et des contrôles</h3><button class="btn" id="ciRun" type="button">Relancer les tests</button></div>
+        <div class="tablewrap"><table id="ciMatrix"></table></div></div>
+      <div class="panel"><div class="lead"><h3>Constats et plan d'action</h3>
+        <label class="f" for="ciFilter" style="min-width:180px">Afficher<select id="ciFilter"><option value="open">Ouverts et en cours</option><option value="all">Tous</option></select></label></div>
+        <div class="rplist" id="ciList"></div></div>
+    </section>
+
+    <!-- ===================== AUDIT INTERNE ===================== -->
+    <section class="page" data-page="audit" hidden>
+      <div class="lead"><div><span class="eyebrow">Pilotage &amp; contrôle</span><h2>Audit <em class="g">interne</em></h2>
+        <p>L'auditeur consulte tout sans rien modifier : programme d'audit par cycle, échantillon de factures à tester, piste d'audit complète et constats avec recommandations.</p></div>
+        <div class="toolbar"><button class="btn" id="auNew" type="button">Nouveau constat</button><button class="btn steel" id="auReport" type="button">Rapport d'audit</button></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Programme d'audit</h3><div class="tasks" id="auProg"></div>
+          <p class="muted" id="auProgNote" style="font-size:.84rem;margin:0"></p></div>
+        <div class="panel"><h3>Échantillon de factures à tester</h3>
+          <div class="formgrid">
+            <label class="f" for="auN">Taille<input type="number" id="auN" value="5" min="1" max="30"></label>
+            <label class="f" for="auMeth">Méthode<select id="auMeth"><option value="alea">Tirage aléatoire</option><option value="mus">Pondéré par le montant</option><option value="risk">Pièces avec alertes d'abord</option></select></label>
+          </div>
+          <div class="toolbar"><button class="btn primary" id="auDraw" type="button">Tirer l'échantillon</button></div>
+          <div class="tablewrap"><table id="auSample"></table></div></div>
+      </div>
+      <div class="panel"><div class="lead"><h3>Constats d'audit</h3>
+        <label class="f" for="auFilter" style="min-width:180px">Afficher<select id="auFilter"><option value="open">Ouverts et en cours</option><option value="all">Tous</option></select></label></div>
+        <div class="rplist" id="auList"></div></div>
+      <div class="panel"><div class="lead"><h3>Piste d'audit complète</h3>
+        <label class="f" for="auSearch" style="min-width:220px">Rechercher<input type="text" id="auSearch" placeholder="utilisateur, action, pièce"></label></div>
+        <div class="tablewrap"><table id="auTrail"></table></div></div>
+    </section>
+
     <!-- ===================== COMPTABILITÉ ===================== -->
     <section class="page" data-page="compta" hidden>
       <div class="lead"><div><span class="eyebrow">Espace comptable</span><h2>Saisie des <em class="g">factures</em></h2>
@@ -1302,6 +1393,25 @@ Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Tr�
     </section>
   <footer>Projet réalisé par Fatima Zahrae Chakib et Inass Mouichou · cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
   </main>
+  </div>
+  <div class="overlay" id="csOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="csH" style="width:min(720px,100%)">
+      <div class="sheethd"><div style="display:grid;gap:4px"><span class="eyebrow" id="csEyebrow">Constat</span><h2 id="csH">Nouveau constat</h2></div><button class="btn" id="csClose" type="button">Fermer</button></div>
+      <form class="sheetbody" id="csForm" autocomplete="off" style="display:grid;gap:18px">
+        <label class="f" for="csTitre">Intitulé<input type="text" id="csTitre" maxlength="120" required placeholder="ex. Facture fournisseur sans ICE"></label>
+        <div class="formgrid">
+          <label class="f" for="csGrav">Gravité<select id="csGrav"><option value="majeure">Majeure</option><option value="significative" selected>Significative</option><option value="mineure">Mineure</option></select></label>
+          <label class="f" for="csProc">Cycle<select id="csProc"><option>Achats et fournisseurs</option><option>Ventes et clients</option><option>Immobilisations</option><option>Trésorerie et financement</option><option>Fiscalité</option><option>Paie</option><option>Systèmes et accès</option></select></label>
+          <label class="f" for="csResp">Responsable<select id="csResp"><option value="superviseur">Responsable comptable</option><option value="comptable">Comptables</option><option value="admin">Directrice financière</option><option value="analyste">Analystes</option><option value="controleur">Contrôle de gestion</option></select></label>
+          <label class="f" for="csEch">Échéance<input type="date" id="csEch"></label>
+          <label class="f" for="csRef">Pièce concernée<input type="text" id="csRef" maxlength="60" placeholder="ex. F-2026-0412"></label>
+          <label class="f" for="csStat">Statut<select id="csStat"><option value="ouvert">Ouvert</option><option value="encours">En cours</option><option value="clos">Clos</option></select></label>
+        </div>
+        <label class="f" for="csDesc">Constat<textarea id="csDesc" rows="3" maxlength="1500"></textarea></label>
+        <label class="f" for="csReco">Recommandation<textarea id="csReco" rows="3" maxlength="1500"></textarea></label>
+      </form>
+      <div class="sheetft"><span class="muted" id="csMsg" aria-live="polite" style="font-size:.88rem"></span><div class="toolbar"><button class="btn primary" id="csSave" type="button">Enregistrer</button></div></div>
+    </div>
   </div>
   <div class="overlay" id="rpOverlay" hidden>
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rpH">
@@ -1689,6 +1799,10 @@ const USERS = {
   comptable: { name: "Comptable", role: "comptable", hash: "" },
   stagiaire: { name: "Stagiaire", role: "stagiaire", hash: "" },
   inass: { name: "Inass Mouichou", role: "analyste", hash: "" },
+  controleur: { name: "Contrôleur de gestion", role: "controleur", hash: "" },
+  interne: { name: "Contrôle interne", role: "interne", hash: "" },
+  auditeur: { name: "Auditeur interne", role: "auditeur", hash: "" },
+  rh: { name: "Ressources humaines", role: "rh", hash: "" },
 };
 async function sha(s) {
   try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join(""); }
@@ -1696,7 +1810,8 @@ async function sha(s) {
 }
 let attempts = 0, lockedUntil = 0, user = null;
 (async () => { USERS.admin.hash = await sha("tg2|Tanger2026!"); USERS.jury.hash = await sha("tg2|Jury2026");
-  USERS.encadrant.hash = await sha("tg2|Encadrant2026"); USERS.comptable.hash = await sha("tg2|Compta2026"); USERS.stagiaire.hash = await sha("tg2|Stagiaire2026"); USERS.inass.hash = await sha("tg2|Analyste2026"); })();
+  USERS.encadrant.hash = await sha("tg2|Encadrant2026"); USERS.comptable.hash = await sha("tg2|Compta2026"); USERS.stagiaire.hash = await sha("tg2|Stagiaire2026"); USERS.inass.hash = await sha("tg2|Analyste2026");
+  USERS.controleur.hash = await sha("tg2|Gestion2026"); USERS.interne.hash = await sha("tg2|Interne2026"); USERS.auditeur.hash = await sha("tg2|Audit2026"); USERS.rh.hash = await sha("tg2|RH2026"); })();
 $("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (Date.now() < lockedUntil) { $("lerr").textContent = `Trop de tentatives. Réessayez dans ${Math.ceil((lockedUntil - Date.now()) / 1000)} s.`; return; }
@@ -1711,24 +1826,24 @@ $("loginForm").addEventListener("submit", async (e) => {
 });
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
-const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
-  ["compta", "Saisie des factures", false, "Comptabilité"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
+  ["compta", "Saisie des factures", false, "Comptabilité"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
 let current = "dash";
 function enterApp() {
   $("login").hidden = true; $("app").hidden = false; lastAct = Date.now(); logAudit("Connexion");
   $("whoName").textContent = user.name; $("whoRole").textContent = user.role;
   const tabs = $("tabs"); tabs.innerHTML = "";
   let grp = null;
-  PAGES.filter((p) => !p[2] || user.role === "admin" || user.role === "analyste").forEach(([id, label, , g]) => {
+  PAGES.filter((p) => !p[2] || ["admin", "analyste", "controleur"].includes(user.role)).forEach(([id, label, , g]) => {
     if (!grp || grp.dataset.g !== g) { grp = document.createElement("div"); grp.className = "navgrp"; grp.dataset.g = g; grp.innerHTML = `<div class="gl">${g}</div>`; tabs.appendChild(grp); }
     const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.page = id;
     b.addEventListener("click", () => { show(id); window.scrollTo({ top: 0 }); }); grp.appendChild(b);
   });
   const h = (location.hash || "").slice(1);
   startHome().then(() => { if (current === "home") refreshHome(); });
-  show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin" || user.role === "analyste")) ? h : "home");
+  show(PAGES.some((p) => p[0] === h && (!p[2] || ["admin", "analyste", "controleur"].includes(user.role))) ? h : "home");
   watchChat(); initReport();
 }
 const rendered = {};
@@ -1737,7 +1852,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -2539,12 +2654,13 @@ async function addPiece(piece) {
   piece.id = "p" + Date.now(); cpRows = [piece].concat(cpRows); return lsSave(cpRows);
 }
 async function deletePiece(id) {
-  const dp = cpRows.find((p) => p.id === id); if (!dp || sigsOf(dp).length) return;
+  const dp = cpRows.find((p) => p.id === id); if (!dp || sigsOf(dp).length || isAuditor()) return;
   logAudit("Pièce supprimée", `${dp.numero} · ${dp.tiers}`);
   if (cpDb) { try { await cpDb.doc("journal/" + id).delete(); } catch (e) {} return; }
   cpRows = cpRows.filter((p) => p.id !== id); lsSave(cpRows); renderCompta();
 }
 async function saveInvoice() {
+  if (isAuditor()) { $("cpSaveMsg").textContent = "L'auditeur consulte sans modifier : la saisie est réservée aux comptables."; return; }
   const { lines, ttc } = buildEntry();
   const piece = { type: $("cpSens").value, date: $("cpDate").value, tiers: $("cpTiers").value.trim(), ice: $("cpIce").value.trim(), numero: $("cpNum").value.trim(),
     nature: $("cpNature").value, ht: parseFloat($("cpHt").value) || 0, tva: parseFloat($("cpTva").value) || 0, ttc, reglement: $("cpRegl").value, lines };
@@ -3372,7 +3488,7 @@ async function renderChat() {
       const d = (m.at || "").slice(0, 10);
       if (d !== day) { day = d; prev = null; html += `<div class="day">${esc(new Date(m.at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }))}</div>`; }
       const cont = prev && prev.by === m.by && prev.who === m.who && new Date(m.at) - new Date(prev.at) < 5 * 60000 && !m.urgent;
-      const role = ["admin", "superviseur", "comptable", "stagiaire", "lecteur", "analyste"].includes(m.role) ? m.role : "";
+      const role = ["admin", "superviseur", "comptable", "stagiaire", "lecteur", "analyste", "controleur", "interne", "auditeur", "rh"].includes(m.role) ? m.role : "";
       const mine = isMine(m), canPin = mine || canSupervise();
       html += `<div class="msg${cont ? " cont" : ""}${m.urgent ? " urgent" : ""}"><div class="av ${role}" aria-hidden="true">${esc(initials(nameOf(m)))}</div><div style="min-width:0">
         ${cont ? "" : `<div class="mhd"><b>${esc(nameOf(m))}</b>${m.by && chNames[m.by] && m.who ? `<span class="role">${esc(m.who)}</span>` : ""}<span class="muted">${esc(new Date(m.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }))}</span>${m.urgent ? '<span class="pill ko">Urgent</span>' : ""}${m.pinned ? '<span class="pill warn">Épinglé</span>' : ""}</div>`}
@@ -3412,8 +3528,9 @@ async function delMsg(id) {
 // ---------- Rapports ----------
 const RP_TYPES = [["tache", "Compte rendu de tâche"], ["synthese", "Synthèse du montage financier"], ["stress", "Tests de résistance"], ["levier", "Effet de levier"],
   ["journal", "Journal comptable"], ["validation", "Contrôle et signature des factures"], ["fiscalite", "Fiscalité : IS, cotisation minimale, IR"],
-  ["audit", "Audit de fiabilité (agent IA)"], ["stage", "Suivi des stagiaires"], ["canal", "Échanges d'un canal de la messagerie"]];
-const RP_PAGE = { dash: "synthese", projet: "synthese", montage: "synthese", legal: "synthese", oeuvre: "synthese", sim: "synthese", form: "synthese", live: "synthese", stress: "stress", mc: "stress", opt: "stress", levier: "levier", agent: "audit", stage: "stage", chat: "canal" };
+  ["audit", "Audit de fiabilité (agent IA)"], ["stage", "Suivi des stagiaires"], ["canal", "Échanges d'un canal de la messagerie"],
+  ["cdg", "Contrôle de gestion : budget et réalisé"], ["constats", "Contrôle interne et audit : constats"], ["rh", "Effectif et congés"]];
+const RP_PAGE = { dash: "synthese", projet: "synthese", montage: "synthese", legal: "synthese", oeuvre: "synthese", sim: "synthese", form: "synthese", live: "synthese", stress: "stress", mc: "stress", opt: "stress", levier: "levier", agent: "audit", stage: "stage", chat: "canal", analyste: "synthese", cdg: "cdg", ci: "constats", audit: "constats", rh: "rh" };
 const RP_CP = { saisie: "journal", journal: "journal", amort: "journal", pcm: "journal", fisc: "fiscalite", valid: "validation" };
 const rpLabel = (t) => (RP_TYPES.find((x) => x[0] === t) || RP_TYPES[0])[1];
 let rpInit = false, rpCur = null, rpData = [], rpView = null, rpCtl = null, rpRows = [], rpWatch = false, rpTimer = null;
@@ -3477,6 +3594,21 @@ async function rpBuild(type) {
   if (type === "canal") {
     await watchChat(); const [, cn] = chOf(chCur), rows = chRows.filter((m) => m.ch === chCur).sort((a, b) => (a.at || "").localeCompare(b.at || "")).slice(-40);
     return [{ h: `Canal # ${cn} : ${rows.length} dernier(s) message(s)`, blocks: [rows.length ? TB(["Date", "Auteur", "Message"], rows.map((m) => [dfr(m.at), (m.by && chNames[m.by]) || m.who || "", (m.urgent ? "[Urgent] " : "") + m.text])) : P("Aucun message.")] }];
+  }
+  if (type === "cdg") {
+    await connectStore(); await watchBudget(); if (!$("cgMonth").value) $("cgMonth").value = todayISO().slice(0, 7);
+    const rows = budRows(), m = $("cgMonth").value;
+    return [{ h: "Budget et réalisé de " + MOIS(m), blocks: [TB(["Compte", "Budget (MAD)", "Réalisé HT (MAD)", "Écart (MAD)", "Écart"], rows.map((r) => [`${r.c} · ${r.l}`, mad(r.bud), mad(r.real), (r.ec >= 0 ? "+" : "") + mad(r.ec), r.pc == null ? "—" : (r.pc >= 0 ? "+" : "") + fmt(r.pc * 100, 1) + " %"])), P(`${rows.filter((r) => r.bad).length} ligne(s) en écart au-delà de ±5 %.`)] }];
+  }
+  if (type === "constats") {
+    await watchConstats(); if (!ciLast) ciLast = await ciTests();
+    return [{ h: "Résultat des tests de contrôle interne", blocks: [TB(["Contrôle", "Résultat", "Preuve"], ciLast.map(([, c, , , t]) => [c, CI_RES[t.res][1], t.preuve]))] },
+      { h: "Constats ouverts et en cours", blocks: [constats.filter((c) => c.statut !== "clos").length ? TB(["Constat", "Gravité", "Cycle", "Responsable", "Échéance", "Recommandation"], constats.filter((c) => c.statut !== "clos").map((c) => [str(c.titre), (GRAV[c.gravite] || GRAV.significative)[1], str(c.cycle), RESP[c.resp] || "", c.echeance ? dday(c.echeance) : "", str(c.reco)])) : P("Aucun constat ouvert.")] }];
+  }
+  if (type === "rh") {
+    await startHome(); await watchLeaves(); const ids = Object.keys(people);
+    return [{ h: "Plan d'effectif", blocks: [TB(["Poste", "Prévus", "Pourvus", "Arrivée", "Brut mensuel (MAD)"], RH_PLAN.map(([p, r, n, a, b]) => [p, String(n), String(ids.filter((i) => r.includes((people[i] || {}).role)).length), String(a), mad(b)]))] },
+      { h: "Demandes de congé", blocks: [leaves.length ? TB(["Employé", "Type", "Du", "Au", "Jours ouvrés", "Statut"], leaves.slice(0, 40).map((l) => [str(l.who), str(l.type), dday(l.from), dday(l.to), String(workDays(l.from, l.to)), { attente: "En attente", accepte: "Acceptée", refuse: "Refusée" }[l.statut] || ""])) : P("Aucune demande.")] }];
   }
   return [];
 }
@@ -3632,8 +3764,8 @@ async function renderReports() {
 }
 
 // ---------- Accueil personnel, fiche employé, présence de l'équipe ----------
-const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur", analyste: "Analyste financière" };
-const DEFAULT_FICHE = { admin: { nom: "Fatima Zahrae Chakib", poste: "Directrice financière" }, analyste: { nom: "Inass Mouichou", poste: "Analyste financière" } };
+const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur", analyste: "Analyste financière", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "Ressources humaines" };
+const DEFAULT_FICHE = { admin: { nom: "Fatima Zahrae Chakib", poste: "Directrice financière" }, analyste: { nom: "Inass Mouichou", poste: "Analyste financière" }, controleur: { poste: "Contrôleur de gestion" }, interne: { poste: "Responsable du contrôle interne" }, auditeur: { poste: "Auditeur interne" }, rh: { poste: "Chargée des ressources humaines" } };
 let hmInit = false, hmWatch = false, myKey = null, loginAt = null, people = {}, myFiche = null, roomNs = null, online = new Map(), events = [], hmDay = "today", hmPhotoData = undefined, profCache = {};
 const keyFor = (uid) => uid || "local-" + (user ? user.role : "");
 const todayISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -3666,7 +3798,7 @@ async function startHome1() {
   if (roomNs) roomNs.presence({ since: loginAt.toISOString(), off: null }).catch(() => {});
   // fiche minimale à la connexion pour apparaître dans l'équipe ; mise à jour de la dernière connexion
   const patch = { role: user.role, lastLogin: loginAt.toISOString() };
-  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: (DEFAULT_FICHE[user.role] || {}).nom || nm || "", poste: (DEFAULT_FICHE[user.role] || {}).poste || "", service: user.role === "stagiaire" ? "Stage" : user.role === "comptable" ? "Comptabilité" : "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
+  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: (DEFAULT_FICHE[user.role] || {}).nom || nm || "", poste: (DEFAULT_FICHE[user.role] || {}).poste || "", service: { stagiaire: "Stage", comptable: "Comptabilité", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "Ressources humaines" }[user.role] || "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
   else myFiche = Object.assign({}, myFiche, patch);
   await saveFiche(myFiche, true);
   updateWho();
@@ -3745,7 +3877,7 @@ function tick() {
 const forMe = (e) => e && (e.pour === "all" || e.pour === (user && user.role) || (e.pour === "me" && (e.by === (meUid || "local-" + user.role))));
 function evStatus(e, now) { const s = new Date(e.date + "T" + e.debut), en = new Date(e.date + "T" + e.fin); return now > en ? "past" : now >= s ? "now" : "next"; }
 const EV_TYPE = { reunion: "Réunion", tache: "Tâche", echeance: "Échéance", formation: "Formation" };
-const POUR = { all: "Toute l'équipe", comptable: "Comptables", superviseur: "Encadrants", stagiaire: "Stagiaires", admin: "Direction", analyste: "Analystes", me: "Moi seulement" };
+const POUR = { all: "Toute l'équipe", comptable: "Comptables", superviseur: "Encadrants", stagiaire: "Stagiaires", admin: "Direction", analyste: "Analystes", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "RH", me: "Moi seulement" };
 function renderAgenda() {
   if (!$("hmAgenda")) return;
   const now = new Date(), t0 = todayISO(now), t1 = todayISO(new Date(now.getTime() + 864e5)), t7 = todayISO(new Date(now.getTime() + 7 * 864e5));
@@ -3922,6 +4054,257 @@ async function renderAnReports() {
   $("anReports").innerHTML = mine.length ? mine.slice(0, 6).map((r) => `<div class="rpitem"><div style="display:grid;gap:4px;min-width:0"><span class="t">${esc(str(r.title))}</span><span class="meta"><span>${esc(rpLabel(r.type))}</span><span>${esc(dfr(r.at))}</span></span></div><button class="btn" type="button" data-arp="${esc(r.id)}">Ouvrir</button></div>`).join("")
     : `<div class="empty" style="padding:24px 8px"><b>Aucun rapport pour l'instant</b><span>Cliquez sur « Préparer la note d'analyse » : les chiffres du modèle sont repris automatiquement.</span></div>`;
   $("anReports").querySelectorAll("[data-arp]").forEach((b) => b.addEventListener("click", () => openReport(null, rpRows.find((x) => x.id === b.dataset.arp))));
+}
+
+// ---------- Pilotage & contrôle : contrôle de gestion, contrôle interne, audit interne ----------
+const isAuditor = () => !!user && user.role === "auditeur";
+const canBudget = () => !!user && ["admin", "analyste", "controleur"].includes(user.role);
+const BUD_NAT = NATURES.achat.filter(([c]) => !isImmo(c)).concat(NATURES.vente);
+let cgInit = false, budgets = {}, budWatch = false;
+async function watchBudget() {
+  if (budWatch) return; budWatch = true; const st = await getStore();
+  if (st.db) st.db.collection("budget").limit(120).onSnapshot((s) => { budgets = {}; s.docs.forEach((d) => { budgets[d.id] = d.data(); }); if (current === "cdg") renderBudget(); }, () => {});
+  else budgets = lsGet("t2budget", {});
+}
+async function initCdg() {
+  if (!cgInit) {
+    cgInit = true; $("cgMonth").value = todayISO().slice(0, 7);
+    $("cgMonth").addEventListener("input", renderBudget);
+    $("cgSave").addEventListener("click", saveBudget);
+    $("cgReport").addEventListener("click", () => openReport("cdg"));
+  }
+  await connectStore(); await watchBudget(); renderBudget(); renderCost();
+}
+function budRows() {
+  const m = $("cgMonth").value, b = (budgets[m] && budgets[m].lines) || {};
+  return BUD_NAT.map(([c, l]) => { const real = cpRows.filter((p) => (p.date || "").startsWith(m) && p.nature === c).reduce((s, p) => s + (+p.ht || 0), 0), bud = +b[c] || 0, ec = real - bud, vente = c.startsWith("7");
+    return { c, l, bud, real, ec, pc: bud ? ec / bud : null, bad: bud ? (vente ? ec / bud < -0.05 : ec / bud > 0.05) : real > 0, vente }; });
+}
+function renderBudget() {
+  const rows = budRows(), ch = rows.filter((r) => !r.vente), ve = rows.filter((r) => r.vente), sum = (a, k) => a.reduce((s, r) => s + r[k], 0);
+  const ed = canBudget();
+  $("cgTiles").innerHTML = tile("Charges budgétées (MAD)", mad(sum(ch, "bud"))) + tile("Charges réalisées (MAD)", mad(sum(ch, "real")), "", sum(ch, "real") > sum(ch, "bud") * 1.05 && sum(ch, "bud") ? "ko" : "")
+    + tile("Ventes budgétées (MAD)", mad(sum(ve, "bud"))) + tile("Ventes réalisées (MAD)", mad(sum(ve, "real")), "", sum(ve, "bud") && sum(ve, "real") < sum(ve, "bud") * 0.95 ? "ko" : "") + tile("Lignes en écart", rows.filter((r) => r.bad).length, "au-delà de ±5 %");
+  $("cgBudget").innerHTML = `<thead><tr><th class="wrap">Compte</th><th>Budget (MAD)</th><th>Réalisé HT (MAD)</th><th>Écart (MAD)</th><th>Écart</th></tr></thead><tbody>`
+    + rows.map((r) => `<tr${r.bad ? ' class="hl"' : ""}><td class="wrap"><span class="num">${r.c}</span> · ${esc(r.l)}</td>
+      <td class="n">${ed ? `<input type="number" step="100" min="0" id="cgB_${r.c}" value="${r.bud || ""}" aria-label="Budget ${esc(r.l)}">` : mad(r.bud)}</td><td class="n">${mad(r.real)}</td>
+      <td class="n"><span class="ecart ${r.bad ? "ko" : "ok"}">${r.ec >= 0 ? "+" : ""}${mad(r.ec)}</span></td><td class="n">${r.pc == null ? "—" : `<span class="ecart ${r.bad ? "ko" : "ok"}">${r.pc >= 0 ? "+" : ""}${fmt(r.pc * 100, 1)} %</span>`}</td></tr>`).join("") + "</tbody>";
+  $("cgSave").hidden = !ed; if (!ed) $("cgMsg").textContent = "Lecture seule : seuls la direction, les analystes et le contrôle de gestion modifient le budget.";
+}
+async function saveBudget() {
+  if (!canBudget()) return; const m = $("cgMonth").value; if (!m) return;
+  const lines = {}; BUD_NAT.forEach(([c]) => { const v = parseFloat(($("cgB_" + c) || {}).value); if (v > 0) lines[c] = Math.round(v * 100) / 100; });
+  const st = await getStore(), doc = { month: m, lines, by: st.uid || null, who: user.name, at: new Date().toISOString() };
+  $("cgSave").disabled = true;
+  if (st.db) { try { await st.db.doc("budget/" + m).set(doc); $("cgMsg").textContent = "Budget enregistré."; } catch (e) { $("cgMsg").textContent = "Enregistrement refusé : droits insuffisants sur cette page."; } }
+  else { budgets[m] = doc; lsSet("t2budget", budgets); $("cgMsg").textContent = "Budget enregistré dans ce navigateur."; renderBudget(); }
+  $("cgSave").disabled = false; logAudit("Budget mensuel enregistré", m);
+}
+function renderCost() {
+  const r = run(S.B, CASES["1. Central"]), t = r.table, k = r.kpi, yrs = t.year.map((y, i) => i).filter((i) => t.vol[i] > 0 && t.year[i] >= 2029);
+  const per = (key, i) => (t[key][i] * 1e6) / t.vol[i];
+  const row = (l, f, bold) => `<tr${bold ? ' class="hl"' : ""}><td class="wrap">${bold ? `<b>${l}</b>` : l}</td>${yrs.map((i) => `<td class="n">${bold ? "<b>" : ""}${f(i)}${bold ? "</b>" : ""}</td>`).join("")}</tr>`;
+  $("cgCost").innerHTML = `<thead><tr><th class="wrap">Par kit (MAD)</th>${yrs.map((i) => `<th>${t.year[i]}</th>`).join("")}</tr></thead><tbody>`
+    + row("Volume (kits)", (i) => fmt(t.vol[i], 0)) + row("Prix de vente moyen", (i) => fmt(per("ca", i), 0)) + row("Coût variable", (i) => fmt(per("varc", i), 0))
+    + row("Coûts fixes répartis", (i) => fmt(per("fixed", i), 0)) + row("Coût de revient (hors amortissements)", (i) => fmt(per("varc", i) + per("fixed", i), 0), true)
+    + row("EBITDA par kit", (i) => fmt(per("ebitda", i), 0)) + row("Marge d'EBITDA", (i) => pct(t.margin[i], 1)) + "</tbody>";
+  plot("cgChart", [{ type: "bar", x: yrs.map((i) => t.year[i]), y: yrs.map((i) => per("ebitda", i)), name: "EBITDA par kit (MAD)", marker: { color: COLS().B } },
+    { type: "scatter", x: yrs.map((i) => t.year[i]), y: yrs.map((i) => t.margin[i] * 100), name: "Marge d'EBITDA (%)", yaxis: "y2", line: { color: COLS().A, width: 3 } }],
+    { yaxis2: { overlaying: "y", side: "right", ticksuffix: " %", showgrid: false }, legend: { orientation: "h", y: -0.2 } });
+  const i32 = t.year.indexOf(2032), ms = 1 - k.breakeven / t.ca[i32];
+  $("cgBe").innerHTML = tile("CA du point mort (MDH)", fmt(k.breakeven, 0)) + tile("CA 2032 (MDH)", fmt(t.ca[i32], 0)) + tile("Marge de sécurité", pct(ms, 0), "baisse de CA supportable", ms < 0.15 ? "ko" : "")
+    + tile("Volume du point mort", fmt(k.breakeven * 1e6 / per("ca", i32), 0) + " kits", "sur 500 000 de capacité");
+  $("cgBeNote").textContent = "Le point mort est le chiffre d'affaires qui couvre toutes les charges, service de la dette compris. La marge de sécurité dit de combien le chiffre d'affaires peut baisser avant ce seuil.";
+}
+
+// ---- constats partagés (contrôle interne et audit) ----
+let constats = [], csWatch = false, csEdit = null, ciLast = null;
+async function watchConstats() {
+  if (csWatch) return; csWatch = true; const st = await getStore();
+  if (st.db) st.db.collection("constats").orderBy("at", "desc").limit(300).onSnapshot((s) => { constats = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (current === "ci") renderCi(); if (current === "audit") renderAuList(); }, () => {});
+  else constats = lsGet("t2constats", []);
+  $("csClose").addEventListener("click", closeConstat);
+  $("csOverlay").addEventListener("click", (e) => { if (e.target === $("csOverlay")) closeConstat(); });
+  $("csSave").addEventListener("click", saveConstat);
+}
+const GRAV = { majeure: ["maj", "Majeure"], significative: ["sig", "Significative"], mineure: ["min", "Mineure"] };
+const CSTAT = { ouvert: ["ko", "Ouvert"], encours: ["warn", "En cours"], clos: ["ok", "Clos"] };
+const RESP = { superviseur: "Responsable comptable", comptable: "Comptables", admin: "Directrice financière", analyste: "Analystes", controleur: "Contrôle de gestion" };
+function openConstat(c, pre) {
+  csEdit = c || null; const v = Object.assign({ titre: "", gravite: "significative", cycle: "Achats et fournisseurs", resp: "superviseur", echeance: "", ref: "", statut: "ouvert", desc: "", reco: "" }, pre || {}, c || {});
+  $("csH").textContent = c ? "Modifier le constat" : "Nouveau constat"; $("csEyebrow").textContent = user.role === "auditeur" ? "Audit interne" : "Contrôle interne";
+  $("csTitre").value = v.titre; $("csGrav").value = v.gravite; $("csProc").value = v.cycle; $("csResp").value = v.resp; $("csEch").value = v.echeance; $("csRef").value = v.ref; $("csStat").value = v.statut; $("csDesc").value = v.desc; $("csReco").value = v.reco;
+  $("csMsg").textContent = ""; $("csOverlay").hidden = false; document.body.style.overflow = "hidden"; setTimeout(() => $("csTitre").focus(), 30);
+}
+function closeConstat() { $("csOverlay").hidden = true; document.body.style.overflow = ""; csEdit = null; }
+async function saveConstat() {
+  const titre = $("csTitre").value.trim(); if (!titre) { $("csMsg").textContent = "Donnez un intitulé au constat."; return; }
+  const st = await getStore();
+  const d = { titre: titre.slice(0, 120), gravite: $("csGrav").value, cycle: $("csProc").value, resp: $("csResp").value, echeance: $("csEch").value, ref: $("csRef").value.trim().slice(0, 60), statut: $("csStat").value, desc: $("csDesc").value.trim().slice(0, 1500), reco: $("csReco").value.trim().slice(0, 1500) };
+  $("csSave").disabled = true;
+  try {
+    if (csEdit) { if (st.db) await st.db.doc("constats/" + csEdit.id).update(Object.assign({}, d, { maj: new Date().toISOString() })); else { Object.assign(constats.find((x) => x.id === csEdit.id) || {}, d); lsSet("t2constats", constats); } }
+    else { const doc = Object.assign(d, { at: new Date().toISOString(), by: st.uid || null, who: user.name, source: user.role === "auditeur" ? "audit" : "ci" }); if (st.db) await st.db.collection("constats").add(doc); else { doc.id = "c" + Date.now(); constats = [doc].concat(constats); lsSet("t2constats", constats); } }
+    logAudit((csEdit ? "Constat modifié : " : "Constat créé : ") + d.titre, d.ref); closeConstat(); if (!st.db) { if (current === "ci") renderCi(); if (current === "audit") renderAuList(); }
+  } catch (e) { $("csMsg").textContent = "Enregistrement refusé : droits insuffisants sur cette page."; }
+  $("csSave").disabled = false;
+}
+function constatList(el, filter, source) {
+  const today = todayISO(), rows = constats.filter((c) => c && (!source || c.source === source) && (filter === "all" || c.statut !== "clos"));
+  if (!rows.length) { $(el).innerHTML = `<div class="empty"><b>Aucun constat ${filter === "all" ? "" : "ouvert"}</b><span>${source === "audit" ? "Les constats de l'auditeur apparaîtront ici avec leur recommandation." : "Utilisez « Signaler une anomalie » ou le bouton Anomalie d'un échantillon d'audit."}</span></div>`; return; }
+  const editable = (c) => (meUid ? c.by === meUid : c.who === user.name) || ["admin", "interne", "auditeur"].includes(user.role);
+  $(el).innerHTML = rows.map((c) => { const late = c.echeance && c.echeance < today && c.statut !== "clos", g = GRAV[c.gravite] || GRAV.significative, s = CSTAT[c.statut] || CSTAT.ouvert;
+    return `<div class="rpitem" style="align-items:start"><div style="display:grid;gap:8px;min-width:0"><span class="t">${esc(str(c.titre))}</span>
+      <span class="meta"><span class="sev ${g[0]}">${g[1]}</span><span class="pill ${s[0]}">${s[1]}</span><span>${esc(str(c.cycle))}</span><span>Responsable : ${esc(RESP[c.resp] || "")}</span>${c.echeance ? `<span class="${late ? "ecart ko" : ""}">Échéance ${esc(dday(c.echeance))}${late ? " · en retard" : ""}</span>` : ""}${c.ref ? `<span>Pièce ${esc(str(c.ref))}</span>` : ""}<span>${c.source === "audit" ? "Audit interne" : "Contrôle interne"}</span></span>
+      ${c.desc ? `<span class="desc"><b>Constat.</b> ${esc(str(c.desc))}</span>` : ""}${c.reco ? `<span class="desc"><b>Recommandation.</b> ${esc(str(c.reco))}</span>` : ""}</div>
+      ${editable(c) ? `<button class="btn" type="button" data-cs="${esc(c.id)}">Modifier</button>` : "<span></span>"}</div>`; }).join("");
+  $(el).querySelectorAll("[data-cs]").forEach((b) => b.addEventListener("click", () => openConstat(constats.find((x) => x.id === b.dataset.cs))));
+}
+
+// ---- contrôle interne : matrice testée automatiquement ----
+let ciInit = false;
+async function ciTests() {
+  await connectStore(); await computeStates(); await watchAudit();
+  const P = cpRows, norm2 = (p) => p.numero + " · " + p.tiers;
+  const selfSigned = P.filter((p) => sigsOf(p).some((s) => (p.by && s.who === p.by) || (!p.by && p.saisiPar && s.who === "local:" + p.saisiPar)));
+  const big = P.filter((p) => (+p.ttc || 0) >= SEUIL2 && STATES[p.id] === "validee" && new Set(sigsOf(p).map((s) => s.who)).size < 2);
+  const alt = P.filter((p) => STATES[p.id] === "alteree");
+  const dup = P.filter((p) => fraudChecks(p, P).some((f) => f.msg.startsWith("Doublon")));
+  const ice = P.filter((p) => p.type === "achat" && !/^\d{15}$/.test(String(p.ice || "").replace(/\s/g, "")));
+  const late = P.filter((p) => fraudChecks(p, P).some((f) => f.ref.startsWith("Loi 69-21")));
+  const pend = P.filter((p) => ["attente", "partielle"].includes(STATES[p.id] || "attente") && (Date.now() - new Date(p.createdAt || p.date)) / 864e5 > 7);
+  const kB = run(S.B, CASES["1. Central"]).kpi, kS = run(S.B, CASES["6. Stress combiné"]).kpi;
+  const a = await runAudit();
+  const R = (n, txt, warnOnly) => (n ? { res: warnOnly ? "warn" : "ko", preuve: `${n} ${txt}` } : { res: "ok", preuve: `Aucune exception sur ${P.length} pièce(s)` });
+  return [
+    ["Fraude par une même personne qui saisit et valide", "Séparation des tâches : le saisisseur ne peut pas signer", "Chaque facture", "Responsable comptable", R(selfSigned.length, "pièce(s) signée(s) par leur auteur")],
+    ["Paiement important sans second regard", "Double signature au-delà de 500 000 MAD TTC", "Chaque facture", "Directrice financière", R(big.length, "grosse(s) pièce(s) validée(s) avec une seule signature")],
+    ["Facture modifiée après validation", "Empreinte SHA-256 figée à la signature", "En continu", "Contrôle interne", R(alt.length, "pièce(s) modifiée(s) après signature")],
+    ["Double paiement d'une facture", "Détection des doublons à la saisie", "Chaque saisie", "Comptables", R(dup.length, "doublon(s) au journal")],
+    ["Fournisseur fictif", "ICE à 15 chiffres et vérification du fournisseur", "Chaque saisie", "Comptables", R(ice.length, "facture(s) d'achat sans ICE valide", true)],
+    ["Pénalités de retard de paiement", "Suivi des délais de 60 jours (loi 69-21)", "Chaque semaine", "Trésorier", R(late.length, "facture(s) à crédit de plus de 60 jours", true)],
+    ["Charges non validées en fin de mois", "Validation des pièces sous 7 jours", "Chaque semaine", "Responsable comptable", R(pend.length, "pièce(s) en attente depuis plus de 7 jours", true)],
+    ["Opérations sans trace", "Piste d'audit de chaque action", "En continu", "Contrôle interne", auditRows.length ? { res: "ok", preuve: `${auditRows.length} action(s) tracée(s)` } : { res: "warn", preuve: "Aucune action tracée pour l'instant" }],
+    ["Accès non autorisé", "Blocage après 5 échecs, déconnexion après 15 min d'inactivité", "En continu", "Directrice financière", { res: "ok", preuve: "Contrôle actif dans l'application" }],
+    ["Bris de covenant bancaire", "Suivi mensuel du DSCR et du levier", "Chaque mois", "Analystes", kB.dscrMin < 1.2 ? { res: "ko", preuve: `DSCR minimum ${xx(kB.dscrMin)}` } : kS.dscrMin < 1.2 ? { res: "warn", preuve: `Respecté au cas central (${xx(kB.dscrMin)}), rompu en stress combiné (${xx(kS.dscrMin)})` } : { res: "ok", preuve: `DSCR minimum ${xx(kB.dscrMin)}` }],
+    ["Erreur fiscale ou légale", "Audit de conformité par l'agent IA", "Chaque mois", "Contrôle interne", a.score["Conformité"] >= 80 ? { res: "ok", preuve: `Conformité ${a.score["Conformité"]} / 100` } : { res: "warn", preuve: `Conformité ${a.score["Conformité"]} / 100` }],
+  ];
+}
+const CI_RES = { ok: ["ok", "Efficace"], warn: ["warn", "À améliorer"], ko: ["ko", "Défaillant"] };
+async function initCi() {
+  if (!ciInit) { ciInit = true; $("ciNew").addEventListener("click", () => openConstat()); $("ciRun").addEventListener("click", async () => { ciLast = null; await renderCi(); logAudit("Tests du contrôle interne relancés"); }); $("ciFilter").addEventListener("change", renderCi); }
+  await watchConstats(); await renderCi();
+}
+async function renderCi() {
+  if (!ciLast) ciLast = await ciTests();
+  const n = (r) => ciLast.filter((x) => x[4].res === r).length, open = constats.filter((c) => c.statut !== "clos").length;
+  $("ciTiles").innerHTML = tile("Contrôles efficaces", `${n("ok")} / ${ciLast.length}`) + tile("À améliorer", n("warn"), "", n("warn") ? "" : "") + tile("Défaillants", n("ko"), "", n("ko") ? "ko" : "") + tile("Constats ouverts", open, "contrôle interne et audit", open ? "" : "");
+  $("ciMatrix").innerHTML = `<thead><tr><th class="wrap">Risque</th><th class="wrap">Contrôle</th><th>Fréquence</th><th>Propriétaire</th><th>Résultat du test</th><th class="wrap">Preuve</th></tr></thead><tbody>`
+    + ciLast.map(([r, c, f, o, t]) => `<tr><td class="wrap">${esc(r)}</td><td class="wrap">${esc(c)}</td><td>${esc(f)}</td><td>${esc(o)}</td><td><span class="pill ${CI_RES[t.res][0]}">${CI_RES[t.res][1]}</span></td><td class="wrap muted">${esc(t.preuve)}</td></tr>`).join("") + "</tbody>";
+  constatList("ciList", $("ciFilter").value);
+}
+
+// ---- audit interne ----
+const AU_CYCLES = ["Achats et fournisseurs", "Ventes et clients", "Immobilisations et amortissements", "Trésorerie, emprunts et covenants", "Fiscalité : TVA, IS, cotisation minimale", "Paie et charges sociales", "Systèmes, accès et piste d'audit"];
+let auInit = false, auSampleRows = [], auChecked = {};
+async function initAudit() {
+  if (!auInit) {
+    auInit = true;
+    $("auNew").addEventListener("click", () => openConstat()); $("auReport").addEventListener("click", () => openReport("constats"));
+    $("auDraw").addEventListener("click", drawSample); $("auFilter").addEventListener("change", renderAuList); $("auSearch").addEventListener("input", renderAuTrail);
+  }
+  await watchConstats(); await connectStore(); await computeStates(); await watchAudit();
+  renderAuProg(); renderAuList(); renderAuTrail(); renderSample();
+}
+function renderAuProg() {
+  const done = lsGet("t2auprog", []);
+  $("auProg").innerHTML = AU_CYCLES.map((c, i) => `<label class="task${done[i] ? " done" : ""}"><input type="checkbox" data-ap="${i}"${done[i] ? " checked" : ""}><span class="t" style="font-weight:500">${esc(c)}</span></label>`).join("");
+  $("auProg").querySelectorAll("[data-ap]").forEach((cb) => cb.addEventListener("change", () => { const d = lsGet("t2auprog", []); d[+cb.dataset.ap] = cb.checked; lsSet("t2auprog", d); renderAuProg(); }));
+  $("auProgNote").textContent = `${done.filter(Boolean).length} cycle(s) revu(s) sur ${AU_CYCLES.length}. Mémorisé sur cet appareil.`;
+}
+function renderAuList() { constatList("auList", $("auFilter").value, "audit"); }
+function renderAuTrail() {
+  const q = norm($("auSearch").value), rows = auditRows.filter((a) => !q || norm(`${a.name} ${a.role} ${a.action} ${a.ref}`).includes(q)).slice(0, 300);
+  $("auTrail").innerHTML = rows.length ? `<thead><tr><th>Date</th><th>Utilisateur</th><th class="wrap">Action</th><th class="wrap">Objet</th></tr></thead><tbody>` + rows.map((a) => `<tr><td class="n">${esc(dfr(a.at))}</td><td>${esc(a.name || "")}<div class="muted" style="font-size:.76rem">${esc(a.role || "")}</div></td><td class="wrap">${esc(a.action || "")}</td><td class="wrap">${esc(a.ref || "")}</td></tr>`).join("") + "</tbody>"
+    : '<tbody><tr><td class="muted">Aucune action ne correspond.</td></tr></tbody>';
+}
+function drawSample() {
+  const n = Math.max(1, Math.min(30, parseInt($("auN").value) || 5)), m = $("auMeth").value, pool = cpRows.slice();
+  let pick = [];
+  if (m === "alea") { for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; } pick = pool.slice(0, n); }
+  else if (m === "mus") { while (pick.length < n && pool.length) { const tot = pool.reduce((s, p) => s + Math.max(+p.ttc || 0, 1), 0); let r = Math.random() * tot, k = 0; while (k < pool.length - 1 && (r -= Math.max(+pool[k].ttc || 0, 1)) > 0) k++; pick.push(pool.splice(k, 1)[0]); } }
+  else pick = pool.map((p) => ({ p, r: riskOf(fraudChecks(p, cpRows)) + Math.random() })).sort((a, b) => b.r - a.r).slice(0, n).map((x) => x.p);
+  auSampleRows = pick.map((p) => p.id); auChecked = {};
+  logAudit(`Échantillon d'audit tiré (${pick.length} pièce(s), ${$("auMeth").selectedOptions[0].textContent.toLowerCase()})`); renderSample();
+}
+function renderSample() {
+  const rows = auSampleRows.map((id) => cpRows.find((p) => p.id === id)).filter(Boolean);
+  if (!rows.length) { $("auSample").innerHTML = `<tbody><tr><td class="muted">${cpRows.length ? "Choisissez la taille et la méthode, puis tirez l'échantillon." : "Le journal est vide : aucune facture à échantillonner."}</td></tr></tbody>`; return; }
+  $("auSample").innerHTML = `<thead><tr><th class="wrap">Pièce</th><th>TTC (MAD)</th><th>Statut</th><th>Alertes</th><th>Test</th></tr></thead><tbody>`
+    + rows.map((p) => { const F = fraudChecks(p, cpRows), c = auChecked[p.id];
+      return `<tr><td class="wrap"><b>${esc(p.numero || "")}</b> · ${esc(p.tiers || "")}<div class="muted" style="font-size:.78rem">${esc(dday(p.date))}</div></td><td class="n">${mad(+p.ttc || 0)}</td><td>${stPill(STATES[p.id] || "attente")}</td><td>${riskPill(riskOf(F))}</td>
+        <td>${c ? `<span class="pill ${c === "ok" ? "ok" : "ko"}">${c === "ok" ? "Conforme" : "Anomalie"}</span>` : `<div class="toolbar" style="flex-wrap:nowrap"><button class="btn" type="button" data-ok="${esc(p.id)}" style="padding:5px 10px;font-size:.8rem">Conforme</button><button class="btn" type="button" data-ko="${esc(p.id)}" style="padding:5px 10px;font-size:.8rem">Anomalie</button></div>`}</td></tr>`; }).join("") + "</tbody>";
+  $("auSample").querySelectorAll("[data-ok]").forEach((b) => b.addEventListener("click", () => { auChecked[b.dataset.ok] = "ok"; const p = cpRows.find((x) => x.id === b.dataset.ok); logAudit("Pièce testée conforme", p ? p.numero + " · " + p.tiers : ""); renderSample(); }));
+  $("auSample").querySelectorAll("[data-ko]").forEach((b) => b.addEventListener("click", () => { const p = cpRows.find((x) => x.id === b.dataset.ko); auChecked[b.dataset.ko] = "ko"; renderSample();
+    openConstat(null, { titre: `Anomalie sur la facture ${p.numero}`, ref: p.numero, cycle: p.type === "vente" ? "Ventes et clients" : isImmo(p.nature) ? "Immobilisations" : "Achats et fournisseurs", desc: fraudChecks(p, cpRows).map((f) => f.msg).join(" ") }); }));
+}
+
+// ---------- Ressources humaines ----------
+const RH_PLAN = [["Directrice financière", ["admin"], 1, 2027, 40000], ["Analystes financiers et trésorerie", ["analyste"], 2, 2027, 18000], ["Contrôleur de gestion", ["controleur"], 1, 2028, 17000],
+  ["Responsable comptable", ["superviseur"], 1, 2027, 20000], ["Comptables et paie", ["comptable"], 5, 2027, 9500], ["Contrôle interne", ["interne"], 1, 2028, 18000],
+  ["Audit interne", ["auditeur"], 1, 2029, 18000], ["Ressources humaines", ["rh"], 1, 2028, 15000], ["Stagiaires", ["stagiaire"], 2, 2029, 3000]];
+let rhInit = false, leaves = [], lvWatch = false;
+const isRH = () => !!user && (user.role === "rh" || user.role === "admin");
+async function watchLeaves() {
+  if (lvWatch) return; lvWatch = true; const st = await getStore();
+  if (st.db) st.db.collection("conges").orderBy("at", "desc").limit(300).onSnapshot((s) => { leaves = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (current === "rh") renderRh(); }, () => {});
+  else leaves = lsGet("t2conges", []);
+}
+const workDays = (a, b) => { let n = 0; for (let d = new Date(a + "T12:00"); d <= new Date(b + "T12:00"); d.setDate(d.getDate() + 1)) if (d.getDay() !== 0 && d.getDay() !== 6) n++; return n; };
+async function initRh() {
+  if (!rhInit) {
+    rhInit = true; $("lvFrom").value = $("lvTo").value = todayISO();
+    $("cgForm").addEventListener("submit", (e) => { e.preventDefault(); sendLeave(); });
+  }
+  await startHome(); await watchLeaves(); renderRh();
+}
+function renderRh() {
+  const roleOf = (id) => (people[id] || {}).role, ids = Object.keys(people);
+  let tot = 0, filled = 0, mass = 0;
+  const rows = RH_PLAN.map(([poste, roles, n, an, brut]) => { const f = ids.filter((i) => roles.includes(roleOf(i))).length, cost = brut * 12 * n * (roles[0] === "stagiaire" ? 1 : 1.2109);
+    tot += n; filled += Math.min(f, n); mass += cost; return { poste, n, an, brut, f, cost }; });
+  const today = todayISO(), absent = leaves.filter((l) => l.statut === "accepte" && l.from <= today && l.to >= today);
+  $("rhTiles").innerHTML = tile("Postes prévus", tot, "en régime de croisière") + tile("Postes pourvus", filled, "fiches employés") + tile("À recruter", tot - filled, "", tot - filled ? "" : "")
+    + tile("Coût employeur annuel (MAD)", mad(mass), "estimation") + tile("Absents aujourd'hui", absent.length, absent.map((l) => l.who).join(", "));
+  $("rhPlan").innerHTML = `<thead><tr><th class="wrap">Poste</th><th>Prévus</th><th>Pourvus</th><th>À recruter</th><th>Arrivée</th><th>Brut mensuel (MAD)</th><th>Coût annuel (MAD)</th></tr></thead><tbody>`
+    + rows.map((r) => `<tr><td class="wrap">${esc(r.poste)}</td><td class="n">${r.n}</td><td class="n">${r.f}</td><td class="n">${r.n - r.f > 0 ? `<span class="pill warn">${r.n - r.f}</span>` : '<span class="pill ok">0</span>'}</td><td class="n">${r.an}</td><td class="n">${mad(r.brut)}</td><td class="n">${mad(r.cost)}</td></tr>`).join("")
+    + `<tr class="hl"><td><b>Total</b></td><td class="n"><b>${tot}</b></td><td class="n"><b>${filled}</b></td><td class="n"><b>${tot - filled}</b></td><td></td><td></td><td class="n"><b>${mad(mass)}</b></td></tr></tbody>`;
+  const mine = leaves.filter((l) => (meUid ? l.by === meUid : l.who === user.name));
+  const card = (l, act) => { const s = { attente: ["warn", "En attente"], accepte: ["ok", "Acceptée"], refuse: ["ko", "Refusée"] }[l.statut] || ["warn", "En attente"];
+    return `<div class="rpitem"><div style="display:grid;gap:4px;min-width:0"><span class="t">${esc(str(l.type))} · ${esc(dday(l.from))} au ${esc(dday(l.to))}</span>
+      <span class="meta"><span>${esc(str(l.who))}</span><span>${workDays(l.from, l.to)} jour(s) ouvré(s)</span><span class="pill ${s[0]}">${s[1]}</span>${l.why ? `<span>${esc(str(l.why))}</span>` : ""}</span></div>
+      ${act && l.statut === "attente" ? `<div class="toolbar" style="flex-wrap:nowrap"><button class="btn primary" type="button" data-lok="${esc(l.id)}" style="padding:6px 12px">Accepter</button><button class="btn" type="button" data-lko="${esc(l.id)}" style="padding:6px 12px">Refuser</button></div>` : "<span></span>"}</div>`; };
+  $("lvMine").innerHTML = mine.length ? mine.map((l) => card(l, false)).join("") : '<p class="muted" style="margin:0">Aucune demande.</p>';
+  $("lvAllTitle").textContent = isRH() ? "Demandes à traiter" : "Absences de l'équipe";
+  const all = isRH() ? leaves : leaves.filter((l) => l.statut === "accepte" && l.to >= today);
+  $("lvAll").innerHTML = all.length ? all.map((l) => card(l, isRH())).join("") : `<div class="empty"><b>${isRH() ? "Aucune demande" : "Aucune absence prévue"}</b><span>${isRH() ? "Les demandes de congé de l'équipe arriveront ici." : "Les congés acceptés de vos collègues s'afficheront ici."}</span></div>`;
+  $("lvAll").querySelectorAll("[data-lok]").forEach((b) => b.addEventListener("click", () => decideLeave(b.dataset.lok, "accepte")));
+  $("lvAll").querySelectorAll("[data-lko]").forEach((b) => b.addEventListener("click", () => decideLeave(b.dataset.lko, "refuse")));
+}
+async function sendLeave() {
+  const l = { type: $("lvType").value, from: $("lvFrom").value, to: $("lvTo").value, why: $("lvWhy").value.trim().slice(0, 200), statut: "attente", at: new Date().toISOString() };
+  if (!l.from || !l.to || l.to < l.from) { $("lvMsg").textContent = "La date de fin doit suivre la date de début."; return; }
+  const st = await getStore(); l.by = st.uid || null; l.who = (myFiche && myFiche.nom) || user.name; l.role = user.role;
+  $("lvSend").disabled = true;
+  if (st.db) { try { await st.db.collection("conges").add(l); $("lvMsg").textContent = "Demande envoyée aux RH."; } catch (e) { $("lvMsg").textContent = "Envoi refusé : droits insuffisants sur cette page."; } }
+  else { l.id = "l" + Date.now(); leaves = [l].concat(leaves); lsSet("t2conges", leaves); $("lvMsg").textContent = "Demande envoyée (dans ce navigateur)."; renderRh(); }
+  $("lvSend").disabled = false; $("lvWhy").value = ""; logAudit(`Demande de ${l.type.toLowerCase()}`, `${l.from} au ${l.to}`);
+}
+async function decideLeave(id, statut) {
+  if (!isRH()) return; const l = leaves.find((x) => x.id === id); if (!l) return; const st = await getStore();
+  if (st.db) { try { await st.db.doc("conges/" + id).update({ statut, decidePar: user.name, decideLe: new Date().toISOString() }); } catch (e) {} }
+  else { l.statut = statut; lsSet("t2conges", leaves); renderRh(); }
+  logAudit(`Congé ${statut === "accepte" ? "accepté" : "refusé"}`, `${l.who} · ${l.from} au ${l.to}`);
 }
 
 // thème : redessiner les graphiques quand le thème change
