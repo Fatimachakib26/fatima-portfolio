@@ -181,7 +181,14 @@ mark{background:linear-gradient(transparent 55%,var(--glow) 55%);color:inherit;f
 .calc b{font:700 .95rem var(--f-display)}
 .calc .out{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:2.2em}
 .calc .res{font:700 1.3rem var(--f-mono)}
-input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
+input[type=date],input[type=month]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
+
+/* Comptabilité */
+.formgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.drop{display:grid;place-items:center;min-height:220px;border:2px dashed var(--line);border-radius:12px;background:var(--chip);text-align:center;padding:16px;cursor:pointer;color:var(--ink);font-size:.95rem;text-transform:none;letter-spacing:0}
+.drop.over{border-color:var(--orange)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop img{max-height:420px;max-width:100%;border-radius:8px;object-fit:contain}
 footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -622,6 +629,72 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
       </div>
     </section>
 
+
+    <!-- ===================== COMPTABILITÉ ===================== -->
+    <section class="page" data-page="compta" hidden>
+      <div class="lead"><div><span class="eyebrow">Espace comptable</span><h2>Saisie des <em class="g">factures</em></h2>
+        <p>Scannez ou saisissez une facture : l'écriture est proposée selon le plan comptable marocain (CGNC), contrôlée (débit = crédit), puis enregistrée au journal.</p></div>
+        <div class="seg" id="cpSeg"></div></div>
+
+      <div id="cp-saisie" style="display:grid;gap:22px">
+        <div class="grid2">
+          <div class="panel gilt"><h3>1 · Scanner la facture</h3>
+            <label class="drop" for="cpFile" id="cpDrop"><input type="file" id="cpFile" accept="image/jpeg,image/png,image/webp" capture="environment">
+              <span id="cpDropTxt"><b>Prendre une photo ou choisir une image</b><br><span class="muted">JPEG, PNG ou WebP · glisser-déposer accepté</span></span>
+              <img id="cpPreview" alt="Aperçu de la facture" hidden></label>
+            <div class="toolbar"><button class="btn primary" id="cpRead" type="button" hidden>Lire la facture avec Claude</button><button class="btn" id="cpStop" type="button" hidden>Arrêter</button></div>
+            <div class="muted" id="cpScanMsg" aria-live="polite" style="font-size:.88rem"></div>
+          </div>
+          <form class="panel" id="cpForm" autocomplete="off"><h3>2 · Détails de la facture</h3>
+            <div class="formgrid">
+              <label class="f" for="cpSens">Sens<select id="cpSens"><option value="achat">Achat (facture fournisseur)</option><option value="vente">Vente (facture client)</option></select></label>
+              <label class="f" for="cpNature">Nature<select id="cpNature"></select></label>
+              <label class="f" for="cpTiers">Fournisseur / client<input type="text" id="cpTiers" required></label>
+              <label class="f" for="cpIce">ICE du tiers<input type="text" id="cpIce" inputmode="numeric" placeholder="15 chiffres"></label>
+              <label class="f" for="cpNum">N° de facture<input type="text" id="cpNum" required></label>
+              <label class="f" for="cpDate">Date<input type="date" id="cpDate" required></label>
+              <label class="f" for="cpHt">Montant HT (MAD)<input type="number" id="cpHt" step="0.01" min="0" required></label>
+              <label class="f" for="cpTaux">Taux de TVA<select id="cpTaux"><option value="0.20">20 %</option><option value="0.14">14 %</option><option value="0.10">10 %</option><option value="0.07">7 %</option><option value="0">0 % (exonéré / export)</option></select></label>
+              <label class="f" for="cpTva">TVA (MAD)<input type="number" id="cpTva" step="0.01" min="0"></label>
+              <label class="f" for="cpTtc">Total TTC (MAD)<input type="number" id="cpTtc" step="0.01" min="0"></label>
+              <label class="f" for="cpRegl">Règlement<select id="cpRegl"><option value="credit">À crédit (compte de tiers)</option><option value="banque">Payé par banque</option></select></label>
+              <label class="f" for="cpLib">Libellé<input type="text" id="cpLib" placeholder="ex. Résine PP, octobre"></label>
+            </div>
+            <div class="muted" id="cpCheck" style="font-size:.86rem"></div>
+          </form>
+        </div>
+        <div class="panel"><div class="lead"><h3>3 · Écriture proposée</h3><span id="cpBal"></span></div>
+          <div class="tablewrap"><table id="cpEntry"></table></div>
+          <div class="toolbar"><button class="btn primary" id="cpSave" type="button">Enregistrer au journal</button><button class="btn" id="cpClear" type="button">Nouvelle facture</button><span class="muted" id="cpSaveMsg" aria-live="polite"></span></div>
+          <p class="muted" style="font-size:.84rem">Taux de TVA à vérifier selon le bien ou le service (CGI art. 98 à 100, réforme des taux en cours) ; les ventes à l'export sont exonérées (CGI art. 92). L'ICE du fournisseur doit figurer sur la facture.</p>
+        </div>
+      </div>
+
+      <div id="cp-journal" hidden style="display:grid;gap:22px">
+        <div class="tiles" id="cpTiles"></div>
+        <div class="panel"><div class="lead"><h3>Journal des écritures</h3>
+          <div class="toolbar"><label class="f" for="cpMonth" style="min-width:160px">Mois<input type="month" id="cpMonth"></label><button class="btn" id="cpCsv" type="button">Copier en CSV</button></div></div>
+          <div class="muted" id="cpStore" style="font-size:.86rem"></div>
+          <div class="tablewrap"><table id="cpJournal"></table></div>
+          <div class="muted" id="cpCsvMsg" aria-live="polite"></div></div>
+      </div>
+
+      <div id="cp-amort" hidden style="display:grid;gap:22px">
+        <div class="panel"><div class="lead"><h3>Dotations aux amortissements de l'exercice</h3>
+          <label class="f" for="cpYear" style="min-width:140px">Exercice<input type="number" id="cpYear" min="2020" max="2050"></label></div>
+          <p class="muted" style="font-size:.88rem">Calculées à partir des immobilisations enregistrées au journal : amortissement linéaire, prorata temporis à partir du mois d'acquisition, taux usuels de la note circulaire n° 717.</p>
+          <div class="tablewrap"><table id="cpAmort"></table></div>
+          <div class="toolbar"><button class="btn primary" id="cpAmortSave" type="button">Passer l'écriture de dotation</button><span class="muted" id="cpAmortMsg" aria-live="polite"></span></div></div>
+      </div>
+
+      <div id="cp-pcm" hidden style="display:grid;gap:22px">
+        <div class="panel"><div class="lead"><h3>Plan comptable marocain (CGNC) · comptes d'une entreprise industrielle</h3>
+          <label class="f" for="cpSearch" style="min-width:240px">Rechercher<input type="text" id="cpSearch" placeholder="numéro ou mot : 2332, TVA, amortissement"></label></div>
+          <div class="tablewrap"><table id="cpPcm"></table></div>
+          <p class="muted" style="font-size:.84rem">Sélection de comptes du Code général de normalisation comptable (loi n° 9-88), pour une société industrielle. À compléter avec le plan comptable complet de l'entreprise ; vérifier chaque compte avec l'expert-comptable.</p></div>
+      </div>
+    </section>
+
     <!-- ===================== MÉTHODE ===================== -->
     <section class="page" data-page="methode" hidden>
       <div class="lead"><div><span class="eyebrow">Annexe 3 et limites</span><h2>Méthode et <em class="g">formules</em></h2><p>Les indicateurs calculés par le moteur, sa fidélité au modèle Excel et les limites de l'analyse.</p></div></div>
@@ -1040,7 +1113,7 @@ $("logout").addEventListener("click", () => { user = null; $("app").hidden = tru
 const PAGES = [["daily", "Au quotidien", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
-  ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
+  ["compta", "Saisie des factures", false, "Comptabilité"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
 let current = "dash";
 function enterApp() {
   $("login").hidden = true; $("app").hidden = false;
@@ -1061,7 +1134,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); if (b.dataset.page === id) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
 }
 function fillSelect(id, names, sel) { const el = $(id); if (el.options.length) return; names.forEach((n) => { const o = document.createElement("option"); o.value = o.textContent = n; el.appendChild(o); }); if (sel) el.value = sel; }
@@ -1716,6 +1789,279 @@ function drawCalcs() {
   $("oFx").innerHTML = `<span class="res">${fmt(v("cEur") * v("cRate"), 0)} MAD</span> <span class="muted">soit ${fmt(v("cEur") * v("cRate") / 1e6, 2)} MDH</span>`;
   const over = v("cBudget") > 0 ? v("cCost") / v("cBudget") - 1 : NaN;
   $("oCapex").innerHTML = `<span class="res">${over >= 0 ? "+" : ""}${pct(over, 1)}</span> ${st(over <= 0.05, over <= 0.11, over <= 0.05 ? "Dans la tolérance" : over <= 0.11 ? "Alerte : le montage absorbe jusqu'à ≈ 11 %" : "Activer les lignes de sécurité")}`;
+}
+
+// ---------- Comptabilité (CGNC) ----------
+const PCM = [
+ [1,"1111","Capital social","Apports de la maison mère"],[1,"1140","Réserve légale","5 % du bénéfice jusqu'à 10 % du capital"],[1,"1161","Report à nouveau (solde créditeur)",""],
+ [1,"1191","Résultat net de l'exercice (solde créditeur)",""],[1,"1311","Subventions d'équipement reçues","Prime de la Charte de l'investissement"],[1,"1481","Emprunts auprès des établissements de crédit","Dette bancaire à long terme"],
+ [2,"2112","Frais préalables au démarrage","Frais préopérationnels (non-valeurs, 5 ans)"],[2,"2128","Autres charges à répartir sur plusieurs exercices",""],
+ [2,"2311","Terrains nus","Terrain de 8 ha (non amortissable)"],[2,"2316","Agencements et aménagements de terrains","VRD"],[2,"2321","Bâtiments","Bâtiments industriels et administratifs"],
+ [2,"2327","Agencements et aménagements des constructions",""],[2,"2331","Installations techniques","Utilités, réseaux"],[2,"2332","Matériel et outillage","Presses, robots, ligne de peinture"],
+ [2,"2340","Matériel de transport",""],[2,"2351","Mobilier de bureau",""],[2,"2352","Matériel de bureau",""],[2,"2355","Matériel informatique","Systèmes d'information"],
+ [2,"239","Immobilisations corporelles en cours","Chantier avant mise en service"],[2,"2811","Amortissements des immobilisations en non-valeurs",""],[2,"2831","Amortissements des terrains (agencements)",""],
+ [2,"2832","Amortissements des constructions",""],[2,"2833","Amortissements des installations techniques, matériel et outillage",""],[2,"2834","Amortissements du matériel de transport",""],
+ [2,"2835","Amortissements du mobilier, matériel de bureau et aménagements divers",""],
+ [3,"3121","Matières premières","Résines, compounds"],[3,"3122","Matières et fournitures consommables",""],[3,"3123","Emballages",""],[3,"3131","Biens en cours",""],[3,"3151","Produits finis","Kits de pièces"],
+ [3,"3421","Clients","Constructeurs automobiles"],[3,"3425","Clients - effets à recevoir",""],[3,"34551","État - TVA récupérable sur immobilisations",""],[3,"34552","État - TVA récupérable sur charges",""],[3,"3456","État - crédit de TVA",""],
+ [4,"4411","Fournisseurs",""],[4,"4415","Fournisseurs - effets à payer",""],[4,"4432","Rémunérations dues au personnel",""],[4,"4441","Caisse nationale de sécurité sociale",""],
+ [4,"4452","État - impôts, taxes et assimilés",""],[4,"4453","État - impôts sur les résultats","IS, acomptes"],[4,"4455","État - TVA facturée",""],[4,"4456","État - TVA due",""],[4,"4481","Dettes sur acquisitions d'immobilisations","Fournisseurs d'équipements"],
+ [5,"5141","Banques (soldes débiteurs)",""],[5,"5161","Caisses",""],[5,"5541","Banques (soldes créditeurs)",""],
+ [6,"6121","Achats de matières premières","Résines PP"],[6,"6122","Achats de matières et fournitures consommables",""],[6,"6123","Achats d'emballages",""],[6,"6124","Variation des stocks de matières et fournitures",""],
+ [6,"6125","Achats non stockés de matières et fournitures","Eau, électricité"],[6,"6126","Achats de travaux, études et prestations de service",""],[6,"6131","Locations et charges locatives",""],
+ [6,"6132","Redevances de crédit-bail","Loyers du matériel en crédit-bail"],[6,"6133","Entretien et réparations","Maintenance"],[6,"6134","Primes d'assurances",""],[6,"6136","Rémunérations d'intermédiaires et honoraires",""],
+ [6,"6142","Transports","Livraisons, export"],[6,"6143","Déplacements, missions et réceptions",""],[6,"6145","Frais postaux et frais de télécommunications",""],[6,"6147","Services bancaires",""],
+ [6,"6161","Impôts et taxes directs","Taxe professionnelle"],[6,"6171","Rémunérations du personnel",""],[6,"6174","Charges sociales",""],[6,"6191","Dotations d'exploitation aux amortissements de l'immobilisation en non-valeurs",""],
+ [6,"6193","Dotations d'exploitation aux amortissements des immobilisations corporelles",""],[6,"6311","Intérêts des emprunts et dettes",""],[6,"6513","Valeurs nettes d'amortissements des immobilisations corporelles cédées",""],[6,"6701","Impôts sur les bénéfices","IS"],
+ [7,"7121","Ventes de biens produits au Maroc","Ventes aux usines de Tanger et Kénitra"],[7,"7122","Ventes de biens produits à l'étranger","Export (TVA exonérée)"],[7,"7124","Ventes de services produits au Maroc",""],
+ [7,"7127","Ventes et produits accessoires",""],[7,"7132","Variation des stocks de biens produits",""],[7,"7513","Produits des cessions des immobilisations corporelles",""],[7,"7577","Reprises sur subventions d'investissement","Reprise de la prime"],
+];
+const CLASSES = {1:"Financement permanent",2:"Actif immobilisé",3:"Actif circulant",4:"Passif circulant",5:"Trésorerie",6:"Charges",7:"Produits"};
+const ACC = Object.fromEntries(PCM.map(([, n, l]) => [n, l]));
+// nature -> compte, et pour les immobilisations : compte d'amortissement et taux usuel
+const NATURES = {
+  achat: [["6121","Matières premières"],["6122","Matières et fournitures consommables"],["6123","Emballages"],["6125","Eau, électricité"],["6126","Travaux, études, prestations"],
+    ["6131","Locations"],["6132","Redevance de crédit-bail"],["6133","Entretien et réparations"],["6134","Assurances"],["6136","Honoraires"],["6142","Transports"],["6145","Télécommunications"],
+    ["2311","Immobilisation : terrain"],["2321","Immobilisation : bâtiment"],["2331","Immobilisation : installations techniques"],["2332","Immobilisation : matériel et outillage"],
+    ["2340","Immobilisation : matériel de transport"],["2351","Immobilisation : mobilier de bureau"],["2355","Immobilisation : matériel informatique"]],
+  vente: [["7121","Ventes de biens produits au Maroc"],["7122","Ventes de biens produits à l'export"],["7127","Produits accessoires"]],
+};
+const AMORT = {"2321":["2832",0.05],"2316":["2831",0.05],"2331":["2833",0.10],"2332":["2833",0.10],"2340":["2834",0.20],"2351":["2835",0.10],"2352":["2835",0.10],"2355":["2835",0.20],"2112":["2811",0.20]};
+const isImmo = (c) => c.startsWith("2");
+const r2 = (x) => Math.round(x * 100) / 100;
+const mad = (x) => (isFinite(x) ? x : 0).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+let cpView = "saisie", cpDb = null, cpUid = null, cpRows = [], cpUnsub = null, cpSample = null, cpCtl = null, cpImage = null;
+function lsRows() { try { return JSON.parse(localStorage.getItem("t2journal") || "[]"); } catch (e) { return []; } }
+function lsSave(rows) { try { localStorage.setItem("t2journal", JSON.stringify(rows)); return true; } catch (e) { return false; } }
+
+function buildEntry() {
+  const sens = $("cpSens").value, nat = $("cpNature").value, ht = parseFloat($("cpHt").value) || 0;
+  const tva = parseFloat($("cpTva").value) || 0, ttc = r2(ht + tva), bank = $("cpRegl").value === "banque";
+  const lib = ($("cpLib").value || "").trim() || `${$("cpTiers").value} — facture ${$("cpNum").value}`;
+  const L = [];
+  if (sens === "achat") {
+    L.push({ compte: nat, debit: ht, credit: 0 });
+    if (tva > 0) L.push({ compte: isImmo(nat) ? "34551" : "34552", debit: tva, credit: 0 });
+    L.push({ compte: bank ? "5141" : (isImmo(nat) ? "4481" : "4411"), debit: 0, credit: ttc });
+  } else {
+    L.push({ compte: bank ? "5141" : "3421", debit: ttc, credit: 0 });
+    L.push({ compte: nat, debit: 0, credit: ht });
+    if (tva > 0) L.push({ compte: "4455", debit: 0, credit: tva });
+  }
+  return { lines: L.map((l) => Object.assign(l, { libelle: lib })), ttc, lib };
+}
+function renderEntry() {
+  const ht = parseFloat($("cpHt").value) || 0, tva = parseFloat($("cpTva").value) || 0, ttcIn = parseFloat($("cpTtc").value);
+  const { lines } = buildEntry();
+  const d = r2(lines.reduce((s, l) => s + l.debit, 0)), c = r2(lines.reduce((s, l) => s + l.credit, 0));
+  $("cpEntry").innerHTML = `<thead><tr><th>Compte</th><th class="wrap">Intitulé</th><th>Débit (MAD)</th><th>Crédit (MAD)</th></tr></thead><tbody>`
+    + lines.map((l) => `<tr><td class="n">${l.compte}</td><td class="wrap">${esc(ACC[l.compte] || "")}</td><td class="n">${l.debit ? mad(l.debit) : ""}</td><td class="n">${l.credit ? mad(l.credit) : ""}</td></tr>`).join("")
+    + `<tr class="hl"><td></td><td><b>Total</b></td><td class="n"><b>${mad(d)}</b></td><td class="n"><b>${mad(c)}</b></td></tr></tbody>`;
+  const ok = ht > 0 && Math.abs(d - c) < 0.005;
+  $("cpBal").innerHTML = ok ? '<span class="pill ok">Équilibrée</span>' : '<span class="pill warn">À compléter</span>';
+  const checks = [];
+  if (isFinite(ttcIn) && ttcIn > 0 && Math.abs(r2(ht + tva) - ttcIn) > 0.05) checks.push(`HT + TVA = ${mad(ht + tva)} MAD, différent du TTC saisi (${mad(ttcIn)} MAD) : vérifiez la facture.`);
+  const rate = parseFloat($("cpTaux").value);
+  if (ht > 0 && Math.abs(r2(ht * rate) - tva) > 0.05) checks.push(`La TVA ne correspond pas à ${fmt(rate * 100, 0)} % du HT (${mad(ht * rate)} MAD attendus).`);
+  const ice = ($("cpIce").value || "").replace(/\s/g, "");
+  if (ice && !/^\d{15}$/.test(ice)) checks.push("L'ICE doit compter 15 chiffres.");
+  if ($("cpSens").value === "vente" && $("cpNature").value === "7122" && rate > 0) checks.push("Vente à l'export : en principe exonérée de TVA (CGI art. 92).");
+  $("cpCheck").innerHTML = checks.map((x) => `<div class="pill warn" style="margin:2px 0">${esc(x)}</div>`).join("");
+  $("cpSave").disabled = !ok || !$("cpTiers").value.trim() || !$("cpNum").value.trim() || !$("cpDate").value;
+}
+function fillNatures() {
+  const s = $("cpSens").value; $("cpNature").innerHTML = NATURES[s].map(([c, l]) => `<option value="${c}">${c} · ${esc(l)}</option>`).join("");
+}
+function autoTva() { const ht = parseFloat($("cpHt").value) || 0, t = parseFloat($("cpTaux").value); $("cpTva").value = ht ? r2(ht * t).toFixed(2) : ""; $("cpTtc").value = ht ? r2(ht * (1 + t)).toFixed(2) : ""; }
+
+async function initCompta() {
+  if (!rendered.compta) {
+    seg("cpSeg", [["saisie", "Saisie"], ["journal", "Journal"], ["amort", "Amortissements"], ["pcm", "Plan comptable"]], "saisie", (v) => { cpView = v; renderCompta(); });
+    fillNatures(); $("cpDate").value = new Date().toISOString().slice(0, 10);
+    $("cpYear").value = new Date().getFullYear(); $("cpMonth").value = "";
+    $("cpSens").addEventListener("change", () => { fillNatures(); if ($("cpSens").value === "vente" && $("cpNature").value === "7122") $("cpTaux").value = "0"; autoTva(); renderEntry(); });
+    $("cpNature").addEventListener("change", () => { if ($("cpNature").value === "7122") { $("cpTaux").value = "0"; autoTva(); } renderEntry(); });
+    ["cpHt", "cpTaux"].forEach((id) => $(id).addEventListener("input", () => { autoTva(); renderEntry(); }));
+    ["cpTva", "cpTtc", "cpTiers", "cpNum", "cpDate", "cpIce", "cpRegl", "cpLib"].forEach((id) => $(id).addEventListener("input", renderEntry));
+    $("cpRegl").addEventListener("change", renderEntry);
+    $("cpSave").addEventListener("click", saveInvoice);
+    $("cpClear").addEventListener("click", clearInvoice);
+    $("cpFile").addEventListener("change", (e) => pickImage(e.target.files[0]));
+    const dz = $("cpDrop");
+    dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("over"); });
+    dz.addEventListener("dragleave", () => dz.classList.remove("over"));
+    dz.addEventListener("drop", (e) => { e.preventDefault(); dz.classList.remove("over"); if (e.dataTransfer.files[0]) pickImage(e.dataTransfer.files[0]); });
+    $("cpRead").addEventListener("click", readInvoice);
+    $("cpStop").addEventListener("click", () => cpCtl && cpCtl.abort());
+    $("cpMonth").addEventListener("input", renderJournal);
+    $("cpCsv").addEventListener("click", copyCsv);
+    $("cpYear").addEventListener("input", renderAmort);
+    $("cpAmortSave").addEventListener("click", saveDotation);
+    $("cpSearch").addEventListener("input", renderPcm);
+    renderEntry();
+    connectStore(); connectSample();
+  }
+  renderCompta();
+}
+function renderCompta() {
+  ["saisie", "journal", "amort", "pcm"].forEach((v) => { $("cp-" + v).hidden = v !== cpView; });
+  if (cpView === "journal") renderJournal();
+  if (cpView === "amort") renderAmort();
+  if (cpView === "pcm") renderPcm();
+}
+
+// ---- stockage : base partagée du document claude.ai, sinon navigateur ----
+async function connectStore() {
+  const cl = window.claude;
+  try { cpDb = cl ? await cl.use("db") : null; } catch (e) { cpDb = null; }
+  try { const u = cl ? await cl.use("user") : null; cpUid = u ? await u.id() : null; } catch (e) { cpUid = null; }
+  if (cpDb) {
+    $("cpStore").textContent = "Journal partagé entre les comptables qui ont accès à cette page.";
+    cpUnsub = cpDb.collection("journal").orderBy("date", "desc").limit(1000).onSnapshot((snap) => {
+      cpRows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (cpView !== "saisie") renderCompta();
+    }, () => { cpDb = null; cpRows = lsRows(); $("cpStore").textContent = "Journal enregistré dans ce navigateur seulement."; renderCompta(); });
+  } else {
+    cpRows = lsRows();
+    $("cpStore").textContent = "Journal enregistré dans ce navigateur seulement (il n'est pas partagé).";
+  }
+}
+async function addPiece(piece) {
+  piece.by = cpUid || null; piece.createdAt = new Date().toISOString();
+  if (cpDb) { try { await cpDb.collection("journal").add(piece); return true; } catch (e) { $("cpSaveMsg").textContent = e && e.code === "quota_exceeded" ? "Journal plein : supprimez d'anciennes pièces." : "Enregistrement refusé : vous n'avez peut-être pas le droit d'écrire sur cette page."; return false; } }
+  piece.id = "p" + Date.now(); cpRows = [piece].concat(cpRows); return lsSave(cpRows);
+}
+async function deletePiece(id) {
+  if (cpDb) { try { await cpDb.doc("journal/" + id).delete(); } catch (e) {} return; }
+  cpRows = cpRows.filter((p) => p.id !== id); lsSave(cpRows); renderCompta();
+}
+async function saveInvoice() {
+  const { lines, ttc } = buildEntry();
+  const piece = { type: $("cpSens").value, date: $("cpDate").value, tiers: $("cpTiers").value.trim(), ice: $("cpIce").value.trim(), numero: $("cpNum").value.trim(),
+    nature: $("cpNature").value, ht: parseFloat($("cpHt").value) || 0, tva: parseFloat($("cpTva").value) || 0, ttc, reglement: $("cpRegl").value, lines };
+  $("cpSave").disabled = true;
+  if (await addPiece(piece)) { $("cpSaveMsg").textContent = `Facture ${piece.numero} enregistrée au journal.`; clearInvoice(true); }
+  else renderEntry();
+}
+function clearInvoice(keepMsg) {
+  ["cpTiers", "cpIce", "cpNum", "cpHt", "cpTva", "cpTtc", "cpLib"].forEach((id) => { $(id).value = ""; });
+  if (keepMsg !== true) $("cpSaveMsg").textContent = "";
+  cpImage = null; $("cpPreview").hidden = true; $("cpDropTxt").hidden = false; $("cpFile").value = ""; $("cpRead").disabled = true; $("cpScanMsg").textContent = "";
+  renderEntry();
+}
+
+// ---- scan : lecture de l'image par Claude (page claude.ai) ----
+async function connectSample() {
+  const cl = window.claude;
+  try { cpSample = cl ? await cl.use("sample") : null; } catch (e) { cpSample = null; }
+  let caps = null; try { caps = cpSample ? await cpSample.limits() : null; } catch (e) { caps = null; }
+  if (cpSample && caps && caps.images) { $("cpRead").hidden = false; $("cpRead").disabled = !cpImage; }
+  else $("cpScanMsg").textContent = "Lecture automatique indisponible ici : l'image sert d'aperçu, saisissez les montants à côté.";
+}
+function pickImage(file) {
+  if (!file) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { $("cpScanMsg").textContent = "Choisissez une image JPEG, PNG ou WebP (pour un PDF, faites une capture de la page)."; return; }
+  cpImage = file; const url = URL.createObjectURL(file);
+  $("cpPreview").src = url; $("cpPreview").hidden = false; $("cpDropTxt").hidden = true;
+  $("cpRead").disabled = false; $("cpScanMsg").textContent = cpSample ? "Image prête : cliquez sur « Lire la facture avec Claude »." : $("cpScanMsg").textContent;
+}
+async function readInvoice() {
+  if (!cpSample || !cpImage) return;
+  cpCtl = new AbortController(); $("cpRead").disabled = true; $("cpStop").hidden = false; $("cpScanMsg").textContent = "Lecture de la facture…";
+  const natures = NATURES.achat.concat(NATURES.vente).map(([c, l]) => `${c} = ${l}`).join("; ");
+  const prompt = "Tu lis l'image d'une facture marocaine pour un comptable. L'entreprise qui saisit est DPA (fabricant de pièces plastiques automobiles). "
+    + "Réponds uniquement par un objet JSON : {\"sens\": \"achat\" si DPA est l'acheteur ou \"vente\" si DPA est le vendeur, \"tiers\": nom de l'autre partie, "
+    + "\"ice\": ICE de l'autre partie (15 chiffres) ou \"\", \"numero\": numéro de facture, \"date\": \"AAAA-MM-JJ\", \"ht\": total hors taxes en nombre, \"tva\": montant total de TVA en nombre, "
+    + "\"taux\": taux de TVA principal en décimal (0.2, 0.14, 0.1, 0.07 ou 0), \"ttc\": total TTC en nombre, \"devise\": \"MAD\" ou autre, \"libelle\": 3 à 6 mots décrivant l'objet, "
+    + "\"compte\": le compte le plus adapté parmi : " + natures + ", \"remarque\": une phrase si un montant est illisible ou incohérent, sinon \"\"}. "
+    + "N'invente aucun chiffre : mets null si une valeur est illisible.";
+  try {
+    const r = await cpSample.json(prompt, { images: [cpImage], signal: cpCtl.signal, cache: false });
+    if (r.sens === "vente" || r.sens === "achat") { $("cpSens").value = r.sens; fillNatures(); }
+    if (r.compte && [...$("cpNature").options].some((o) => o.value === String(r.compte))) $("cpNature").value = String(r.compte);
+    const set = (id, v) => { if (v !== null && v !== undefined && v !== "") $(id).value = v; };
+    set("cpTiers", r.tiers); set("cpIce", r.ice); set("cpNum", r.numero); set("cpDate", /^\d{4}-\d{2}-\d{2}$/.test(r.date || "") ? r.date : null);
+    set("cpHt", isFinite(r.ht) ? Number(r.ht).toFixed(2) : null); set("cpTva", isFinite(r.tva) ? Number(r.tva).toFixed(2) : null); set("cpTtc", isFinite(r.ttc) ? Number(r.ttc).toFixed(2) : null);
+    if ([0.2, 0.14, 0.1, 0.07, 0].includes(Number(r.taux))) $("cpTaux").value = String(Number(r.taux) === 0.2 ? "0.20" : Number(r.taux) === 0.1 ? "0.10" : Number(r.taux) === 0 ? "0" : r.taux);
+    set("cpLib", r.libelle);
+    const warn = [r.devise && r.devise !== "MAD" ? `Facture en ${r.devise} : convertissez en MAD avant d'enregistrer.` : "", r.remarque || ""].filter(Boolean).join(" ");
+    $("cpScanMsg").textContent = "Champs remplis à partir de l'image : vérifiez chaque montant avant d'enregistrer. " + warn;
+    renderEntry();
+  } catch (e) {
+    const msg = { cancelled: "Lecture arrêtée.", not_granted: "Lecture automatique refusée : saisissez les champs à la main.", rate_limited: "Trop de demandes pour le moment : réessayez plus tard.",
+      image_rejected: "Image refusée (format ou taille) : essayez une autre photo.", invalid_json: "La facture n'a pas pu être lue correctement : réessayez ou saisissez à la main.",
+      refused: "Lecture refusée pour cette image." }[e && e.code] || "La lecture a échoué : réessayez ou saisissez à la main.";
+    $("cpScanMsg").textContent = msg;
+    if (e && ["not_granted", "sampling_disabled", "images_unavailable", "not_declared"].includes(e.code)) $("cpRead").hidden = true;
+  } finally { $("cpRead").disabled = !cpImage; $("cpStop").hidden = true; }
+}
+
+// ---- journal ----
+function journalLines() {
+  const m = $("cpMonth").value;
+  return cpRows.filter((p) => !m || (p.date || "").startsWith(m)).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+}
+function renderJournal() {
+  const rows = journalLines();
+  const sum = (f) => rows.reduce((s, p) => s + (p.lines || []).reduce((t, l) => t + (Number(l[f]) || 0), 0), 0);
+  const tvaD = rows.filter((p) => p.type !== "vente").reduce((s, p) => s + (Number(p.tva) || 0), 0), tvaC = rows.filter((p) => p.type === "vente").reduce((s, p) => s + (Number(p.tva) || 0), 0);
+  $("cpTiles").innerHTML = tile("Pièces", rows.length) + tile("Total débit (MAD)", mad(sum("debit"))) + tile("Total crédit (MAD)", mad(sum("credit")))
+    + tile("TVA récupérable (MAD)", mad(tvaD)) + tile("TVA facturée (MAD)", mad(tvaC)) + tile("TVA à payer (MAD)", mad(Math.max(tvaC - tvaD, 0)), tvaC < tvaD ? `crédit de TVA : ${mad(tvaD - tvaC)}` : "");
+  if (!rows.length) { $("cpJournal").innerHTML = '<tbody><tr><td class="muted">Aucune écriture pour l\'instant. Enregistrez une facture dans l\'onglet « Saisie ».</td></tr></tbody>'; return; }
+  $("cpJournal").innerHTML = `<thead><tr><th>Date</th><th>Pièce</th><th>Compte</th><th class="wrap">Libellé</th><th>Débit</th><th>Crédit</th><th></th></tr></thead><tbody>`
+    + rows.map((p) => (p.lines || []).map((l, i) => `<tr${i === 0 ? ' class="hl"' : ""}><td class="n">${i === 0 ? esc(p.date || "") : ""}</td><td>${i === 0 ? esc(p.numero || "") : ""}</td>
+      <td class="n">${esc(l.compte)}</td><td class="wrap">${esc(ACC[l.compte] || "")}<div class="muted" style="font-size:.8rem">${esc(l.libelle || "")}</div></td>
+      <td class="n">${l.debit ? mad(l.debit) : ""}</td><td class="n">${l.credit ? mad(l.credit) : ""}</td>
+      <td>${i === 0 && (!cpDb || !p.by || p.by === cpUid) ? `<button class="btn" type="button" data-del="${esc(p.id)}" style="padding:4px 10px;font-size:.8rem">Supprimer</button>` : ""}</td></tr>`).join("")).join("")
+    + "</tbody>";
+  $("cpJournal").querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.confirm) deletePiece(b.dataset.del); else { b.dataset.confirm = "1"; b.textContent = "Confirmer"; } }));
+}
+async function copyCsv() {
+  const rows = journalLines(), out = ["Date;Pièce;Tiers;Compte;Intitulé;Libellé;Débit;Crédit"];
+  rows.forEach((p) => (p.lines || []).forEach((l) => out.push([p.date, p.numero, p.tiers, l.compte, ACC[l.compte] || "", l.libelle, l.debit ? String(l.debit).replace(".", ",") : "", l.credit ? String(l.credit).replace(".", ",") : ""].map((v) => String(v ?? "").replace(/;/g, ",")).join(";"))));
+  const text = out.join("\n");
+  try { await navigator.clipboard.writeText(text); $("cpCsvMsg").textContent = `${out.length - 1} lignes copiées : collez-les dans Excel ou votre logiciel comptable.`; }
+  catch (e) { $("cpCsvMsg").textContent = "Copie automatique bloquée : sélectionnez le texte ci-dessous puis copiez-le."; const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "width:100%;height:140px"; ta.setAttribute("aria-label", "Journal en CSV"); $("cpCsvMsg").appendChild(ta); ta.select(); }
+}
+
+// ---- amortissements ----
+function amortRows() {
+  const y = parseInt($("cpYear").value) || new Date().getFullYear(), out = [];
+  cpRows.filter((p) => p.type === "achat" && AMORT[p.nature]).forEach((p) => {
+    const [acc, rate] = AMORT[p.nature], base = Number(p.ht) || 0, d0 = new Date(p.date || Date.now());
+    const y0 = d0.getFullYear(), m0 = d0.getMonth(); if (y < y0) return;
+    let done = 0; for (let yy = y0; yy < y; yy++) done += base * rate * (yy === y0 ? (12 - m0) / 12 : 1);
+    const dot = Math.max(0, Math.min(base - done, base * rate * (y === y0 ? (12 - m0) / 12 : 1)));
+    if (dot > 0.005) out.push({ p, acc, rate, base, dot: r2(dot), cum: r2(done + dot) });
+  });
+  return out;
+}
+function renderAmort() {
+  const rows = amortRows(), tot = rows.reduce((s, r) => s + r.dot, 0);
+  $("cpAmort").innerHTML = rows.length ? `<thead><tr><th class="wrap">Immobilisation</th><th>Compte</th><th>Acquisition</th><th>Base HT</th><th>Taux</th><th>Dotation</th><th>Amortissement cumulé</th><th>Compte d'amortissement</th></tr></thead><tbody>`
+    + rows.map((r) => `<tr><td class="wrap">${esc(r.p.tiers || "")} · ${esc(r.p.numero || "")}</td><td class="n">${r.p.nature}</td><td class="n">${esc(r.p.date || "")}</td><td class="n">${mad(r.base)}</td><td class="n">${fmt(r.rate * 100, 0)} %</td><td class="n">${mad(r.dot)}</td><td class="n">${mad(r.cum)}</td><td class="n">${r.acc}</td></tr>`).join("")
+    + `<tr class="hl"><td colspan="5"><b>Total à doter (6193 au débit)</b></td><td class="n"><b>${mad(tot)}</b></td><td></td><td></td></tr></tbody>`
+    : '<tbody><tr><td class="muted">Aucune immobilisation amortissable au journal pour cet exercice. Le terrain (2311) ne s\'amortit pas.</td></tr></tbody>';
+  $("cpAmortSave").disabled = !rows.length;
+}
+async function saveDotation() {
+  const rows = amortRows(); if (!rows.length) return;
+  const y = parseInt($("cpYear").value), by = {};
+  rows.forEach((r) => { by[r.acc] = r2((by[r.acc] || 0) + r.dot); });
+  const tot = r2(rows.reduce((s, r) => s + r.dot, 0)), lib = `Dotations aux amortissements ${y}`;
+  const lines = [{ compte: "6193", debit: tot, credit: 0, libelle: lib }].concat(Object.entries(by).map(([a, v]) => ({ compte: a, debit: 0, credit: v, libelle: lib })));
+  const ok = await addPiece({ type: "od", date: `${y}-12-31`, tiers: "", ice: "", numero: `OD-AMORT-${y}`, nature: "6193", ht: tot, tva: 0, ttc: tot, reglement: "", lines });
+  $("cpAmortMsg").textContent = ok ? `Écriture de dotation ${y} enregistrée au journal (${mad(tot)} MAD).` : "Enregistrement impossible.";
+}
+
+// ---- plan comptable ----
+function renderPcm() {
+  const q = ($("cpSearch").value || "").toLowerCase().trim();
+  const rows = PCM.filter(([, n, l, u]) => !q || n.startsWith(q) || (l + " " + u).toLowerCase().includes(q));
+  let last = 0;
+  $("cpPcm").innerHTML = `<thead><tr><th>Compte</th><th class="wrap">Intitulé</th><th class="wrap">Usage dans le projet</th></tr></thead><tbody>`
+    + rows.map(([k, n, l, u]) => { const h = k !== last ? `<tr class="hl"><td colspan="3"><b>Classe ${k} · ${CLASSES[k]}</b></td></tr>` : ""; last = k; return h + `<tr><td class="n">${n}</td><td class="wrap">${esc(l)}</td><td class="wrap muted">${esc(u)}</td></tr>`; }).join("")
+    + (rows.length ? "" : '<tr><td colspan="3" class="muted">Aucun compte ne correspond.</td></tr>') + "</tbody>";
 }
 
 // thème : redessiner les graphiques quand le thème change
