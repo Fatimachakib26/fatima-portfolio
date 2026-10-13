@@ -62,8 +62,8 @@ header.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-
 .who{display:flex;gap:10px;align-items:center;font-size:.88rem;color:var(--muted)}
 .role{font:600 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.06em;background:var(--chip);padding:3px 8px;border-radius:99px;color:var(--ink)}
 nav.tabs{display:flex;gap:2px;overflow-x:auto;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
-nav.tabs button{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
-nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--orange)}
+nav.tabs button{background:none;border:0;cursor:pointer;color:var(--muted)}
+
 main{padding-block:20px 40px;padding-inline:max(16px,3vw);display:grid;gap:18px;max-width:1400px;width:100%;margin:0 auto}
 section.page{display:grid;gap:18px}
 .lead{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:end;justify-content:space-between}
@@ -219,6 +219,150 @@ textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;pad
 .sigbox canvas{width:100%;height:auto;aspect-ratio:10/3;background:#fff;border:1px dashed var(--muted);border-radius:8px;touch-action:none;cursor:crosshair}
 .sigimg{background:#fff;border-radius:6px;max-width:220px;height:auto;border:1px solid var(--line)}
 input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;color:var(--ink)}
+/* ===== Mise en page aérée : barre latérale groupée, échelle d'espacement ===== */
+:root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--hdr:76px;--side:272px}
+body{font-size:15.5px;line-height:1.6}
+#app{display:grid;grid-template-rows:auto 1fr;min-height:100%}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;flex-wrap:nowrap;gap:var(--s4) var(--s5);padding:var(--s4) clamp(16px,3vw,32px)}
+header.top .brand{flex:1 1 auto;min-width:0}
+.brandtxt{min-width:0;display:grid;gap:2px}
+.tagline{font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who{flex:none;gap:var(--s3)}
+.whoid{display:flex;gap:var(--s2);align-items:center}
+.navbtn{display:none;align-items:center;gap:10px;flex:none}
+.burger{width:16px;height:2px;background:currentColor;position:relative;display:inline-block}
+.burger::before,.burger::after{content:"";position:absolute;left:0;width:16px;height:2px;background:currentColor}
+.burger::before{top:-5px} .burger::after{top:5px}
+.shell{display:grid;grid-template-columns:var(--side) minmax(0,1fr);align-items:start}
+nav.tabs{position:sticky;top:calc(var(--hdr) + env(safe-area-inset-top,0px));max-height:calc(100dvh - var(--hdr));overflow-y:auto;overflow-x:hidden;display:grid;align-content:start;gap:var(--s5);
+  padding:var(--s6) var(--s4) var(--s7);background:var(--panel);border-right:1px solid var(--line);border-bottom:0}
+.navgrp{display:grid;gap:2px;align-items:stretch}
+.navgrp+.navgrp{border-left:0;margin-left:0;padding-left:0}
+.navgrp .gl{display:block;font:700 .7rem var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:0 var(--s3) var(--s2)}
+nav.tabs button{display:flex;justify-content:space-between;align-items:center;gap:var(--s2);width:100%;text-align:left;padding:9px var(--s3);border-radius:8px;border:0;border-left:3px solid transparent;white-space:normal;font-weight:500;color:var(--ink);line-height:1.35}
+nav.tabs button:hover{background:var(--chip)}
+nav.tabs button[aria-selected=true]{background:var(--glow);border-left-color:var(--orange);font-weight:700;border-bottom:0}
+.nbadge{font:700 .7rem var(--f-mono);background:var(--orange);color:#fff;border-radius:99px;padding:1px 7px;min-width:20px;text-align:center}
+.scrim{position:fixed;inset:0;background:rgba(10,18,22,.45);z-index:35}
+main{padding-block:var(--s6) var(--s7);padding-inline:clamp(16px,4vw,48px);gap:var(--s7);max-width:1280px}
+section.page{gap:var(--s6)}
+h2{font-size:clamp(1.35rem,2.3vw,1.75rem);line-height:1.2}
+h3{font-size:1.04rem;line-height:1.3}
+.lead{gap:var(--s4) var(--s6);align-items:end}
+.lead p{max-width:68ch;margin-top:var(--s2);line-height:1.65}
+.lead>div:not(.seg):not(.toolbar){gap:var(--s2)}
+.panel{padding:clamp(18px,2.4vw,28px);gap:var(--s5);border-radius:14px}
+.panel>h3:first-child,.panel>.lead:first-child{margin-bottom:-4px}
+.panel .lead{align-items:center}
+.grid2{gap:var(--s6)}
+.grid3{gap:var(--s5)}
+.tiles{gap:var(--s4);grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.tile{padding:var(--s4) 18px;gap:6px;border-radius:12px}
+.tile .val{font-size:1.5rem}
+th,td{padding:12px 14px}
+table{font-size:.9rem}
+.formgrid{gap:var(--s4) var(--s5);grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+label.f{gap:7px;font-size:.86rem}
+input[type=text],input[type=password],input[type=number],input[type=date],input[type=month],select,textarea{padding:11px 13px;border-radius:9px}
+.btn{padding:11px 18px;border-radius:9px;line-height:1.3}
+.toolbar{gap:var(--s3)}
+.seg{padding:4px;gap:4px;border-radius:10px}
+.seg button{padding:8px 14px;border-radius:7px}
+.checklist{gap:var(--s3)} .checklist>div{padding:var(--s4) 18px;gap:6px;line-height:1.55}
+.tasks{gap:var(--s3)} .task{padding:14px var(--s4)}
+.keys{gap:var(--s4)} .key{padding:var(--s4) 18px;gap:6px}
+.swot{gap:var(--s5)} .swot>div{padding:var(--s5);gap:var(--s3)}
+.modules{gap:var(--s5)} .mod{padding:var(--s5);gap:18px}
+.quiz{gap:var(--s4);padding-top:18px} .quiz fieldset{gap:8px}
+.formula{padding:var(--s4) 18px;gap:6px}
+.calc{padding:var(--s5);gap:var(--s3)}
+.decision{padding:var(--s4) var(--s5)}
+.hero{gap:var(--s5)}
+ol.steps{gap:var(--s4)} ul.clean{gap:10px}
+.chips{gap:var(--s2)} .chips button{padding:7px 13px}
+.chat{gap:var(--s4)} .bub{padding:12px var(--s4)}
+.aiout{padding:var(--s4) 18px}
+.verdict{padding:var(--s4) 18px}
+.drop{min-height:240px}
+footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);line-height:1.55}
+.showok{justify-self:start}
+@media (max-width:1100px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .navbtn{display:inline-flex}
+  nav.tabs{position:fixed;top:0;left:0;bottom:0;width:min(310px,86vw);max-height:none;height:100%;z-index:40;transform:translateX(-105%);transition:transform .2s ease;
+    padding-top:calc(var(--s5) + env(safe-area-inset-top,0px));box-shadow:0 10px 40px rgba(0,0,0,.25);visibility:hidden}
+  #app.navopen nav.tabs{transform:none;visibility:visible}
+  .tagline{display:none}
+}
+@media (max-width:640px){
+  header.top{flex-wrap:wrap;gap:var(--s3)}
+  header.top .brand{order:2;flex:1 1 calc(100% - 140px)}
+  .navbtn{order:1}
+  .who{order:3;width:100%;justify-content:space-between;flex-wrap:wrap}
+  #whoName{display:none}
+  main{padding-block:var(--s5) var(--s6)}
+  section.page{gap:var(--s5)}
+  .grid2{gap:var(--s5)}
+}
+
+/* ===== Messagerie d'équipe ===== */
+.msgr{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--s5);align-items:start}
+@media (max-width:900px){.msgr{grid-template-columns:minmax(0,1fr)}}
+.chlist{display:grid;gap:6px}
+.chlist button{display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;border:1px solid transparent;background:none;border-radius:10px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.chlist button:hover{background:var(--chip)}
+.chlist button[aria-pressed=true]{background:var(--glow);border-color:var(--hair)}
+.chlist .cn{font-weight:700}
+.chlist .cd{grid-column:1/-1;font-size:.8rem;color:var(--muted);line-height:1.4}
+.conv{gap:var(--s4)}
+.convhd{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);justify-content:space-between;align-items:start;padding-bottom:var(--s4);border-bottom:1px solid var(--line)}
+.convhd p{margin:4px 0 0}
+.pinned{display:grid;gap:8px;padding:var(--s3) var(--s4);border-radius:10px;background:var(--warnbg);font-size:.9rem}
+.msgs{display:grid;gap:var(--s4);min-height:280px;max-height:min(62vh,640px);overflow-y:auto;padding:var(--s2) 4px var(--s2) 0;align-content:start}
+.day{display:flex;align-items:center;gap:var(--s3);font:600 .74rem var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:var(--s2)}
+.day::before,.day::after{content:"";height:1px;background:var(--line);flex:1}
+.msg{display:grid;grid-template-columns:40px minmax(0,1fr);gap:var(--s3);align-items:start}
+.msg.cont{margin-top:calc(-1 * var(--s3))}
+.msg.cont .av{visibility:hidden;height:0}
+.av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 .85rem var(--f-display);color:#fff;background:var(--steel)}
+.av.comptable{background:var(--sage)} .av.superviseur{background:var(--plum)} .av.admin{background:var(--orange)} .av.stagiaire{background:#5d7a8a} .av.lecteur{background:var(--muted)}
+.mhd{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:.86rem}
+.mhd b{font-size:.95rem}
+.mtxt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;margin-top:2px}
+.mtxt .at{color:var(--steel);font-weight:700}
+.msg.urgent .mtxt{border-left:3px solid var(--ko);padding-left:10px}
+.mact{display:flex;gap:var(--s3);margin-top:4px}
+.mact button{background:none;border:0;padding:0;color:var(--muted);font-size:.8rem;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.mact button:hover{color:var(--ink)}
+.composer{display:grid;gap:var(--s3);padding-top:var(--s4);border-top:1px solid var(--line)}
+.composer-row{display:flex;flex-wrap:wrap;gap:var(--s3);justify-content:space-between;align-items:center}
+.empty{display:grid;gap:6px;place-items:center;text-align:center;padding:var(--s7) var(--s4);color:var(--muted)}
+.empty b{color:var(--ink);font-family:var(--f-display)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ===== Rapports ===== */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(10,18,22,.5);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) 16px}
+.sheet{width:min(1180px,100%);max-height:calc(100dvh - 32px);background:var(--bg);border-radius:16px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sheethd,.sheetft{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);justify-content:space-between;align-items:center;padding:var(--s5) clamp(16px,3vw,32px);background:var(--panel)}
+.sheethd{border-bottom:1px solid var(--line)} .sheetft{border-top:1px solid var(--line)}
+.sheetft .toolbar{margin-left:auto}
+.sheetbody{overflow-y:auto;padding:var(--s5) clamp(16px,3vw,32px)}
+.rpgrid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:var(--s6);align-items:start}
+@media (max-width:900px){.rpgrid{grid-template-columns:minmax(0,1fr)}}
+.rpform{display:grid;gap:18px}
+.rpdoc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(20px,3vw,40px);display:grid;gap:var(--s5);min-width:0}
+.rpdoc .dochd{display:grid;gap:var(--s3);padding-bottom:var(--s5);border-bottom:2px solid var(--orange)}
+.rpdoc .dochd h2{font-size:clamp(1.3rem,2.4vw,1.6rem)}
+.rpmeta{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:var(--s3) var(--s5);font-size:.88rem}
+.rpmeta span{display:block;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rpsec{display:grid;gap:var(--s3)}
+.rpsec h3{font-size:1rem;color:var(--steel)}
+.rpsec p{margin:0;line-height:1.65;max-width:75ch;white-space:pre-wrap}
+.rpsec ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.rplist{display:grid;gap:var(--s3)}
+.rpitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s2) var(--s4);align-items:center;padding:var(--s4) 18px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.rpitem .t{font-weight:700}
+.rpitem .meta{font-size:.84rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -237,11 +381,17 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
 
 <div id="app" hidden>
   <header class="top">
+    <button class="btn navbtn" id="navBtn" type="button" aria-controls="tabs" aria-expanded="false"><span class="burger" aria-hidden="true"></span><span id="navCur">Menu</span></button>
     <div class="brand"><div class="mark">T2</div>
-      <div><h1>Tanger II</h1><div class="muted" style="font-size:.84rem">Détroit Plasturgie Automobile · 500 000 kits/an · mise en service 01/07/2028 · besoin ≈ 960 MDH</div></div></div>
-    <div class="who"><span id="whoName"></span><span class="role" id="whoRole"></span><button class="btn" id="logout" type="button">Se déconnecter</button></div>
+      <div class="brandtxt"><h1>Tanger II</h1><div class="muted tagline">Détroit Plasturgie Automobile · 500 000 kits/an · mise en service 01/07/2028 · besoin ≈ 960 MDH</div></div></div>
+    <div class="who">
+      <button class="btn steel" id="rpOpen" type="button">Créer un rapport</button>
+      <span class="whoid"><span id="whoName"></span><span class="role" id="whoRole"></span></span>
+      <button class="btn" id="logout" type="button">Se déconnecter</button></div>
   </header>
+  <div class="shell">
   <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  <div class="scrim" id="scrim" hidden></div>
   <main id="main">
 
 
@@ -268,7 +418,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
             <div class="out" id="oDscr"></div></div>
           <div class="calc"><b>Levier (covenant)</b>
             <label class="f" for="cDebt">Dette bancaire + crédit-bail (MDH)<input type="number" id="cDebt" value="520" step="1"></label>
-            <label class="f" for="cCash">Trésorerie (MDH)<input type="number" id="cCash" value="145" step="1"></label>
+            <label class="f" for="dyCash">Trésorerie (MDH)<input type="number" id="dyCash" value="145" step="1"></label>
             <label class="f" for="cEbitda">EBITDA sur 12 mois (MDH)<input type="number" id="cEbitda" value="215" step="1"></label>
             <div class="out" id="oLev"></div></div>
           <div class="calc"><b>Impôt sur les sociétés</b>
@@ -288,6 +438,41 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
             <label class="f" for="cBudget">Budget (MDH)<input type="number" id="cBudget" value="791" step="1"></label>
             <div class="out" id="oCapex"></div></div>
         </div></div>
+    </section>
+
+    <!-- ===================== MESSAGERIE D'ÉQUIPE ===================== -->
+    <section class="page" data-page="chat" hidden>
+      <div class="lead"><div><span class="eyebrow">Équipe</span><h2>Messagerie d'<em class="g">équipe</em></h2>
+        <p>Un fil par sujet pour se coordonner, poser une question à un collègue ou annoncer une décision. Mentionnez un rôle avec @ (par exemple @comptable) pour l'interpeller.</p></div></div>
+      <div class="msgr">
+        <aside class="panel"><h3>Canaux</h3>
+          <div class="chlist" id="chList"></div>
+          <p class="muted" id="chStore" style="font-size:.84rem;margin:0"></p></aside>
+        <div class="panel conv">
+          <div class="convhd"><div><h3 id="chTitle"># général</h3><p class="muted" id="chDesc" style="font-size:.9rem"></p></div>
+            <button class="btn" id="chReport" type="button">Rapport de ce canal</button></div>
+          <div class="pinned" id="chPinned" hidden></div>
+          <div class="msgs" id="msgs" aria-live="polite"></div>
+          <form class="composer" id="msgForm" autocomplete="off">
+            <label class="sr" for="msgText">Message</label>
+            <textarea id="msgText" rows="3" maxlength="2000" placeholder="Écrire un message… (Entrée pour envoyer, Maj + Entrée pour aller à la ligne)"></textarea>
+            <div class="composer-row">
+              <label for="msgUrgent" style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="msgUrgent"> Marquer comme urgent</label>
+              <div class="toolbar"><span class="muted" id="msgMsg" aria-live="polite" style="font-size:.86rem"></span><button class="btn primary" id="msgSend" type="submit">Envoyer</button></div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== RAPPORTS ===================== -->
+    <section class="page" data-page="rapports" hidden>
+      <div class="lead"><div><span class="eyebrow">Équipe</span><h2>Rapports <em class="g">enregistrés</em></h2>
+        <p>Chaque rapport créé avec le bouton « Créer un rapport » est conservé ici, avec son auteur et sa date. Ouvrez-en un pour le relire, le copier ou le télécharger.</p></div>
+        <div class="toolbar"><label class="f" for="rpFilter" style="min-width:220px">Type<select id="rpFilter"><option value="">Tous les rapports</option></select></label>
+          <button class="btn steel" id="rpOpen2" type="button">Créer un rapport</button></div></div>
+      <div class="rplist" id="rpList"></div>
+      <p class="muted" id="rpStore" style="font-size:.86rem;margin:0"></p>
     </section>
 
     <!-- ===================== SYNTHÈSE ===================== -->
@@ -410,7 +595,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
         </div>
         <p class="muted" style="font-size:.85rem">Articles du CGI utilisés : 6-II-B-4° (exonération 5 ans), 9-II (subventions), 10-II-A et 10-III-C (intérêts, dégressif), 12 (déficits), 19-I (taux d'IS), 92 et 123 (TVA), 144 (cotisation minimale), 267 à 273 (contribution sociale de solidarité).</p>
       </div>
-      <div id="lg-textes" style="display:grid;gap:22px">
+      <div id="lg-textes" style="display:grid;gap:32px">
         <div class="tiles">
           <div class="tile"><span class="lab">Impôt sur les sociétés</span><span class="val">20 % / 35 %</span><span class="sub">35 % dès 100 MDH de bénéfice · CGI art. 19-I</span></div>
           <div class="tile"><span class="lab">Cotisation minimale</span><span class="val">0,25 %</span><span class="sub">du CA, dès le 4e exercice · art. 144</span></div>
@@ -442,12 +627,12 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           </tbody></table></div></div>
       </div>
 
-      <div id="lg-formules" hidden style="display:grid;gap:22px">
+      <div id="lg-formules" hidden style="display:grid;gap:32px">
         <p class="muted" style="max-width:80ch">Les formules ci-dessous sont celles que la loi ou l'usage contractuel autorise. Chacune indique son fondement et sa valeur calculée par le moteur pour le scénario B, cas central.</p>
         <div class="grid3" id="lgFormulas"></div>
       </div>
 
-      <div id="lg-prime" hidden style="display:grid;gap:22px">
+      <div id="lg-prime" hidden style="display:grid;gap:32px">
         <div class="grid2">
           <div class="panel gilt"><h3>Calculateur de la prime · Charte de l'investissement</h3>
             <p class="muted" style="font-size:.9rem">Loi-cadre n° 03-22 et décret n° 2-23-1. Éligibilité : investissement ≥ 50 MDH et ≥ 50 emplois stables, ou ≥ 150 emplois. Le cumul des primes est plafonné à 30 %.</p>
@@ -471,13 +656,13 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           </tbody></table></div></div>
       </div>
 
-      <div id="lg-is" hidden style="display:grid;gap:22px">
+      <div id="lg-is" hidden style="display:grid;gap:32px">
         <div class="tiles" id="lgIsTiles"></div>
         <div class="panel"><h3>Impôt sur les sociétés du scénario B · droit commun ou exonération de 5 ans</h3><div class="chart tall" id="lgIsChart"></div>
           <p class="muted" style="font-size:.9rem">Effet de seuil de l'article 19 : dès que le bénéfice atteint 100 MDH, le taux de 35 % s'applique à la totalité du bénéfice. C'est pourquoi un CAPEX majoré de 10 % peut améliorer le DSCR de 2030 : des amortissements plus élevés ramènent le bénéfice sous le seuil.</p></div>
       </div>
 
-      <div id="lg-verif" hidden style="display:grid;gap:22px">
+      <div id="lg-verif" hidden style="display:grid;gap:32px">
         <div class="panel"><h3>Points réglementaires restant à vérifier (annexe 5)</h3><div class="tablewrap"><table>
           <thead><tr><th class="wrap">Point non vérifié</th><th class="wrap">Organisme à consulter</th><th class="wrap">Enjeu pour le montage</th></tr></thead><tbody>
           <tr><td class="wrap">Éligibilité de la société de projet à l'exonération d'IS de 5 ans ; cotisation minimale pendant l'exonération</td><td class="wrap">Direction générale des impôts (demande de position)</td><td class="wrap">≈ 120 MDH de VAN</td></tr>
@@ -494,7 +679,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           </tbody></table></div></div>
       </div>
 
-      <div id="lg-sources" hidden style="display:grid;gap:22px">
+      <div id="lg-sources" hidden style="display:grid;gap:32px">
         <div class="lead"><p class="muted">40 sources consultées le 11/10/2026. Fiabilité : VO = vérifiée sur source officielle ; VS = vérifiée sur source secondaire.</p>
           <label class="f" for="lgFilter" style="min-width:260px">Filtrer<input type="text" id="lgFilter" placeholder="ex. CGI, Bank Al-Maghrib, crédit-bail"></label></div>
         <div class="panel"><div class="tablewrap"><table id="lgSources"></table></div></div>
@@ -535,7 +720,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
       <div class="lead"><div><span class="eyebrow">Analyse</span><h2>Simulateur de <em class="g">chocs</em></h2><p>Chaque curseur relance le modèle complet (activité, BFR, dette, crédit-bail, IS, trésorerie, valorisation) pour les trois montages.</p></div></div>
       <div class="sim">
         <div class="panel ctrls" id="simCtrls"><label class="f" for="sPreset">Partir du cas<select id="sPreset"></select></label></div>
-        <div style="display:grid;gap:22px;min-width:0">
+        <div style="display:grid;gap:32px;min-width:0">
           <div class="grid3" id="sCards"></div>
           <div class="panel">
             <div class="lead"><h3>Courbes du scénario</h3><div class="seg" id="sSeg"></div></div>
@@ -571,7 +756,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           <button class="btn primary" type="submit">Évaluer le scénario</button>
         </fieldset>
       </form>
-      <div id="fOut" style="display:grid;gap:22px"></div>
+      <div id="fOut" style="display:grid;gap:32px"></div>
     </section>
 
     <!-- ===================== SENSIBILITÉS ===================== -->
@@ -692,6 +877,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           <div class="toolbar"><button class="btn primary" id="agRun" type="button">Lancer l'audit</button><span class="muted" id="agWhen" style="font-size:.86rem"></span></div></div>
         <div class="tiles" id="agTiles"></div>
         <div class="tablewrap"><table id="agFind"></table></div>
+        <button class="btn showok" id="agOk" type="button">Afficher les contrôles réussis</button>
         <div class="toolbar"><button class="btn steel" id="agAi" type="button" hidden>Faire commenter l'audit par Claude</button><button class="btn" id="agAiStop" type="button" hidden>Arrêter</button></div>
         <div class="aiout" id="agAiOut" aria-live="polite" hidden></div>
       </div>
@@ -722,9 +908,9 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
     <section class="page" data-page="stage" hidden>
       <div class="lead"><div><span class="eyebrow">Formation</span><h2>Espace <em class="g">stagiaires</em></h2>
         <p>Un parcours pas à pas pour apprendre les données du projet et les tâches comptables, avec des quiz, un journal de bord et le suivi de l'encadrant de stage.</p></div>
-        <div class="seg" id="stSeg"></div></div>
+        <div class="seg" id="sgSeg"></div></div>
 
-      <div id="st-me" style="display:grid;gap:22px">
+      <div id="st-me" style="display:grid;gap:32px">
         <div class="panel gilt"><div class="lead"><h3>Mon stage</h3><span class="muted" id="stStore" style="font-size:.86rem"></span></div>
           <div class="formgrid">
             <label class="f" for="stName">Nom du stagiaire<input type="text" id="stName" maxlength="60" placeholder="Prénom Nom"></label>
@@ -744,7 +930,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
         </div>
       </div>
 
-      <div id="st-enc" hidden style="display:grid;gap:22px">
+      <div id="st-enc" hidden style="display:grid;gap:32px">
         <div class="panel"><h3>Suivi des stagiaires</h3>
           <div class="tablewrap"><table id="stTeam"></table></div></div>
         <div class="panel gilt" id="stCheckPanel" hidden><h3 id="stCheckTitle">Check-up</h3>
@@ -766,7 +952,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
         <p>Scannez ou saisissez une facture : l'écriture est proposée selon le plan comptable marocain (CGNC), contrôlée (débit = crédit), puis enregistrée au journal.</p></div>
         <div class="seg" id="cpSeg"></div></div>
 
-      <div id="cp-saisie" style="display:grid;gap:22px">
+      <div id="cp-saisie" style="display:grid;gap:32px">
         <div class="grid2">
           <div class="panel gilt"><h3>1 · Scanner la facture</h3>
             <label class="drop" for="cpFile" id="cpDrop"><input type="file" id="cpFile" accept="image/jpeg,image/png,image/webp" capture="environment">
@@ -800,7 +986,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
         </div>
       </div>
 
-      <div id="cp-journal" hidden style="display:grid;gap:22px">
+      <div id="cp-journal" hidden style="display:grid;gap:32px">
         <div class="tiles" id="cpTiles"></div>
         <div class="panel"><div class="lead"><h3>Journal des écritures</h3>
           <div class="toolbar"><label class="f" for="cpMonth" style="min-width:160px">Mois<input type="month" id="cpMonth"></label><button class="btn" id="cpCsv" type="button">Copier en CSV</button><button class="btn" id="cpSap" type="button">Exporter pour SAP</button></div></div>
@@ -809,7 +995,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           <div class="muted" id="cpCsvMsg" aria-live="polite"></div></div>
       </div>
 
-      <div id="cp-amort" hidden style="display:grid;gap:22px">
+      <div id="cp-amort" hidden style="display:grid;gap:32px">
         <div class="panel"><div class="lead"><h3>Dotations aux amortissements de l'exercice</h3>
           <label class="f" for="cpYear" style="min-width:140px">Exercice<input type="number" id="cpYear" min="2020" max="2050"></label></div>
           <p class="muted" style="font-size:.88rem">Calculées à partir des immobilisations enregistrées au journal : amortissement linéaire, prorata temporis à partir du mois d'acquisition, taux usuels de la note circulaire n° 717.</p>
@@ -817,7 +1003,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           <div class="toolbar"><button class="btn primary" id="cpAmortSave" type="button">Passer l'écriture de dotation</button><span class="muted" id="cpAmortMsg" aria-live="polite"></span></div></div>
       </div>
 
-      <div id="cp-fisc" hidden style="display:grid;gap:22px">
+      <div id="cp-fisc" hidden style="display:grid;gap:32px">
         <div class="grid2">
           <div class="panel gilt"><h3>Impôt sur les sociétés et cotisation minimale</h3>
             <div class="formgrid">
@@ -847,7 +1033,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
           </div>
         </div>
       </div>
-      <div id="cp-valid" hidden style="display:grid;gap:22px">
+      <div id="cp-valid" hidden style="display:grid;gap:32px">
         <div class="tiles" id="vaTiles"></div>
         <div class="grid2">
           <div class="panel"><div class="lead"><h3>Pièces à contrôler</h3>
@@ -879,7 +1065,7 @@ input[type=date]{background:var(--bg);border:1px solid var(--line);border-radius
         </div>
       </div>
 
-      <div id="cp-pcm" hidden style="display:grid;gap:22px">
+      <div id="cp-pcm" hidden style="display:grid;gap:32px">
         <div class="panel"><div class="lead"><h3>Plan comptable marocain (CGNC) · comptes d'une entreprise industrielle</h3>
           <label class="f" for="cpSearch" style="min-width:240px">Rechercher<input type="text" id="cpSearch" placeholder="numéro ou mot : 2332, TVA, amortissement"></label></div>
           <div class="tablewrap"><table id="cpPcm"></table></div>
@@ -925,8 +1111,37 @@ Respect covenant = IF([DSCR min] >= 1.2, "Oui", "Non")
 Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Trésorerie (fin)")</pre>
       <p class="muted">La version Python / Streamlit complète, avec export CSV et Excel en fichiers, est dans le dépôt GitHub (dossier <span class="num">tanger2-app</span>).</p></div>
     </section>
-  </main>
   <footer>Cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
+  </main>
+  </div>
+  <div class="overlay" id="rpOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rpH">
+      <div class="sheethd"><div style="display:grid;gap:4px"><span class="eyebrow" id="rpEyebrow">Nouveau rapport</span><h2 id="rpH">Créer un rapport</h2></div>
+        <button class="btn" id="rpClose" type="button">Fermer</button></div>
+      <div class="sheetbody">
+        <div class="rpgrid">
+          <form class="rpform" id="rpForm" autocomplete="off">
+            <label class="f" for="rpType">Sujet du rapport<select id="rpType"></select></label>
+            <label class="f" for="rpTitle">Titre<input type="text" id="rpTitle" maxlength="120"></label>
+            <div class="formgrid">
+              <label class="f" for="rpAuthor">Rédigé par<input type="text" id="rpAuthor" maxlength="80"></label>
+              <label class="f" for="rpTo">Destinataire<input type="text" id="rpTo" maxlength="80" placeholder="ex. Directeur financier"></label>
+              <label class="f" for="rpPeriod">Période<input type="text" id="rpPeriod" maxlength="60" placeholder="ex. Octobre 2026"></label>
+              <label class="f" for="rpStatus">Avancement<select id="rpStatus"><option>Terminé</option><option>En cours</option><option>Bloqué</option></select></label>
+            </div>
+            <label class="f" for="rpDone">Travail réalisé<textarea id="rpDone" rows="3" maxlength="2000"></textarea></label>
+            <label class="f" for="rpIssues">Difficultés et points d'attention<textarea id="rpIssues" rows="3" maxlength="2000"></textarea></label>
+            <label class="f" for="rpNext">Prochaines étapes<textarea id="rpNext" rows="3" maxlength="2000"></textarea></label>
+            <label class="f" for="rpSummary">Synthèse<textarea id="rpSummary" rows="4" maxlength="3000" placeholder="Quelques lignes pour le lecteur pressé."></textarea></label>
+            <div class="toolbar"><button class="btn steel" id="rpAi" type="button" hidden>Rédiger la synthèse avec Claude</button><button class="btn" id="rpAiStop" type="button" hidden>Arrêter</button></div>
+          </form>
+          <article class="rpdoc" id="rpDoc" aria-label="Aperçu du rapport"></article>
+        </div>
+      </div>
+      <div class="sheetft"><span class="muted" id="rpMsg" aria-live="polite" style="font-size:.88rem"></span>
+        <div class="toolbar"><button class="btn" id="rpCopy" type="button">Copier le texte</button><button class="btn" id="rpDl" type="button" hidden>Télécharger</button><button class="btn" id="rpDel" type="button" hidden>Supprimer</button><button class="btn primary" id="rpSave" type="button">Enregistrer le rapport</button></div></div>
+    </div>
+  </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script><script>
 // Moteur financier Tanger II — portage JavaScript de tanger2-app/model.py
@@ -1302,9 +1517,9 @@ $("loginForm").addEventListener("submit", async (e) => {
     else $("lerr").textContent = `Identifiant ou mot de passe incorrect (${5 - attempts} essai(s) restant(s)).`;
   }
 });
-$("logout").addEventListener("click", () => { user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
+$("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
 
-const PAGES = [["daily", "Au quotidien", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -1321,15 +1536,17 @@ function enterApp() {
   });
   const h = (location.hash || "").slice(1);
   show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin")) ? h : "dash");
+  watchChat(); initReport();
 }
 const rendered = {};
 function show(id) {
   current = id;
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
-  document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); if (b.dataset.page === id) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
+  document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
+  afterShow(id);
 }
 function fillSelect(id, names, sel) { const el = $(id); if (el.options.length) return; names.forEach((n) => { const o = document.createElement("option"); o.value = o.textContent = n; el.appendChild(o); }); if (sel) el.value = sel; }
 function fillScen(id, sel = "B") { const el = $(id); if (el.options.length) return; "ABC".split("").forEach((k) => { const o = document.createElement("option"); o.value = k; o.textContent = S[k].name; el.appendChild(o); }); el.value = sel; }
@@ -1974,7 +2191,7 @@ function drawCalcs() {
   const st = (ok, warn, txt) => `<span class="pill ${ok ? "ok" : warn ? "warn" : "ko"}">${txt}</span>`;
   const d = v("cServ") > 0 ? v("cCfads") / v("cServ") : NaN;
   $("oDscr").innerHTML = `<span class="res">${xx(d)}</span> ${st(d >= 1.3, d >= 1.2, d >= 1.3 ? "Conforme" : d >= 1.2 ? "Sous l'alerte de 1,30x" : "Covenant non respecté")}`;
-  const lev = v("cEbitda") > 0 ? (v("cDebt") - v("cCash")) / v("cEbitda") : NaN;
+  const lev = v("cEbitda") > 0 ? (v("cDebt") - v("dyCash")) / v("cEbitda") : NaN;
   $("oLev").innerHTML = `<span class="res">${xx(lev)}</span> ${st(lev <= 3, lev <= 3.5, lev <= 3 ? "Conforme" : lev <= 3.5 ? "Au-dessus de l'alerte de 3,0x" : "Covenant non respecté")}`;
   const rf = v("cRf"), rate = rf >= 100 ? 0.35 : 0.20, is = Math.max(Math.max(rf, 0) * rate, 0.0025 * v("cCa"));
   $("oIs").innerHTML = `<span class="res">${fmt(is, 1)} MDH</span> <span class="muted">taux ${rf >= 100 ? "35 % (seuil de 100 MDH atteint)" : "20 %"} ; cotisation minimale ${fmt(0.0025 * v("cCa"), 1)} MDH</span>`;
@@ -2381,11 +2598,12 @@ function drawLv() {
 let storeP = null;
 function getStore() {
   if (!storeP) storeP = (async () => {
-    const cl = window.claude; let db = null, uid = null, sample = null;
+    const cl = window.claude; let db = null, uid = null, sample = null, u = null, dl = null;
     try { db = cl ? await cl.use("db") : null; } catch (e) { db = null; }
-    try { const u = cl ? await cl.use("user") : null; uid = u ? await u.id() : null; } catch (e) { uid = null; }
+    try { u = cl ? await cl.use("user") : null; uid = u ? await u.id() : null; } catch (e) { uid = null; }
     try { sample = cl ? await cl.use("sample") : null; } catch (e) { sample = null; }
-    return { db, uid, sample };
+    try { dl = cl ? await cl.use("downloads") : null; } catch (e) { dl = null; }
+    return { db, uid, sample, u, dl };
   })();
   return storeP;
 }
@@ -2592,7 +2810,7 @@ const LEGAL_REF = [
   ["Délais de paiement : 60 jours, 120 au plus par convention", "Loi 69-21"],
   ["Prime d'investissement : cumul plafonné à 30 %", "Loi-cadre 03-22, décret 2-23-1"],
 ];
-let agLast = null, agInit = false, agHist = [], agCtl = null, agAiCtl = null;
+let agShowOk = false, agLast = null, agInit = false, agHist = [], agCtl = null, agAiCtl = null;
 async function runAudit() {
   await connectStore(); await computeStates();
   const F = [], add = (dom, lvl, msg, ref = "") => F.push({ dom, lvl, msg, ref });
@@ -2650,10 +2868,11 @@ function renderAudit() {
   const cls = (v) => (v >= 80 ? "" : v >= 60 ? "" : "ko");
   $("agTiles").innerHTML = tile("Fiabilité globale", glob + " / 100", glob >= 80 ? "bonne" : glob >= 60 ? "à surveiller" : "faible", cls(glob))
     + Object.entries(score).map(([d, v]) => tile(d, v + " / 100", "", cls(v))).join("") + tile("Erreurs", ko, "à corriger", ko ? "ko" : "") + tile("Alertes", wa, "à vérifier");
-  const order = { ko: 0, warn: 1, ok: 2 }, rows = F.slice().sort((a, b) => order[a.lvl] - order[b.lvl]);
+  const order = { ko: 0, warn: 1, ok: 2 }, nOk = F.filter((f) => f.lvl === "ok").length, rows = F.slice().sort((a, b) => order[a.lvl] - order[b.lvl]).filter((f) => agShowOk || f.lvl !== "ok");
   $("agFind").innerHTML = `<thead><tr><th>Niveau</th><th>Domaine</th><th class="wrap">Constat</th><th class="wrap">Référence</th></tr></thead><tbody>`
     + rows.map((f) => `<tr><td><span class="sev ${f.lvl}">${f.lvl === "ko" ? "Erreur" : f.lvl === "warn" ? "Alerte" : "OK"}</span></td><td>${esc(f.dom)}</td><td class="wrap">${esc(f.msg)}</td><td class="wrap muted">${esc(f.ref || "")}</td></tr>`).join("") + "</tbody>";
   $("agWhen").textContent = "Audit du " + dfr(agLast.at);
+  $("agOk").textContent = agShowOk ? "Masquer les contrôles réussis" : `Afficher les ${nOk} contrôles réussis`;
 }
 const md = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/^#+\s*(.+)$/gm, "<b>$1</b>");
 const AI_ERR = { cancelled: "Arrêté.", not_granted: "Accès à Claude refusé pour cette page.", rate_limited: "Trop de demandes pour le moment : réessayez dans un instant.",
@@ -2666,6 +2885,7 @@ async function initAgent() {
     agInit = true;
     $("agRun").addEventListener("click", async () => { $("agRun").disabled = true; await runAudit(); renderAudit(); $("agRun").disabled = false; logAudit("Audit de fiabilité lancé (score " + agLast.glob + "/100)"); });
     $("agAi").addEventListener("click", aiComment);
+    $("agOk").addEventListener("click", () => { agShowOk = !agShowOk; renderAudit(); });
     $("agAiStop").addEventListener("click", () => agAiCtl && agAiCtl.abort());
     $("agForm").addEventListener("submit", (e) => { e.preventDefault(); ask($("agQ").value); });
     $("agQ").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask($("agQ").value); } });
@@ -2790,7 +3010,7 @@ async function initStage() {
   }
   if (stRole !== user.role) {
     stRole = user.role; stView = canSupervise() ? "enc" : "me"; stSel = null;
-    seg("stSeg", [["me", "Mon parcours"]].concat(canSupervise() ? [["enc", "Suivi de l'encadrant"]] : []), stView, (v) => { stView = v; renderStage(); });
+    seg("sgSeg", [["me", "Mon parcours"]].concat(canSupervise() ? [["enc", "Suivi de l'encadrant"]] : []), stView, (v) => { stView = v; renderStage(); });
   }
   renderStage();
 }
@@ -2885,6 +3105,337 @@ async function saveCheck() {
   else { stChecks = [c].concat(stChecks); lsSet("t2checkups", stChecks); $("stCheckMsg").textContent = "Check-up enregistré."; renderTeam(); }
   $("stCheckSave").disabled = false; $("stComment").value = "";
   logAudit("Check-up de stagiaire enregistré", (stDocs[stSel] || {}).name || "");
+}
+
+// ---------- Navigation latérale (tiroir sur mobile) ----------
+function navOpen(open) { $("app").classList.toggle("navopen", open); $("scrim").hidden = !open; $("navBtn").setAttribute("aria-expanded", open); if (open) { const b = $("tabs").querySelector("[aria-selected=true]"); if (b) b.focus(); } }
+$("navBtn").addEventListener("click", () => navOpen(!$("app").classList.contains("navopen")));
+$("scrim").addEventListener("click", () => navOpen(false));
+addEventListener("keydown", (e) => { if (e.key === "Escape") { if (!$("rpOverlay").hidden) closeReport(); else navOpen(false); } });
+try { new ResizeObserver(() => document.documentElement.style.setProperty("--hdr", $("app").querySelector("header.top").offsetHeight + "px")).observe($("app").querySelector("header.top")); } catch (e) {}
+function afterShow(id) {
+  navOpen(false);
+  const p = PAGES.find((x) => x[0] === id); $("navCur").textContent = p ? p[1] : "Menu";
+  if (id === "chat") markRead();
+}
+
+// ---------- Messagerie d'équipe ----------
+const CHANNELS = [["general", "Général", "Annonces et coordination de toute l'équipe"], ["projet", "Projet Tanger II", "Montage financier, banques, calendrier"],
+  ["compta", "Comptabilité", "Factures, TVA, clôtures et paiements"], ["direction", "Direction", "Décisions à prendre et validations"], ["stagiaires", "Stagiaires", "Questions des stagiaires et réponses de l'encadrant"]];
+let chInit = false, chWatch = false, chCur = "general", chRows = [], meUid = null, lastSend = 0, chNames = {};
+const chOf = (id) => CHANNELS.find((c) => c[0] === id) || CHANNELS[0];
+const isMine = (m) => (meUid ? m.by === meUid : (!m.by && user && m.who === user.name));
+function unreadOf(ch) { const lr = lsGet("t2read", {})[ch] || ""; return chRows.filter((m) => m.ch === ch && (m.at || "") > lr && !isMine(m)).length; }
+function navBadge() {
+  const b = $("tabs").querySelector('[data-page="chat"]'); if (!b) return;
+  const n = CHANNELS.reduce((s, c) => s + unreadOf(c[0]), 0);
+  let sp = b.querySelector(".nbadge"); if (!n) { if (sp) sp.remove(); return; }
+  if (!sp) { sp = document.createElement("span"); sp.className = "nbadge"; b.appendChild(sp); }
+  sp.textContent = n > 99 ? "99+" : String(n); sp.setAttribute("aria-label", n + " message(s) non lu(s)");
+}
+function markRead() {
+  const last = chRows.filter((m) => m.ch === chCur).reduce((a, m) => ((m.at || "") > a ? m.at : a), "");
+  const r = lsGet("t2read", {}); if (last && r[chCur] !== last) { r[chCur] = last; lsSet("t2read", r); }
+  navBadge();
+}
+async function watchChat() {
+  if (chWatch) return; chWatch = true;
+  const st = await getStore(); meUid = st.uid;
+  if (st.db) st.db.collection("messages").orderBy("at", "desc").limit(400).onSnapshot((s) => {
+    chRows = s.docs.map((d) => Object.assign({ id: d.id }, d.data())).filter((m) => m && typeof m.text === "string");
+    if (current === "chat") renderChat(); else navBadge();
+  }, () => {});
+  else { chRows = lsGet("t2msgs", []); navBadge(); }
+}
+async function initChat() {
+  if (!chInit) {
+    chInit = true;
+    $("msgForm").addEventListener("submit", (e) => { e.preventDefault(); sendMsg(); });
+    $("msgText").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendMsg(); } });
+    $("chReport").addEventListener("click", () => openReport("canal"));
+    const st = await getStore();
+    $("chStore").textContent = st.db ? "Les messages sont partagés avec toutes les personnes qui ont accès à cette page." : "Hors de claude.ai, les messages restent dans ce navigateur. Ouvrez la page partagée sur claude.ai pour échanger avec l'équipe.";
+  }
+  await watchChat(); renderChat();
+}
+const fmtMsg = (t) => esc(t).replace(/(^|\s)@([A-Za-zÀ-ÿ0-9_-]{2,30})/g, '$1<span class="at">@$2</span>');
+const initials = (s) => (String(s || "?").trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2) || "?").toUpperCase();
+async function renderChat() {
+  $("chList").innerHTML = CHANNELS.map(([id, n, d]) => { const u = id === chCur ? 0 : unreadOf(id);
+    return `<button type="button" data-ch="${id}" aria-pressed="${id === chCur}"><span class="cn"># ${esc(n)}</span>${u ? `<span class="nbadge">${u}</span>` : "<span></span>"}<span class="cd">${esc(d)}</span></button>`; }).join("");
+  $("chList").querySelectorAll("[data-ch]").forEach((b) => b.addEventListener("click", () => { chCur = b.dataset.ch; $("msgMsg").textContent = ""; renderChat(); $("msgText").focus(); }));
+  const [, cn, cd] = chOf(chCur); $("chTitle").textContent = "# " + cn; $("chDesc").textContent = cd; $("msgText").placeholder = `Écrire dans # ${cn}… (Entrée pour envoyer, Maj + Entrée pour aller à la ligne)`;
+  const rows = chRows.filter((m) => m.ch === chCur).sort((a, b) => (a.at || "").localeCompare(b.at || ""));
+  const st = await getStore(), ids = [...new Set(rows.map((m) => m.by).filter(Boolean))];
+  if (st.u && ids.length) { try { const ps = await st.u.profiles(ids); ids.forEach((i) => { chNames[i] = (ps[i] && ps[i].name) || ""; }); } catch (e) {} }
+  const nameOf = (m) => (m.by && chNames[m.by]) || m.who || "Membre";
+  const pins = rows.filter((m) => m.pinned);
+  $("chPinned").hidden = !pins.length;
+  $("chPinned").innerHTML = pins.length ? `<b style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase">Épinglé</b>` + pins.slice(-3).map((m) => `<div><b>${esc(nameOf(m))}</b> · ${fmtMsg(m.text.length > 180 ? m.text.slice(0, 180) + "…" : m.text)}</div>`).join("") : "";
+  if (!rows.length) { $("msgs").innerHTML = `<div class="empty"><b>Aucun message dans # ${esc(cn)}</b><span>Écrivez le premier message ci-dessous : une question, une information ou une décision à partager.</span></div>`; }
+  else {
+    let html = "", day = "", prev = null;
+    rows.forEach((m) => {
+      const d = (m.at || "").slice(0, 10);
+      if (d !== day) { day = d; prev = null; html += `<div class="day">${esc(new Date(m.at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }))}</div>`; }
+      const cont = prev && prev.by === m.by && prev.who === m.who && new Date(m.at) - new Date(prev.at) < 5 * 60000 && !m.urgent;
+      const role = ["admin", "superviseur", "comptable", "stagiaire", "lecteur"].includes(m.role) ? m.role : "";
+      const mine = isMine(m), canPin = mine || canSupervise();
+      html += `<div class="msg${cont ? " cont" : ""}${m.urgent ? " urgent" : ""}"><div class="av ${role}" aria-hidden="true">${esc(initials(nameOf(m)))}</div><div style="min-width:0">
+        ${cont ? "" : `<div class="mhd"><b>${esc(nameOf(m))}</b>${m.by && chNames[m.by] && m.who ? `<span class="role">${esc(m.who)}</span>` : ""}<span class="muted">${esc(new Date(m.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }))}</span>${m.urgent ? '<span class="pill ko">Urgent</span>' : ""}${m.pinned ? '<span class="pill warn">Épinglé</span>' : ""}</div>`}
+        <div class="mtxt">${fmtMsg(m.text)}</div>
+        ${canPin || mine ? `<div class="mact">${canPin ? `<button type="button" data-pin="${esc(m.id)}">${m.pinned ? "Désépingler" : "Épingler"}</button>` : ""}${mine ? `<button type="button" data-delm="${esc(m.id)}">Supprimer</button>` : ""}</div>` : ""}</div></div>`;
+      prev = m;
+    });
+    const box = $("msgs"), atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    box.innerHTML = html; if (atEnd || !box.dataset.ch || box.dataset.ch !== chCur) box.scrollTop = box.scrollHeight; box.dataset.ch = chCur;
+    box.querySelectorAll("[data-pin]").forEach((b) => b.addEventListener("click", () => pinMsg(b.dataset.pin)));
+    box.querySelectorAll("[data-delm]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.confirm) delMsg(b.dataset.delm); else { b.dataset.confirm = "1"; b.textContent = "Confirmer la suppression"; } }));
+  }
+  if (current === "chat") markRead(); else navBadge();
+}
+async function sendMsg() {
+  const text = $("msgText").value.trim(); if (!text || !user) return;
+  if (Date.now() - lastSend < 1500) { $("msgMsg").textContent = "Patientez une seconde avant le message suivant."; return; }
+  lastSend = Date.now();
+  const st = await getStore();
+  const m = { ch: chCur, at: new Date().toISOString(), by: st.uid || null, who: user.name, role: user.role, text: text.slice(0, 2000), urgent: $("msgUrgent").checked, pinned: false };
+  $("msgSend").disabled = true;
+  if (st.db) { try { await st.db.collection("messages").add(m); $("msgText").value = ""; $("msgUrgent").checked = false; $("msgMsg").textContent = ""; } catch (e) { $("msgMsg").textContent = e && e.code === "quota_exceeded" ? "Messagerie pleine : supprimez d'anciens messages." : "Message non envoyé : vous n'avez peut-être pas le droit d'écrire sur cette page."; } }
+  else { m.id = "m" + Date.now(); chRows = chRows.concat([m]); lsSet("t2msgs", chRows.slice(-400)); $("msgText").value = ""; $("msgUrgent").checked = false; renderChat(); }
+  $("msgSend").disabled = false; $("msgText").focus();
+}
+async function pinMsg(id) {
+  const m = chRows.find((x) => x.id === id); if (!m) return; const st = await getStore();
+  if (st.db) { try { await st.db.doc("messages/" + id).update({ pinned: !m.pinned }); } catch (e) { $("msgMsg").textContent = "Action refusée."; } }
+  else { m.pinned = !m.pinned; lsSet("t2msgs", chRows); renderChat(); }
+}
+async function delMsg(id) {
+  const m = chRows.find((x) => x.id === id); if (!m || !isMine(m)) return; const st = await getStore();
+  if (st.db) { try { await st.db.doc("messages/" + id).delete(); } catch (e) {} }
+  else { chRows = chRows.filter((x) => x.id !== id); lsSet("t2msgs", chRows); renderChat(); }
+}
+
+// ---------- Rapports ----------
+const RP_TYPES = [["tache", "Compte rendu de tâche"], ["synthese", "Synthèse du montage financier"], ["stress", "Tests de résistance"], ["levier", "Effet de levier"],
+  ["journal", "Journal comptable"], ["validation", "Contrôle et signature des factures"], ["fiscalite", "Fiscalité : IS, cotisation minimale, IR"],
+  ["audit", "Audit de fiabilité (agent IA)"], ["stage", "Suivi des stagiaires"], ["canal", "Échanges d'un canal de la messagerie"]];
+const RP_PAGE = { dash: "synthese", projet: "synthese", montage: "synthese", legal: "synthese", oeuvre: "synthese", sim: "synthese", form: "synthese", live: "synthese", stress: "stress", mc: "stress", opt: "stress", levier: "levier", agent: "audit", stage: "stage", chat: "canal" };
+const RP_CP = { saisie: "journal", journal: "journal", amort: "journal", pcm: "journal", fisc: "fiscalite", valid: "validation" };
+const rpLabel = (t) => (RP_TYPES.find((x) => x[0] === t) || RP_TYPES[0])[1];
+let rpInit = false, rpCur = null, rpData = [], rpView = null, rpCtl = null, rpRows = [], rpWatch = false, rpTimer = null;
+const MOIS = (iso) => { try { return new Date(iso + "-01T12:00:00").toLocaleDateString("fr-FR", { month: "long", year: "numeric" }); } catch (e) { return iso; } };
+const P = (x) => ({ t: "p", x: String(x) }), KV = (rows) => ({ t: "kv", rows }), TB = (head, rows) => ({ t: "table", head, rows }), LI = (items) => ({ t: "list", items });
+
+async function rpBuild(type) {
+  const cen = CASES["1. Central"];
+  if (type === "synthese") {
+    const K = {}; "ABC".split("").forEach((k) => { K[k] = run(S[k], cen).kpi; });
+    const row = (l, f) => [l].concat("ABC".split("").map((k) => f(K[k], S[k])));
+    return [{ h: "Indicateurs des trois montages (cas central, MDH)", blocks: [TB(["Indicateur", "A", "B", "C"], [
+      row("Fonds propres / dette / crédit-bail", (k, s) => `${s.equity} / ${s.debt} / ${s.lease}`), row("Besoin de financement", (k) => fmt(k.need, 1)), row("VAN au WACC", (k) => fmt(k.npv, 1)),
+      row("TRI du projet", (k) => pct(k.tri, 1)), row("TRI des actionnaires", (k) => pct(k.triEq, 1)), row("WACC", (k) => pct(k.wacc, 2)), row("DSCR minimum", (k) => xx(k.dscrMin)),
+      row("Levier maximal", (k) => xx(k.levMax)), row("Trésorerie minimale", (k) => fmt(k.minCash, 1)), row("Covenants", (k) => (verdictOf(k).length ? "Non respectés" : "Respectés"))])] },
+      { h: "Recommandation", blocks: [P(`Le montage B (350 MDH de fonds propres, 450 MDH de dette bancaire, 180 MDH de crédit-bail) offre le meilleur TRI pour les actionnaires (${pct(K.B.triEq, 1)}) tout en respectant les covenants (DSCR minimum ${xx(K.B.dscrMin)} ≥ 1,20x, levier maximal ${xx(K.B.levMax)} ≤ 3,5x).`)] }];
+  }
+  if (type === "stress") {
+    const rows = Object.keys(CASES).map((c) => { const k = run(S.B, CASES[c]).kpi; return [c, xx(k.dscrMin), fmt(k.npv, 1), fmt(k.minCash, 1), xx(k.levMax), verdictOf(k).length ? "Non" : "Oui"]; });
+    return [{ h: "Montage B face aux cas de stress", blocks: [TB(["Cas", "DSCR min", "VAN (MDH)", "Trésorerie min", "Levier max", "Covenants respectés"], rows)] }];
+  }
+  if (type === "levier") {
+    return [{ h: "Effet de levier en 2032 (année de croisière)", blocks: [P("Rf = Re + (Re − i) × D / CP"), TB(["Montage", "CP (MDH)", "Dette nette (MDH)", "D / CP", "Re", "i", "Rf", "Effet de levier"],
+      Object.entries(LEV).map(([k, o]) => [k, fmt(o.cp, 1), fmt(o.d, 1), xx(o.l), pct(o.re, 2), pct(o.i, 2), pct(o.re + (o.re - o.i) * o.l, 2), "+" + fmt((o.re - o.i) * o.l * 100, 2) + " pts"]))] }];
+  }
+  if (type === "journal" || type === "validation") {
+    await connectStore(); await computeStates();
+    const m = $("cpMonth").value, rows = journalLines();
+    if (type === "journal") {
+      const tvaD = rows.filter((p) => p.type !== "vente").reduce((s, p) => s + (+p.tva || 0), 0), tvaC = rows.filter((p) => p.type === "vente").reduce((s, p) => s + (+p.tva || 0), 0);
+      return [{ h: m ? "Journal de " + MOIS(m) : "Journal (toutes périodes)", blocks: [KV([["Pièces", String(rows.length)], ["Achats TTC (MAD)", mad(rows.filter((p) => p.type !== "vente").reduce((s, p) => s + (+p.ttc || 0), 0))],
+        ["Ventes TTC (MAD)", mad(rows.filter((p) => p.type === "vente").reduce((s, p) => s + (+p.ttc || 0), 0))], ["TVA récupérable (MAD)", mad(tvaD)], ["TVA facturée (MAD)", mad(tvaC)], ["TVA à payer (MAD)", mad(Math.max(tvaC - tvaD, 0))]]),
+        rows.length ? TB(["Date", "Pièce", "Tiers", "Compte", "HT", "TVA", "TTC", "Statut"], rows.slice(0, 80).map((p) => [p.date || "", p.numero || "", p.tiers || "", p.nature || "", mad(+p.ht || 0), mad(+p.tva || 0), mad(+p.ttc || 0), ST_LABEL[STATES[p.id] || "attente"][1]])) : P("Aucune écriture sur la période.")] }];
+    }
+    const cnt = (s) => cpRows.filter((p) => (STATES[p.id] || "attente") === s).length, al = cpRows.map((p) => ({ p, F: fraudChecks(p, cpRows) })).filter((x) => x.F.length);
+    return [{ h: "État des validations", blocks: [KV([["Pièces au journal", String(cpRows.length)], ["Validées et signées", String(cnt("validee"))], ["En attente (dont 1 signature sur 2)", `${cnt("attente") + cnt("partielle")} (${cnt("partielle")})`], ["Rejetées", String(cnt("rejetee"))], ["Modifiées après signature", String(cnt("alteree"))]])] },
+      { h: "Pièces avec alertes anti-fraude", blocks: [al.length ? TB(["Pièce", "Tiers", "TTC (MAD)", "Statut", "Alertes"], al.slice(0, 50).map(({ p, F }) => [p.numero || "", p.tiers || "", mad(+p.ttc || 0), ST_LABEL[STATES[p.id] || "attente"][1], F.map((f) => f.msg).join(" ")])) : P("Aucune alerte.")] },
+      { h: "Dernières actions de la piste d'audit", blocks: [auditRows.length ? LI(auditRows.slice(0, 12).map((a) => `${dfr(a.at)} · ${a.name || ""} · ${a.action || ""}${a.ref ? " · " + a.ref : ""}`)) : P("Aucune action enregistrée.")] }];
+  }
+  if (type === "fiscalite") {
+    const v = (id) => parseFloat($(id).value) || 0, rf = Math.max(v("isRf"), 0), rang = parseInt($("isRang").value) || 1, under = parseInt($("isUnder").value) || 0, exo = $("isExo").checked && rang <= 5;
+    const taux = rf >= 100e6 || under < 3 ? 0.35 : 0.20, isTh = rf * taux, cm = rang <= 3 ? 0 : Math.max(0.0025 * (v("isCa") + v("isAutres")), 3000), du = exo ? 0 : Math.max(isTh, cm);
+    const brut = v("irBrut"), fam = Math.max(0, parseInt($("irFam").value) || 0), cnss = Math.min(brut, 6000) * 0.0448, amo = brut * 0.0226, ann = brut * 12;
+    const fp = Math.min(ann * (ann <= 78000 ? 0.35 : 0.25), ann <= 78000 ? Infinity : 35000), sni = Math.max(0, ann - fp - (cnss + amo) * 12), tr = IR_BAREME.find(([mx]) => sni <= mx);
+    const irA = Math.max(0, Math.max(0, sni * tr[1] - tr[2]) - Math.min(fam * 500, 3000));
+    return [{ h: "Impôt sur les sociétés et cotisation minimale", blocks: [KV([["Résultat fiscal (MAD)", mad(rf)], ["Taux d'IS", pct(taux, 0)], ["IS théorique (MAD)", mad(isTh)], ["Cotisation minimale (MAD)", mad(cm)], ["IS dû (MAD)", mad(du) + (exo ? " (exonération)" : "")], ["Acompte trimestriel (MAD)", mad(du / 4)]]), P("Références : CGI art. 19-I (taux), art. 144 (cotisation minimale), art. 170 (acomptes).")] },
+      { h: "IR sur un salaire mensuel", blocks: [KV([["Salaire brut mensuel (MAD)", mad(brut)], ["Salaire net imposable annuel (MAD)", mad(sni)], ["IR annuel (MAD)", mad(irA)], ["IR du mois (MAD)", mad(irA / 12)], ["Net à payer (MAD)", mad(brut - cnss - amo - irA / 12)]]), P("Barème de l'IR applicable depuis 2025 (CGI art. 73) : à vérifier avant toute paie réelle.")] }];
+  }
+  if (type === "audit") {
+    const a = await runAudit(), ko = a.F.filter((f) => f.lvl === "ko"), wa = a.F.filter((f) => f.lvl === "warn");
+    return [{ h: "Note de fiabilité", blocks: [KV([["Note globale", a.glob + " / 100"]].concat(Object.entries(a.score).map(([d, s]) => [d, s + " / 100"])).concat([["Erreurs", String(ko.length)], ["Alertes", String(wa.length)]]))] },
+      { h: "Erreurs à corriger", blocks: [ko.length ? LI(ko.map((f) => `${f.dom} · ${f.msg}${f.ref ? " (" + f.ref + ")" : ""}`)) : P("Aucune erreur.")] },
+      { h: "Points à vérifier", blocks: [wa.length ? LI(wa.map((f) => `${f.dom} · ${f.msg}${f.ref ? " (" + f.ref + ")" : ""}`)) : P("Aucune alerte.")] }];
+  }
+  if (type === "stage") {
+    if (!stInit) { const st = await getStore(); if (st.db) { try { const q = await st.db.collection("stage").limit(200).get(); q.docs.forEach((d) => { stDocs[d.id] = d.data(); }); const c = await st.db.collection("checkups").orderBy("at", "desc").limit(500).get(); stChecks = c.docs.map((d) => d.data()); } catch (e) {} } else { stDocs = lsGet("t2stage", {}); stChecks = lsGet("t2checkups", []); } }
+    const ids = Object.keys(stDocs);
+    return [{ h: "Avancement des stagiaires", blocks: [ids.length ? TB(["Stagiaire", "Début", "Progression", "Quiz", "Modules validés", "Dernier check-up", "Prochain point"], ids.map((id) => { const m = stDocs[id], pr = progressOf(m), l = stChecks.find((c) => c.sid === id);
+      return [m.name || "Sans nom", m.start ? dday(m.start) : "", pct(pr.pct, 0), pr.quiz == null ? "—" : pct(pr.quiz, 0), `${pr.val} / ${MODULES.length}`, l ? `${dday(l.at.slice(0, 10))} · ${l.decision || ""}` : "Aucun", l && l.next ? dday(l.next) : "—"]; })) : P("Aucun stagiaire inscrit.")] }];
+  }
+  if (type === "canal") {
+    await watchChat(); const [, cn] = chOf(chCur), rows = chRows.filter((m) => m.ch === chCur).sort((a, b) => (a.at || "").localeCompare(b.at || "")).slice(-40);
+    return [{ h: `Canal # ${cn} : ${rows.length} dernier(s) message(s)`, blocks: [rows.length ? TB(["Date", "Auteur", "Message"], rows.map((m) => [dfr(m.at), (m.by && chNames[m.by]) || m.who || "", (m.urgent ? "[Urgent] " : "") + m.text])) : P("Aucun message.")] }];
+  }
+  return [];
+}
+function rpRead() {
+  return { type: $("rpType").value, title: $("rpTitle").value.trim() || rpLabel($("rpType").value), author: $("rpAuthor").value.trim(), to: $("rpTo").value.trim(), period: $("rpPeriod").value.trim(), status: $("rpStatus").value,
+    summary: $("rpSummary").value.trim(), done: $("rpDone").value.trim(), issues: $("rpIssues").value.trim(), next: $("rpNext").value.trim(), data: rpData, at: rpView ? rpView.at : new Date().toISOString() };
+}
+function rpSections(r) {
+  const S2 = [];
+  if (r.summary) S2.push({ h: "Synthèse", blocks: [P(r.summary)] });
+  (Array.isArray(r.data) ? r.data : []).forEach((s) => S2.push(s));
+  if (r.done) S2.push({ h: "Travail réalisé", blocks: [P(r.done)] });
+  if (r.issues) S2.push({ h: "Difficultés et points d'attention", blocks: [P(r.issues)] });
+  if (r.next) S2.push({ h: "Prochaines étapes", blocks: [P(r.next)] });
+  return S2;
+}
+const str = (x) => String(x == null ? "" : x);
+function blockHtml(b) {
+  if (!b || typeof b !== "object") return "";
+  if (b.t === "p") return `<p>${esc(str(b.x))}</p>`;
+  if (b.t === "list") return `<ul>${(Array.isArray(b.items) ? b.items : []).map((i) => `<li>${esc(str(i))}</li>`).join("")}</ul>`;
+  if (b.t === "kv") return `<div class="tablewrap"><table><tbody>${(Array.isArray(b.rows) ? b.rows : []).map((r) => `<tr><td class="wrap">${esc(str(r[0]))}</td><td class="n">${esc(str(r[1]))}</td></tr>`).join("")}</tbody></table></div>`;
+  if (b.t === "table") return `<div class="tablewrap"><table><thead><tr>${(b.head || []).map((h) => `<th>${esc(str(h))}</th>`).join("")}</tr></thead><tbody>${(Array.isArray(b.rows) ? b.rows : []).map((r) => `<tr>${(Array.isArray(r) ? r : []).map((c, i) => `<td${i === r.length - 1 && str(c).length > 40 ? ' class="wrap"' : ""}>${esc(str(c))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  return "";
+}
+function rpHtml(r) {
+  const meta = [["Rédigé par", r.author], ["Destinataire", r.to], ["Date", dfr(r.at)], ["Période", r.period], ["Avancement", r.status]].filter((x) => x[1]);
+  return `<header class="dochd"><span class="eyebrow">DPA · Tanger II · ${esc(rpLabel(r.type))}</span><h2>${esc(str(r.title))}</h2>
+    <div class="rpmeta">${meta.map(([k, v]) => `<div><span>${esc(k)}</span>${esc(str(v))}</div>`).join("")}</div></header>`
+    + rpSections(r).map((s) => `<section class="rpsec"><h3>${esc(str(s.h))}</h3>${(s.blocks || []).map(blockHtml).join("")}</section>`).join("")
+    + (rpSections(r).length ? "" : `<p class="muted">Remplissez les champs à gauche : l'aperçu se met à jour au fur et à mesure.</p>`);
+}
+function rpText(r) {
+  const L = [`${r.title}`, `${rpLabel(r.type)} · DPA · Tanger II`, [r.author && "Rédigé par : " + r.author, r.to && "Destinataire : " + r.to, "Date : " + dfr(r.at), r.period && "Période : " + r.period, "Avancement : " + r.status].filter(Boolean).join(" | "), ""];
+  rpSections(r).forEach((s) => { L.push(str(s.h).toUpperCase());
+    (s.blocks || []).forEach((b) => { if (b.t === "p") L.push(str(b.x)); else if (b.t === "list") (b.items || []).forEach((i) => L.push("- " + str(i))); else if (b.t === "kv") (b.rows || []).forEach((x) => L.push(`${str(x[0])} : ${str(x[1])}`)); else if (b.t === "table") { L.push((b.head || []).join(" ; ")); (b.rows || []).forEach((x) => L.push(x.map(str).join(" ; "))); } });
+    L.push(""); });
+  return L.join("\n");
+}
+function rpFile(r) {
+  return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(str(r.title))}</title><style>
+body{font:15px/1.6 "Public Sans",Arial,sans-serif;color:#1b2428;max-width:900px;margin:40px auto;padding:0 24px}h2{font:800 1.6rem Arial,sans-serif;margin:8px 0 16px}h3{color:#24566b;margin:32px 0 10px}
+.eyebrow{font:700 .72rem Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#d9622b}.dochd{border-bottom:2px solid #d9622b;padding-bottom:20px}
+.rpmeta{display:flex;flex-wrap:wrap;gap:12px 32px;font-size:.9rem}.rpmeta span{display:block;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#5d6a70}
+table{border-collapse:collapse;width:100%;font-size:.88rem}th,td{padding:8px 10px;border-bottom:1px solid #dde2e0;text-align:left;vertical-align:top}th{font-size:.72rem;text-transform:uppercase;color:#5d6a70}
+p{white-space:pre-wrap}</style></head><body>${rpHtml(r)}<p style="margin-top:40px;color:#5d6a70;font-size:.8rem">Rapport généré par la plateforme Tanger II le ${esc(dfr(new Date().toISOString()))}. Cas pédagogique fictif.</p></body></html>`;
+}
+function rpPreview() { $("rpDoc").innerHTML = rpHtml(rpView || rpRead()); }
+async function rpLoadType() {
+  const t = $("rpType").value; $("rpDoc").setAttribute("aria-busy", "true");
+  try { rpData = await rpBuild(t); } catch (e) { rpData = [{ h: "Données", blocks: [P("Les données de ce sujet n'ont pas pu être chargées.")] }]; }
+  $("rpDoc").removeAttribute("aria-busy");
+  if (!$("rpTitle").dataset.touched) $("rpTitle").value = rpLabel(t) + (t === "canal" ? " # " + chOf(chCur)[1] : "");
+  rpPreview();
+}
+async function initReport() {
+  if (rpInit) return; rpInit = true;
+  $("rpType").innerHTML = RP_TYPES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("");
+  $("rpFilter").innerHTML = `<option value="">Tous les rapports</option>` + RP_TYPES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("");
+  $("rpType").addEventListener("change", () => { $("rpTitle").dataset.touched = ""; rpLoadType(); });
+  $("rpTitle").addEventListener("input", () => { $("rpTitle").dataset.touched = "1"; });
+  ["rpTitle", "rpAuthor", "rpTo", "rpPeriod", "rpStatus", "rpDone", "rpIssues", "rpNext", "rpSummary"].forEach((id) => $(id).addEventListener("input", () => { clearTimeout(rpTimer); rpTimer = setTimeout(rpPreview, 120); }));
+  $("rpStatus").addEventListener("change", rpPreview);
+  $("rpClose").addEventListener("click", closeReport);
+  $("rpOverlay").addEventListener("click", (e) => { if (e.target === $("rpOverlay")) closeReport(); });
+  $("rpCopy").addEventListener("click", async () => { const t = rpText(rpView || rpRead()); try { await navigator.clipboard.writeText(t); $("rpMsg").textContent = "Texte copié : collez-le dans un e-mail ou un document."; } catch (e) { $("rpMsg").textContent = "Copie bloquée par le navigateur : sélectionnez le texte de l'aperçu."; } });
+  $("rpSave").addEventListener("click", saveReport);
+  $("rpDl").addEventListener("click", downloadReport);
+  $("rpDel").addEventListener("click", deleteReport);
+  $("rpAi").addEventListener("click", aiReport);
+  $("rpAiStop").addEventListener("click", () => rpCtl && rpCtl.abort());
+  $("rpOpen").addEventListener("click", () => openReport());
+  $("rpOpen2").addEventListener("click", () => openReport());
+  $("rpFilter").addEventListener("change", renderReports);
+  const st = await getStore(); $("rpAi").hidden = !st.sample; $("rpDl").hidden = !st.dl;
+}
+async function openReport(type, saved) {
+  await initReport();
+  rpView = saved || null; $("rpMsg").textContent = "";
+  const t = type || (current === "compta" ? RP_CP[cpView] : RP_PAGE[current]) || "tache";
+  const ro = !!saved;
+  $("rpForm").querySelectorAll("input,select,textarea").forEach((el) => { el.disabled = ro; });
+  $("rpEyebrow").textContent = ro ? "Rapport enregistré" : "Nouveau rapport"; $("rpH").textContent = ro ? str(saved.title) : "Créer un rapport";
+  $("rpSave").hidden = ro; $("rpAi").hidden = ro || !(await getStore()).sample;
+  const st = await getStore(); $("rpDel").hidden = !(ro && ((st.uid && saved.by === st.uid) || (!st.uid && saved.who === user.name)));
+  if (ro) {
+    $("rpType").value = saved.type; ["title", "author", "to", "period", "status", "done", "issues", "next", "summary"].forEach((k) => { const el = $("rp" + k[0].toUpperCase() + k.slice(1)); if (el) el.value = str(saved[k]); });
+    rpData = Array.isArray(saved.data) ? saved.data : []; rpPreview();
+  } else {
+    $("rpType").value = t; $("rpTitle").dataset.touched = "";
+    ["rpTo", "rpPeriod", "rpDone", "rpIssues", "rpNext", "rpSummary"].forEach((id) => { $(id).value = ""; });
+    $("rpStatus").value = "Terminé";
+    let me = user ? user.name : ""; if (st.u) { try { const p = await st.u.me(); if (p && p.name) me = p.name + " (" + user.name + ")"; } catch (e) {} }
+    $("rpAuthor").value = me;
+    $("rpPeriod").value = new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+    rpPreview(); rpLoadType();
+  }
+  $("rpOverlay").hidden = false; document.body.style.overflow = "hidden";
+  setTimeout(() => (ro ? $("rpClose") : $("rpType")).focus(), 30);
+}
+function closeReport() { $("rpOverlay").hidden = true; document.body.style.overflow = ""; if (rpCtl) rpCtl.abort(); rpView = null; }
+async function saveReport() {
+  const r = rpRead(), st = await getStore();
+  const doc = Object.assign({}, r, { by: st.uid || null, who: user.name, role: user.role, at: new Date().toISOString(), data: JSON.parse(JSON.stringify(r.data || [])) });
+  $("rpSave").disabled = true;
+  if (st.db) { try { await st.db.collection("rapports").add(doc); $("rpMsg").textContent = "Rapport enregistré : retrouvez-le dans l'onglet « Rapports »."; logAudit("Rapport créé : " + doc.title); } catch (e) { $("rpMsg").textContent = e && e.code === "quota_exceeded" ? "Espace plein : supprimez d'anciens rapports." : "Enregistrement refusé : vous n'avez peut-être pas le droit d'écrire sur cette page."; } }
+  else { doc.id = "r" + Date.now(); rpRows = [doc].concat(lsGet("t2rapports", [])).slice(0, 100); lsSet("t2rapports", rpRows); $("rpMsg").textContent = "Rapport enregistré dans ce navigateur : retrouvez-le dans l'onglet « Rapports »."; logAudit("Rapport créé : " + doc.title); if (current === "rapports") renderReports(); }
+  $("rpSave").disabled = false;
+}
+async function downloadReport() {
+  const st = await getStore(); if (!st.dl) return; const r = rpView || rpRead();
+  const name = (str(r.title).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "rapport") + ".html";
+  try { const res = await st.dl.save({ filename: name, data: rpFile(r) }); $("rpMsg").textContent = res && res.status === "delivered" ? "Rapport transmis." : "Rapport téléchargé (fichier HTML, ouvrable dans un navigateur ou Word)."; }
+  catch (e) { $("rpMsg").textContent = e && e.code === "cancelled" ? "Téléchargement annulé." : e && e.code === "unavailable" ? "Téléchargement indisponible ici : utilisez « Copier le texte »." : "Le téléchargement a échoué."; if (e && e.code === "unavailable") $("rpDl").hidden = true; }
+}
+async function deleteReport() {
+  const r = rpView; if (!r) return; const b = $("rpDel");
+  if (!b.dataset.confirm) { b.dataset.confirm = "1"; b.textContent = "Confirmer la suppression"; return; }
+  b.dataset.confirm = ""; b.textContent = "Supprimer";
+  const st = await getStore();
+  if (st.db) { try { await st.db.doc("rapports/" + r.id).delete(); } catch (e) { $("rpMsg").textContent = "Suppression refusée."; return; } }
+  else { rpRows = lsGet("t2rapports", []).filter((x) => x.id !== r.id); lsSet("t2rapports", rpRows); renderReports(); }
+  closeReport();
+}
+async function aiReport() {
+  const st = await getStore(); if (!st.sample) return;
+  rpCtl = new AbortController(); $("rpAi").disabled = true; $("rpAiStop").hidden = false; $("rpSummary").value = "Rédaction…";
+  const r = rpRead(); r.summary = "";
+  const prompt = `${AG_RULES}\n\nVoici le contenu d'un rapport interne de la plateforme. Rédige uniquement la synthèse placée en tête du rapport : 80 à 130 mots, en français, ton professionnel, avec les 2 ou 3 chiffres clés, le point d'attention principal et la prochaine étape. Pas de titre, pas de liste, pas de markdown.\n\n${rpText(r)}`;
+  try { const res = await st.sample(prompt, { signal: rpCtl.signal, cache: false, onText: ({ text }) => { $("rpSummary").value = text; rpPreview(); } }); $("rpSummary").value = res.text.trim(); }
+  catch (e) { $("rpSummary").value = e && e.text && e.code !== "refused" ? e.text : ""; $("rpMsg").textContent = aiErr(e); }
+  finally { rpCtl = null; $("rpAi").disabled = false; $("rpAiStop").hidden = true; rpPreview(); }
+}
+async function initRapports() {
+  await initReport();
+  if (!rpWatch) {
+    rpWatch = true; const st = await getStore();
+    if (st.db) { $("rpStore").textContent = "Les rapports sont partagés avec toutes les personnes qui ont accès à cette page.";
+      st.db.collection("rapports").orderBy("at", "desc").limit(200).onSnapshot((s) => { rpRows = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (current === "rapports") renderReports(); }, () => {}); }
+    else { $("rpStore").textContent = "Hors de claude.ai, les rapports restent dans ce navigateur."; rpRows = lsGet("t2rapports", []); }
+  }
+  renderReports();
+}
+async function renderReports() {
+  const f = $("rpFilter").value, rows = rpRows.filter((r) => r && (!f || r.type === f));
+  if (!rows.length) { $("rpList").innerHTML = `<div class="panel empty"><b>${rpRows.length ? "Aucun rapport de ce type" : "Aucun rapport pour l'instant"}</b><span>Cliquez sur « Créer un rapport » en haut de la page, depuis n'importe quel onglet : le sujet est choisi d'après l'onglet ouvert.</span></div>`; return; }
+  const st = await getStore(), ids = [...new Set(rows.map((r) => r.by).filter(Boolean))];
+  if (st.u && ids.length) { try { const ps = await st.u.profiles(ids); ids.forEach((i) => { chNames[i] = (ps[i] && ps[i].name) || ""; }); } catch (e) {} }
+  $("rpList").innerHTML = rows.map((r) => `<div class="rpitem"><div style="display:grid;gap:4px;min-width:0"><span class="t">${esc(str(r.title))}</span>
+    <span class="meta"><span>${esc(rpLabel(r.type))}</span><span>${esc((r.by && chNames[r.by]) || r.author || r.who || "")}</span><span>${esc(dfr(r.at))}</span>${r.status ? `<span class="pill ${r.status === "Bloqué" ? "ko" : r.status === "En cours" ? "warn" : "ok"}">${esc(str(r.status))}</span>` : ""}</span></div>
+    <button class="btn" type="button" data-rp="${esc(r.id)}">Ouvrir</button></div>`).join("");
+  $("rpList").querySelectorAll("[data-rp]").forEach((b) => b.addEventListener("click", () => openReport(null, rpRows.find((x) => x.id === b.dataset.rp))));
 }
 
 // thème : redessiner les graphiques quand le thème change
