@@ -325,7 +325,7 @@ footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);li
 .msg.cont{margin-top:calc(-1 * var(--s3))}
 .msg.cont .av{visibility:hidden;height:0}
 .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 .85rem var(--f-display);color:#fff;background:var(--steel)}
-.av.comptable{background:var(--sage)} .av.superviseur{background:var(--plum)} .av.admin{background:var(--orange)} .av.stagiaire{background:#5d7a8a} .av.lecteur{background:var(--muted)}
+.av.comptable{background:var(--sage)} .av.superviseur{background:var(--plum)} .av.admin{background:var(--orange)} .av.stagiaire{background:#5d7a8a} .av.lecteur{background:var(--muted)} .av.analyste{background:#2f7a8c}
 .mhd{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:.86rem}
 .mhd b{font-size:.95rem}
 .mtxt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;margin-top:2px}
@@ -445,6 +445,10 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
 @media (max-width:900px){#login{grid-template-columns:minmax(0,1fr);justify-items:center;gap:var(--s5);padding-block:32px 48px}
   .lhero{justify-items:center;text-align:center}.lsub{display:none}.logo.xl{width:84px;height:84px;border-radius:20px}.ltitle{font-size:clamp(2rem,9vw,2.6rem)}.ltitle span{display:inline}
   .lcredit{left:16px;right:16px;text-align:center}}
+.lauthors{margin:0;font-size:.9rem;color:#e6ecee;border-left:3px solid #f08a52;padding-left:12px}
+.lauthors b{color:#fff}
+@media (max-width:900px){.lauthors{border-left:0;padding-left:0}}
+.margin.ko{color:var(--ko);font-weight:700} .margin.warn{color:var(--warn);font-weight:700} .margin.ok{color:var(--ok);font-weight:700}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -455,6 +459,7 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
     <span class="lkicker">Détroit Plasturgie Automobile · DPA</span>
     <h1 class="ltitle">Département <span>financier</span></h1>
     <p class="lsub">Plateforme interne de l'équipe finance : montage du projet Tanger II, comptabilité, fiscalité, contrôle et coordination.</p>
+    <p class="lauthors">Projet réalisé par <b>Fatima Zahrae Chakib</b> et <b>Inass Mouichou</b> · Génie financier, 5<sup>e</sup> année</p>
   </div>
   <form class="lcard" id="loginForm" autocomplete="off">
     <div class="brand"><img class="logo" alt="" aria-hidden="true">
@@ -463,7 +468,7 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
     <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn primary" id="lbtn" type="submit">Se connecter</button>
-    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation</div>
+    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation<br><code>inass</code> / <code>Analyste2026</code> — Inass Mouichou, analyste financière</div>
   </form>
   <p class="lcredit">Illustration : site industriel de DPA · cas pédagogique fictif</p>
 </div>
@@ -536,7 +541,7 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
                   <label class="f" for="evDebut">Début<input type="time" id="evDebut" required value="09:00"></label>
                   <label class="f" for="evFin">Fin<input type="time" id="evFin" required value="10:00"></label>
                   <label class="f" for="evLieu">Lieu<input type="text" id="evLieu" maxlength="60" placeholder="ex. Salle B2 ou visioconférence"></label>
-                  <label class="f" for="evPour">Pour<select id="evPour"><option value="all">Toute l'équipe</option><option value="comptable">Les comptables</option><option value="superviseur">Les encadrants</option><option value="stagiaire">Les stagiaires</option><option value="admin">La direction</option><option value="me">Moi seulement</option></select></label>
+                  <label class="f" for="evPour">Pour<select id="evPour"><option value="all">Toute l'équipe</option><option value="comptable">Les comptables</option><option value="superviseur">Les encadrants</option><option value="stagiaire">Les stagiaires</option><option value="admin">La direction</option><option value="analyste">Les analystes</option><option value="me">Moi seulement</option></select></label>
                 </div>
                 <div class="toolbar"><button class="btn primary" type="submit" id="evSave">Ajouter au programme</button><span class="muted" id="evMsg" aria-live="polite"></span></div>
               </form>
@@ -551,6 +556,32 @@ header.top h1{font-size:clamp(1.15rem,2vw,1.5rem)}
           <p class="muted" id="tmNote" style="font-size:.82rem;margin:0"></p>
         </aside>
       </div>
+    </section>
+
+    <!-- ===================== ESPACE ANALYSTE FINANCIÈRE ===================== -->
+    <section class="page" data-page="analyste" hidden>
+      <div class="lead"><div><span class="eyebrow">Mon espace</span><h2>Espace <em class="g">analyste financière</em></h2>
+        <p id="anIntro">Le poste de pilotage de l'analyse : les indicateurs à surveiller, la marge de sécurité de chaque covenant, la routine de travail et les rapports à préparer pour la direction financière.</p></div>
+        <div class="toolbar"><button class="btn steel" id="anReport" type="button">Préparer la note d'analyse</button></div></div>
+
+      <div class="panel gilt"><div class="lead"><h3>Indicateurs à surveiller · montage B, cas central</h3><span class="muted" style="font-size:.86rem">Calculés par le modèle à chaque ouverture</span></div>
+        <div class="tiles" id="anTiles" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))"></div></div>
+
+      <div class="panel"><h3>Marge de sécurité des covenants selon le cas de stress</h3>
+        <div class="tablewrap"><table id="anCov"></table></div>
+        <p class="muted" style="font-size:.84rem;margin:0">Marge DSCR = DSCR minimum − 1,20x ; marge de levier = 3,5x − levier maximal. Une marge négative signifie un bris de covenant.</p></div>
+
+      <div class="grid2">
+        <div class="panel"><h3>Ma routine d'analyse</h3>
+          <div class="seg" id="anSeg"></div>
+          <div class="tasks" id="anTasks"></div>
+          <p class="muted" style="font-size:.84rem;margin:0" id="anTaskNote"></p></div>
+        <div class="panel"><h3>Outils d'analyse</h3>
+          <div class="todo" id="anTools"></div></div>
+      </div>
+
+      <div class="panel"><div class="lead"><h3>Mes rapports</h3><button class="btn" id="anAll" type="button">Tous les rapports</button></div>
+        <div class="rplist" id="anReports"></div></div>
     </section>
 
     <!-- ===================== AU QUOTIDIEN ===================== -->
@@ -1269,7 +1300,7 @@ Respect covenant = IF([DSCR min] >= 1.2, "Oui", "Non")
 Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Trésorerie (fin)")</pre>
       <p class="muted">La version Python / Streamlit complète, avec export CSV et Excel en fichiers, est dans le dépôt GitHub (dossier <span class="num">tanger2-app</span>).</p></div>
     </section>
-  <footer>Cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
+  <footer>Projet réalisé par Fatima Zahrae Chakib et Inass Mouichou · cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
   </main>
   </div>
   <div class="overlay" id="rpOverlay" hidden>
@@ -1657,6 +1688,7 @@ const USERS = {
   encadrant: { name: "Encadrant de stage", role: "superviseur", hash: "" },
   comptable: { name: "Comptable", role: "comptable", hash: "" },
   stagiaire: { name: "Stagiaire", role: "stagiaire", hash: "" },
+  inass: { name: "Inass Mouichou", role: "analyste", hash: "" },
 };
 async function sha(s) {
   try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join(""); }
@@ -1664,7 +1696,7 @@ async function sha(s) {
 }
 let attempts = 0, lockedUntil = 0, user = null;
 (async () => { USERS.admin.hash = await sha("tg2|Tanger2026!"); USERS.jury.hash = await sha("tg2|Jury2026");
-  USERS.encadrant.hash = await sha("tg2|Encadrant2026"); USERS.comptable.hash = await sha("tg2|Compta2026"); USERS.stagiaire.hash = await sha("tg2|Stagiaire2026"); })();
+  USERS.encadrant.hash = await sha("tg2|Encadrant2026"); USERS.comptable.hash = await sha("tg2|Compta2026"); USERS.stagiaire.hash = await sha("tg2|Stagiaire2026"); USERS.inass.hash = await sha("tg2|Analyste2026"); })();
 $("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (Date.now() < lockedUntil) { $("lerr").textContent = `Trop de tentatives. Réessayez dans ${Math.ceil((lockedUntil - Date.now()) / 1000)} s.`; return; }
@@ -1679,7 +1711,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 });
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
-const PAGES = [["home", "Accueil", false, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -1689,14 +1721,14 @@ function enterApp() {
   $("whoName").textContent = user.name; $("whoRole").textContent = user.role;
   const tabs = $("tabs"); tabs.innerHTML = "";
   let grp = null;
-  PAGES.filter((p) => !p[2] || user.role === "admin").forEach(([id, label, , g]) => {
+  PAGES.filter((p) => !p[2] || user.role === "admin" || user.role === "analyste").forEach(([id, label, , g]) => {
     if (!grp || grp.dataset.g !== g) { grp = document.createElement("div"); grp.className = "navgrp"; grp.dataset.g = g; grp.innerHTML = `<div class="gl">${g}</div>`; tabs.appendChild(grp); }
     const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.page = id;
     b.addEventListener("click", () => { show(id); window.scrollTo({ top: 0 }); }); grp.appendChild(b);
   });
   const h = (location.hash || "").slice(1);
   startHome().then(() => { if (current === "home") refreshHome(); });
-  show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin")) ? h : "home");
+  show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin" || user.role === "analyste")) ? h : "home");
   watchChat(); initReport();
 }
 const rendered = {};
@@ -1705,7 +1737,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -3340,7 +3372,7 @@ async function renderChat() {
       const d = (m.at || "").slice(0, 10);
       if (d !== day) { day = d; prev = null; html += `<div class="day">${esc(new Date(m.at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }))}</div>`; }
       const cont = prev && prev.by === m.by && prev.who === m.who && new Date(m.at) - new Date(prev.at) < 5 * 60000 && !m.urgent;
-      const role = ["admin", "superviseur", "comptable", "stagiaire", "lecteur"].includes(m.role) ? m.role : "";
+      const role = ["admin", "superviseur", "comptable", "stagiaire", "lecteur", "analyste"].includes(m.role) ? m.role : "";
       const mine = isMine(m), canPin = mine || canSupervise();
       html += `<div class="msg${cont ? " cont" : ""}${m.urgent ? " urgent" : ""}"><div class="av ${role}" aria-hidden="true">${esc(initials(nameOf(m)))}</div><div style="min-width:0">
         ${cont ? "" : `<div class="mhd"><b>${esc(nameOf(m))}</b>${m.by && chNames[m.by] && m.who ? `<span class="role">${esc(m.who)}</span>` : ""}<span class="muted">${esc(new Date(m.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }))}</span>${m.urgent ? '<span class="pill ko">Urgent</span>' : ""}${m.pinned ? '<span class="pill warn">Épinglé</span>' : ""}</div>`}
@@ -3600,7 +3632,8 @@ async function renderReports() {
 }
 
 // ---------- Accueil personnel, fiche employé, présence de l'équipe ----------
-const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur" };
+const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur", analyste: "Analyste financière" };
+const DEFAULT_FICHE = { admin: { nom: "Fatima Zahrae Chakib", poste: "Directrice financière" }, analyste: { nom: "Inass Mouichou", poste: "Analyste financière" } };
 let hmInit = false, hmWatch = false, myKey = null, loginAt = null, people = {}, myFiche = null, roomNs = null, online = new Map(), events = [], hmDay = "today", hmPhotoData = undefined, profCache = {};
 const keyFor = (uid) => uid || "local-" + (user ? user.role : "");
 const todayISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -3633,7 +3666,7 @@ async function startHome1() {
   if (roomNs) roomNs.presence({ since: loginAt.toISOString(), off: null }).catch(() => {});
   // fiche minimale à la connexion pour apparaître dans l'équipe ; mise à jour de la dernière connexion
   const patch = { role: user.role, lastLogin: loginAt.toISOString() };
-  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: nm, poste: "", service: user.role === "stagiaire" ? "Stage" : user.role === "comptable" ? "Comptabilité" : "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
+  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: (DEFAULT_FICHE[user.role] || {}).nom || nm || "", poste: (DEFAULT_FICHE[user.role] || {}).poste || "", service: user.role === "stagiaire" ? "Stage" : user.role === "comptable" ? "Comptabilité" : "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
   else myFiche = Object.assign({}, myFiche, patch);
   await saveFiche(myFiche, true);
   updateWho();
@@ -3712,7 +3745,7 @@ function tick() {
 const forMe = (e) => e && (e.pour === "all" || e.pour === (user && user.role) || (e.pour === "me" && (e.by === (meUid || "local-" + user.role))));
 function evStatus(e, now) { const s = new Date(e.date + "T" + e.debut), en = new Date(e.date + "T" + e.fin); return now > en ? "past" : now >= s ? "now" : "next"; }
 const EV_TYPE = { reunion: "Réunion", tache: "Tâche", echeance: "Échéance", formation: "Formation" };
-const POUR = { all: "Toute l'équipe", comptable: "Comptables", superviseur: "Encadrants", stagiaire: "Stagiaires", admin: "Direction", me: "Moi seulement" };
+const POUR = { all: "Toute l'équipe", comptable: "Comptables", superviseur: "Encadrants", stagiaire: "Stagiaires", admin: "Direction", analyste: "Analystes", me: "Moi seulement" };
 function renderAgenda() {
   if (!$("hmAgenda")) return;
   const now = new Date(), t0 = todayISO(now), t1 = todayISO(new Date(now.getTime() + 864e5)), t7 = todayISO(new Date(now.getTime() + 7 * 864e5));
@@ -3844,6 +3877,52 @@ let bgTimer = null;
 const paintLogin = () => { if (!$("login").hidden) drawIndustry($("loginBg")); };
 addEventListener("resize", () => { clearTimeout(bgTimer); bgTimer = setTimeout(paintLogin, 150); });
 paintLogin();
+
+// ---------- Espace analyste financière ----------
+const AN_TASKS = {
+  semaine: ["Mettre à jour les hypothèses de marché (taux BAM, change EUR/MAD, prix des résines)", "Relancer le modèle et comparer les indicateurs à la semaine précédente", "Vérifier la marge des covenants sur les 8 cas de stress", "Répondre aux questions de l'équipe dans # Projet Tanger II"],
+  mois: ["Rapprocher le journal comptable du budget (écarts > 5 %)", "Refaire le Monte-Carlo et suivre la probabilité de bris de covenant", "Mettre à jour l'effet de levier et le coût du capital", "Rédiger la note d'analyse mensuelle pour la directrice financière"],
+  trimestre: ["Revoir le business plan avec les réalisations du trimestre", "Préparer le dossier pour le comité de crédit des banques", "Tester une nouvelle structure dans « Votre montage » et l'Optimiseur", "Présenter la synthèse des risques à la direction"],
+};
+let anInit = false, anFreq = "semaine";
+const anKey = () => "t2an-" + anFreq + "-" + (user ? user.role : "");
+function initAnalyste() {
+  if (!anInit) {
+    anInit = true;
+    seg("anSeg", [["semaine", "Chaque semaine"], ["mois", "Chaque mois"], ["trimestre", "Chaque trimestre"]], anFreq, (v) => { anFreq = v; renderAnTasks(); });
+    $("anReport").addEventListener("click", () => openReport("synthese"));
+    $("anAll").addEventListener("click", () => show("rapports"));
+    const tools = [["Simulateur", "Chocs de prix, volumes, taux et retard", "sim"], ["Sensibilités & stress", "Tornado, points de rupture, 8 cas", "stress"], ["Monte-Carlo", "Probabilité de bris de covenant", "mc"],
+      ["Effet de levier", "Rf = Re + (Re − i) × D/CP", "levier"], ["Optimiseur", "Meilleure structure sous contraintes", "opt"], ["Agent IA", "Audit de fiabilité et questions", "agent"]];
+    $("anTools").innerHTML = tools.map(([t, d, p], i) => `<button type="button" data-an="${p}"><span class="n ok">${i + 1}</span><span><b>${esc(t)}</b><br><span class="muted" style="font-size:.84rem">${esc(d)}</span></span><span class="go">Ouvrir →</span></button>`).join("");
+    $("anTools").querySelectorAll("[data-an]").forEach((b) => b.addEventListener("click", () => show(b.dataset.an)));
+  }
+  const f = myFiche || {};
+  $("anIntro").textContent = `${f.nom ? f.nom + " · " : ""}${f.poste || "Analyste financière"}. Le poste de pilotage de l'analyse : les indicateurs à surveiller, la marge de sécurité de chaque covenant, la routine de travail et les rapports à préparer pour la direction financière.`;
+  const k = run(S.B, CASES["1. Central"]).kpi;
+  $("anTiles").innerHTML = tile("DSCR minimum", xx(k.dscrMin), `marge de ${fmt(k.dscrMin - 1.2, 2)}x sur le covenant`, k.dscrMin < 1.2 ? "ko" : "")
+    + tile("Levier maximal", xx(k.levMax), `marge de ${fmt(3.5 - k.levMax, 2)}x sous 3,5x`, k.levMax > 3.5 ? "ko" : "")
+    + tile("VAN projet (MDH)", fmt(k.npv, 1), `au WACC de ${pct(k.wacc, 2)}`) + tile("TRI fonds propres", pct(k.triEq, 1), `coût des FP ${pct(k.ke, 1)}`)
+    + tile("Trésorerie minimale (MDH)", fmt(k.minCash, 1), k.minCash < 0 ? "trésorerie négative" : "jamais négative", k.minCash < 0 ? "ko" : "") + tile("EBITDA 2032 (MDH)", fmt(k.ebitda32, 1), `CA ${fmt(k.ca32, 0)} MDH`);
+  const cls = (m) => (m < 0 ? "ko" : m < 0.15 ? "warn" : "ok");
+  $("anCov").innerHTML = `<thead><tr><th class="wrap">Cas</th><th>DSCR min</th><th>Marge DSCR</th><th>Levier max</th><th>Marge levier</th></tr></thead><tbody>`
+    + Object.keys(CASES).map((c) => { const q = run(S.B, CASES[c]).kpi, m1 = Math.round((q.dscrMin - 1.2) * 100) / 100 + 0, m2 = Math.round((3.5 - q.levMax) * 100) / 100 + 0;
+      return `<tr><td class="wrap">${esc(c)}</td><td class="n">${xx(q.dscrMin)}</td><td class="n"><span class="margin ${cls(m1)}">${m1 >= 0 ? "+" : ""}${fmt(m1, 2)}x</span></td><td class="n">${xx(q.levMax)}</td><td class="n"><span class="margin ${cls(m2 / 3)}">${m2 >= 0 ? "+" : ""}${fmt(m2, 2)}x</span></td></tr>`; }).join("") + "</tbody>";
+  renderAnTasks(); renderAnReports();
+}
+function renderAnTasks() {
+  const done = lsGet(anKey(), []);
+  $("anTasks").innerHTML = AN_TASKS[anFreq].map((t, i) => `<label class="task${done[i] ? " done" : ""}"><input type="checkbox" data-at="${i}"${done[i] ? " checked" : ""}><span class="t" style="font-weight:500">${esc(t)}</span></label>`).join("");
+  $("anTasks").querySelectorAll("[data-at]").forEach((c) => c.addEventListener("change", () => { const d = lsGet(anKey(), []); d[+c.dataset.at] = c.checked; lsSet(anKey(), d); renderAnTasks(); }));
+  const n = done.filter(Boolean).length; $("anTaskNote").textContent = `${n} sur ${AN_TASKS[anFreq].length} terminée(s). Les cases cochées sont mémorisées sur cet appareil.`;
+}
+async function renderAnReports() {
+  await initRapports();
+  const st = await getStore(), mine = rpRows.filter((r) => r && ((st.uid && r.by === st.uid) || (!st.uid && r.who === user.name)));
+  $("anReports").innerHTML = mine.length ? mine.slice(0, 6).map((r) => `<div class="rpitem"><div style="display:grid;gap:4px;min-width:0"><span class="t">${esc(str(r.title))}</span><span class="meta"><span>${esc(rpLabel(r.type))}</span><span>${esc(dfr(r.at))}</span></span></div><button class="btn" type="button" data-arp="${esc(r.id)}">Ouvrir</button></div>`).join("")
+    : `<div class="empty" style="padding:24px 8px"><b>Aucun rapport pour l'instant</b><span>Cliquez sur « Préparer la note d'analyse » : les chiffres du modèle sont repris automatiquement.</span></div>`;
+  $("anReports").querySelectorAll("[data-arp]").forEach((b) => b.addEventListener("click", () => openReport(null, rpRows.find((x) => x.id === b.dataset.arp))));
+}
 
 // thème : redessiner les graphiques quand le thème change
 const rerender = () => { if (!user) return; show(current); if (current === "opt") drawOpt(); if (current === "live" && liveMode === "film") filmFrame(11); };
