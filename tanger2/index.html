@@ -464,12 +464,12 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
 .motto{display:grid;gap:clamp(2px,1vh,10px);margin:0;font:italic 700 clamp(2.6rem,9vw,6.4rem)/1.02 "Playfair Display","Didot","Bodoni 72",Georgia,serif;letter-spacing:-.01em}
 .motto .w{display:block;overflow:hidden;padding:0 .08em .06em}
 .motto .w span{display:inline-block;background:linear-gradient(180deg,#ffffff 0%,#d9dee1 45%,#8f9aa0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  animation:iword 1s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.35s + var(--i) * .9s)}
+  animation:iword .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.25s + var(--i) * .65s)}
 .motto .w b{color:#f08a52;-webkit-text-fill-color:#f08a52;font-style:normal}
 .motto .w:nth-child(3) span{background:linear-gradient(180deg,#ffd2ae 0%,#f08a52 60%,#c4561f 100%);-webkit-background-clip:text;background-clip:text}
-.intro-rule{width:min(320px,60vw);height:2px;background:linear-gradient(90deg,transparent,#f08a52,transparent);transform-origin:center;animation:irule .9s ease both;animation-delay:3s}
-.intro-sub{margin:0;font:600 .78rem var(--f-body);letter-spacing:.22em;text-transform:uppercase;color:#c3cbcf;animation:ifade .8s ease both;animation-delay:3.2s}
-.intro-hello{margin:0;font:500 1.05rem var(--f-body);color:#e6ecee;animation:ifade .8s ease both;animation-delay:3.4s}
+.intro-rule{width:min(320px,60vw);height:2px;background:linear-gradient(90deg,transparent,#f08a52,transparent);transform-origin:center;animation:irule .7s ease both;animation-delay:2.2s}
+.intro-sub{margin:0;font:600 .78rem var(--f-body);letter-spacing:.22em;text-transform:uppercase;color:#c3cbcf;animation:ifade .6s ease both;animation-delay:2.35s}
+.intro-hello{margin:0;font:500 1.05rem var(--f-body);color:#e6ecee;animation:ifade .6s ease both;animation-delay:2.5s}
 #introSkip{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:2;background:rgba(255,255,255,.08);color:#e6ecee;border:1px solid rgba(255,255,255,.18)}
 #introSkip:hover{background:rgba(255,255,255,.16)}
 @keyframes iword{from{opacity:0;transform:translateY(105%) skewY(4deg);filter:blur(10px);letter-spacing:.12em}to{opacity:1;transform:none;filter:none;letter-spacing:inherit}}
@@ -4354,7 +4354,7 @@ function playIntro() {
   $("introHello").textContent = `Bienvenue, ${(myFiche && myFiche.nom) || user.name}`;
   el.classList.remove("out"); el.hidden = false; document.body.style.overflow = "hidden";
   homeP && homeP.then(() => { if (!el.hidden && user) $("introHello").textContent = `Bienvenue, ${(myFiche && myFiche.nom) || user.name}`; });
-  clearTimeout(introTimer); introTimer = setTimeout(closeIntro, reduce ? 2500 : 6500);
+  clearTimeout(introTimer); introTimer = setTimeout(closeIntro, reduce ? 2000 : 4800);
   setTimeout(() => $("introSkip").focus(), 50);
 }
 function closeIntro() {
