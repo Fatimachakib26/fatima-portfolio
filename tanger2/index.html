@@ -463,7 +463,7 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
     <span class="lkicker">Détroit Plasturgie Automobile · DPA</span>
     <h1 class="ltitle">Département <span>financier</span></h1>
     <p class="lsub">Plateforme interne de l'équipe finance : montage du projet Tanger II, comptabilité, fiscalité, contrôle et coordination.</p>
-    <p class="lauthors">Projet réalisé par <b>Fatima Zahrae Chakib</b> et <b>Inass Mouichou</b> · Génie financier, 5<sup>e</sup> année</p>
+    <p class="lauthors">Projet réalisé par <b>Fatima Zahrae Chakib</b> · Génie financier, 5<sup>e</sup> année</p>
   </div>
   <form class="lcard" id="loginForm" autocomplete="off">
     <div class="brand"><img class="logo" alt="" aria-hidden="true">
@@ -472,7 +472,7 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
     <label class="f" for="lp">Mot de passe<input type="password" id="lp" required></label>
     <div class="err" id="lerr" role="alert"></div>
     <button class="btn primary" id="lbtn" type="submit">Se connecter</button>
-    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation<br><code>inass</code> / <code>Analyste2026</code> — Inass Mouichou, analyste financière<br><code>controleur</code> / <code>Gestion2026</code> — contrôleur de gestion<br><code>interne</code> / <code>Interne2026</code> — contrôle interne<br><code>auditeur</code> / <code>Audit2026</code> — auditeur interne (lecture seule)<br><code>rh</code> / <code>RH2026</code> — ressources humaines</div>
+    <div class="demo">Comptes de démonstration :<br><code>admin</code> / <code>Tanger2026!</code> — accès complet<br><code>jury</code> / <code>Jury2026</code> — lecture et simulations<br><code>encadrant</code> / <code>Encadrant2026</code> — superviseur : signature et suivi des stagiaires<br><code>comptable</code> / <code>Compta2026</code> — saisie des factures<br><code>stagiaire</code> / <code>Stagiaire2026</code> — parcours de formation<br><code>analyste</code> / <code>Analyste2026</code> — analyste financière<br><code>controleur</code> / <code>Gestion2026</code> — contrôleur de gestion<br><code>interne</code> / <code>Interne2026</code> — contrôle interne<br><code>auditeur</code> / <code>Audit2026</code> — auditeur interne (lecture seule)<br><code>rh</code> / <code>RH2026</code> — ressources humaines</div>
   </form>
   <p class="lcredit">Illustration : site industriel de DPA · cas pédagogique fictif</p>
 </div>
@@ -1391,7 +1391,7 @@ Respect covenant = IF([DSCR min] >= 1.2, "Oui", "Non")
 Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Trésorerie (fin)")</pre>
       <p class="muted">La version Python / Streamlit complète, avec export CSV et Excel en fichiers, est dans le dépôt GitHub (dossier <span class="num">tanger2-app</span>).</p></div>
     </section>
-  <footer>Projet réalisé par Fatima Zahrae Chakib et Inass Mouichou · cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
+  <footer>Projet réalisé par Fatima Zahrae Chakib · cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
   </main>
   </div>
   <div class="overlay" id="csOverlay" hidden>
@@ -1798,7 +1798,7 @@ const USERS = {
   encadrant: { name: "Encadrant de stage", role: "superviseur", hash: "" },
   comptable: { name: "Comptable", role: "comptable", hash: "" },
   stagiaire: { name: "Stagiaire", role: "stagiaire", hash: "" },
-  inass: { name: "Inass Mouichou", role: "analyste", hash: "" },
+  analyste: { name: "Analyste financière", role: "analyste", hash: "" },
   controleur: { name: "Contrôleur de gestion", role: "controleur", hash: "" },
   interne: { name: "Contrôle interne", role: "interne", hash: "" },
   auditeur: { name: "Auditeur interne", role: "auditeur", hash: "" },
@@ -1810,7 +1810,7 @@ async function sha(s) {
 }
 let attempts = 0, lockedUntil = 0, user = null;
 (async () => { USERS.admin.hash = await sha("tg2|Tanger2026!"); USERS.jury.hash = await sha("tg2|Jury2026");
-  USERS.encadrant.hash = await sha("tg2|Encadrant2026"); USERS.comptable.hash = await sha("tg2|Compta2026"); USERS.stagiaire.hash = await sha("tg2|Stagiaire2026"); USERS.inass.hash = await sha("tg2|Analyste2026");
+  USERS.encadrant.hash = await sha("tg2|Encadrant2026"); USERS.comptable.hash = await sha("tg2|Compta2026"); USERS.stagiaire.hash = await sha("tg2|Stagiaire2026"); USERS.analyste.hash = await sha("tg2|Analyste2026");
   USERS.controleur.hash = await sha("tg2|Gestion2026"); USERS.interne.hash = await sha("tg2|Interne2026"); USERS.auditeur.hash = await sha("tg2|Audit2026"); USERS.rh.hash = await sha("tg2|RH2026"); })();
 $("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -3765,7 +3765,7 @@ async function renderReports() {
 
 // ---------- Accueil personnel, fiche employé, présence de l'équipe ----------
 const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur", analyste: "Analyste financière", controleur: "Contrôle de gestion", interne: "Contrôle interne", auditeur: "Audit interne", rh: "Ressources humaines" };
-const DEFAULT_FICHE = { admin: { nom: "Fatima Zahrae Chakib", poste: "Directrice financière" }, analyste: { nom: "Inass Mouichou", poste: "Analyste financière" }, controleur: { poste: "Contrôleur de gestion" }, interne: { poste: "Responsable du contrôle interne" }, auditeur: { poste: "Auditeur interne" }, rh: { poste: "Chargée des ressources humaines" } };
+const DEFAULT_FICHE = { admin: { nom: "Fatima Zahrae Chakib", poste: "Directrice financière" }, analyste: { poste: "Analyste financière" }, controleur: { poste: "Contrôleur de gestion" }, interne: { poste: "Responsable du contrôle interne" }, auditeur: { poste: "Auditeur interne" }, rh: { poste: "Chargée des ressources humaines" } };
 let hmInit = false, hmWatch = false, myKey = null, loginAt = null, people = {}, myFiche = null, roomNs = null, online = new Map(), events = [], hmDay = "today", hmPhotoData = undefined, profCache = {};
 const keyFor = (uid) => uid || "local-" + (user ? user.role : "");
 const todayISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
