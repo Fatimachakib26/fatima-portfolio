@@ -295,7 +295,7 @@ footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);li
   .tagline{display:none}
 }
 @media (max-width:640px){
-  header.top{flex-wrap:wrap;gap:var(--s3)}
+  header.top{flex-wrap:wrap;gap:var(--s3);position:static}
   header.top .brand{order:2;flex:1 1 calc(100% - 140px)}
   .navbtn{order:1}
   .who{order:3;width:100%;justify-content:space-between;flex-wrap:wrap}
@@ -363,6 +363,68 @@ footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);li
 .rpitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s2) var(--s4);align-items:center;padding:var(--s4) 18px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
 .rpitem .t{font-weight:700}
 .rpitem .meta{font-size:.84rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+/* ===== Accueil personnel ===== */
+.homegrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--s6);align-items:start}
+@media (max-width:1240px){.homegrid{grid-template-columns:minmax(0,1fr)}}
+.homemain{display:grid;gap:var(--s6);min-width:0}
+.hello{display:flex;flex-wrap:wrap;gap:var(--s5) var(--s6);align-items:center;justify-content:space-between;border-top:4px solid var(--orange)}
+.hello-id{display:flex;gap:var(--s5);align-items:center;min-width:0;flex:1 1 360px}
+.hello-txt{display:grid;gap:var(--s2);min-width:0}
+.hello-txt h2{font-size:clamp(1.6rem,3vw,2.2rem);overflow-wrap:anywhere}
+.chipsrow{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s1)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border-radius:99px;padding:5px 12px;font-size:.84rem;font-weight:600}
+.chip .k{color:var(--muted);font-weight:500}
+.hello-side{display:grid;gap:6px;justify-items:end;text-align:right}
+@media (max-width:640px){.hello-side{justify-items:start;text-align:left}}
+.live{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--ok);background:var(--okbg);border-radius:99px;padding:4px 12px;font-size:.86rem}
+.ldot{width:9px;height:9px;border-radius:50%;background:var(--ok);display:inline-block;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.ldot.off{background:var(--muted);box-shadow:none;opacity:.6}
+.clock{font:600 2rem var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.bigav{width:96px;height:96px;border-radius:24px;flex:none;display:grid;place-items:center;font:800 2rem var(--f-display);color:#fff;background:var(--steel);overflow:hidden;position:relative}
+.bigav img{width:100%;height:100%;object-fit:cover;display:block}
+.fiche{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--s6);align-items:start}
+@media (max-width:640px){.fiche{grid-template-columns:minmax(0,1fr)}}
+.photo-edit{display:grid;gap:var(--s3);justify-items:start}
+.nextcard{align-content:start}
+.nextcard .when{font:700 1rem var(--f-mono);color:var(--orange)}
+.nextcard .ttl{font:800 clamp(1.3rem,2.4vw,1.6rem)/1.2 var(--f-display)}
+.nextcard .facts{display:grid;gap:8px;font-size:.92rem}
+.nextcard .facts span{display:flex;gap:10px}
+.nextcard .facts b{min-width:72px;color:var(--muted);font-weight:500}
+.todo{display:grid;gap:var(--s3)}
+.todo button{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:var(--s3);align-items:center;text-align:left;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:14px var(--s4);cursor:pointer}
+.todo button:hover{border-color:var(--orange)}
+.todo .n{font:700 1.3rem var(--f-mono);min-width:34px;text-align:center}
+.todo .n.ko{color:var(--ko)} .todo .n.warn{color:var(--warn)} .todo .n.ok{color:var(--ok)}
+.todo .go{color:var(--muted);font-size:.86rem}
+.agenda{display:grid;gap:var(--s3)}
+.ev{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:var(--s4);align-items:center;padding:var(--s4) 18px;border-radius:12px;background:var(--chip);border-left:4px solid var(--steel)}
+.ev.tache{border-left-color:var(--orange)} .ev.echeance{border-left-color:var(--ko)} .ev.formation{border-left-color:var(--plum)}
+.ev.past{opacity:.6}
+.ev.now{background:var(--glow);outline:1px solid var(--hair)}
+.ev .hr{font:600 .95rem var(--f-mono);font-variant-numeric:tabular-nums}
+.ev .tt{font-weight:700}
+.ev .sub{font-size:.84rem;color:var(--muted);margin-top:2px}
+.ev .del{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.8rem;padding:0}
+@media (max-width:640px){.ev{grid-template-columns:minmax(0,1fr)}}
+details.plan{border-top:1px solid var(--line);padding-top:var(--s4)}
+details.plan form{display:grid;gap:var(--s4);margin-top:var(--s4)}
+input[type=time]{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 13px;width:100%;color:var(--ink)}
+.team{position:sticky;top:calc(var(--hdr) + 24px);gap:var(--s5)}
+@media (max-width:1240px){.team{position:static}}
+.tgrp{display:grid;gap:var(--s3)}
+.tgrp h4{margin:0;display:flex;align-items:center;gap:8px;font:700 .74rem var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.people{display:grid;gap:var(--s2)}
+.person{display:grid;grid-template-columns:44px minmax(0,1fr);gap:var(--s3);align-items:center;padding:8px;border-radius:10px}
+.person:hover{background:var(--chip)}
+.pav{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font:700 .9rem var(--f-display);color:#fff;background:var(--steel);position:relative}
+.pav img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.pav .ldot{position:absolute;right:-3px;bottom:-3px;border:2px solid var(--panel);box-shadow:none;width:13px;height:13px}
+.person .nm{font-weight:700;font-size:.92rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.person .ds{font-size:.8rem;color:var(--muted);line-height:1.4}
+.person.off .pav{filter:grayscale(.7);opacity:.75}
+.whoav{width:30px;height:30px;border-radius:9px;overflow:hidden;display:grid;place-items:center;font:700 .74rem var(--f-display);color:#fff;background:var(--steel);flex:none}
+.whoav img{width:100%;height:100%;object-fit:cover}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -386,7 +448,7 @@ footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);li
       <div class="brandtxt"><h1>Tanger II</h1><div class="muted tagline">Détroit Plasturgie Automobile · 500 000 kits/an · mise en service 01/07/2028 · besoin ≈ 960 MDH</div></div></div>
     <div class="who">
       <button class="btn steel" id="rpOpen" type="button">Créer un rapport</button>
-      <span class="whoid"><span id="whoName"></span><span class="role" id="whoRole"></span></span>
+      <span class="whoid"><span class="whoav" id="whoAv" aria-hidden="true"></span><span id="whoName"></span><span class="role" id="whoRole"></span></span>
       <button class="btn" id="logout" type="button">Se déconnecter</button></div>
   </header>
   <div class="shell">
@@ -394,6 +456,75 @@ footer{padding:var(--s6) 0 0;text-align:left;border-top:1px solid var(--line);li
   <div class="scrim" id="scrim" hidden></div>
   <main id="main">
 
+
+    <!-- ===================== ACCUEIL PERSONNEL ===================== -->
+    <section class="page" data-page="home" hidden>
+      <div class="homegrid">
+        <div class="homemain">
+          <div class="panel hello">
+            <div class="hello-id">
+              <div class="bigav" id="hmAv" aria-hidden="true"></div>
+              <div class="hello-txt"><span class="eyebrow" id="hmDate"></span><h2 id="hmName">Bonjour</h2><div class="chipsrow" id="hmChips"></div></div>
+            </div>
+            <div class="hello-side">
+              <span class="live"><span class="ldot"></span>En ligne</span>
+              <span class="clock" id="hmClock"></span>
+              <span class="muted" id="hmSince" style="font-size:.88rem"></span>
+              <button class="btn" id="hmEdit" type="button">Modifier ma fiche</button>
+            </div>
+          </div>
+
+          <form class="panel" id="hmForm" hidden autocomplete="off">
+            <div class="lead"><div><h3 id="hmFormTitle">Ma fiche employé</h3><p class="muted" style="margin:0;font-size:.9rem">Ces informations apparaissent sur votre accueil et dans la liste de l'équipe.</p></div></div>
+            <div class="fiche">
+              <div class="photo-edit"><div class="bigav" id="hmAv2" aria-hidden="true"></div>
+                <label class="btn" for="hmPhoto">Choisir une photo<input type="file" id="hmPhoto" accept="image/jpeg,image/png,image/webp" class="sr"></label>
+                <button class="btn" id="hmPhotoDel" type="button" hidden>Retirer la photo</button></div>
+              <div class="formgrid">
+                <label class="f" for="hmNom">Nom complet<input type="text" id="hmNom" maxlength="60" required placeholder="Prénom Nom"></label>
+                <label class="f" for="hmPoste">Poste<input type="text" id="hmPoste" maxlength="60" placeholder="ex. Comptable fournisseurs"></label>
+                <label class="f" for="hmService">Service<select id="hmService"><option>Direction financière</option><option>Comptabilité</option><option>Contrôle de gestion</option><option>Direction générale</option><option>Production</option><option>Achats</option><option>Ressources humaines</option><option>Stage</option></select></label>
+                <label class="f" for="hmMatricule">Matricule<input type="text" id="hmMatricule" maxlength="20" placeholder="ex. DPA-0142"></label>
+                <label class="f" for="hmSite">Site<select id="hmSite"><option>Tanger Automotive City</option><option>Siège · Casablanca</option><option>Télétravail</option></select></label>
+                <label class="f" for="hmTel">Poste téléphonique<input type="text" id="hmTel" maxlength="20" placeholder="ex. 2214"></label>
+              </div>
+            </div>
+            <div class="toolbar"><button class="btn primary" id="hmSave" type="submit">Enregistrer ma fiche</button><button class="btn" id="hmCancel" type="button">Annuler</button><span class="muted" id="hmMsg" aria-live="polite"></span></div>
+          </form>
+
+          <div class="grid2">
+            <div class="panel nextcard" id="hmNext"></div>
+            <div class="panel"><h3>À faire aujourd'hui</h3><div class="todo" id="hmTodo"></div></div>
+          </div>
+
+          <div class="panel">
+            <div class="lead"><h3>Mon programme</h3><div class="seg" id="hmSeg"></div></div>
+            <div class="agenda" id="hmAgenda"></div>
+            <details class="plan" id="hmPlan"><summary>Planifier une réunion ou une tâche</summary>
+              <form id="evForm" autocomplete="off">
+                <div class="formgrid">
+                  <label class="f" for="evTitre">Intitulé<input type="text" id="evTitre" maxlength="100" required placeholder="ex. Point hebdomadaire trésorerie"></label>
+                  <label class="f" for="evType">Type<select id="evType"><option value="reunion">Réunion</option><option value="tache">Tâche</option><option value="echeance">Échéance</option><option value="formation">Formation</option></select></label>
+                  <label class="f" for="evDate">Date<input type="date" id="evDate" required></label>
+                  <label class="f" for="evDebut">Début<input type="time" id="evDebut" required value="09:00"></label>
+                  <label class="f" for="evFin">Fin<input type="time" id="evFin" required value="10:00"></label>
+                  <label class="f" for="evLieu">Lieu<input type="text" id="evLieu" maxlength="60" placeholder="ex. Salle B2 ou visioconférence"></label>
+                  <label class="f" for="evPour">Pour<select id="evPour"><option value="all">Toute l'équipe</option><option value="comptable">Les comptables</option><option value="superviseur">Les encadrants</option><option value="stagiaire">Les stagiaires</option><option value="admin">La direction</option><option value="me">Moi seulement</option></select></label>
+                </div>
+                <div class="toolbar"><button class="btn primary" type="submit" id="evSave">Ajouter au programme</button><span class="muted" id="evMsg" aria-live="polite"></span></div>
+              </form>
+            </details>
+          </div>
+        </div>
+
+        <aside class="panel team" aria-label="Équipe">
+          <div class="lead"><h3>Équipe</h3><span class="muted" id="tmCount" style="font-size:.86rem"></span></div>
+          <div class="tgrp"><h4><span class="ldot"></span>En ligne</h4><div class="people" id="tmOn"></div></div>
+          <div class="tgrp"><h4><span class="ldot off"></span>Hors ligne</h4><div class="people" id="tmOff"></div></div>
+          <p class="muted" id="tmNote" style="font-size:.82rem;margin:0"></p>
+        </aside>
+      </div>
+    </section>
 
     <!-- ===================== AU QUOTIDIEN ===================== -->
     <section class="page" data-page="daily" hidden>
@@ -1517,9 +1648,9 @@ $("loginForm").addEventListener("submit", async (e) => {
     else $("lerr").textContent = `Identifiant ou mot de passe incorrect (${5 - attempts} essai(s) restant(s)).`;
   }
 });
-$("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
+$("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
 
-const PAGES = [["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["home", "Accueil", false, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -1535,7 +1666,8 @@ function enterApp() {
     b.addEventListener("click", () => { show(id); window.scrollTo({ top: 0 }); }); grp.appendChild(b);
   });
   const h = (location.hash || "").slice(1);
-  show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin")) ? h : "dash");
+  startHome().then(() => { if (current === "home") refreshHome(); });
+  show(PAGES.some((p) => p[0] === h && (!p[2] || user.role === "admin")) ? h : "home");
   watchChat(); initReport();
 }
 const rendered = {};
@@ -1544,7 +1676,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -3168,7 +3300,7 @@ async function renderChat() {
   const rows = chRows.filter((m) => m.ch === chCur).sort((a, b) => (a.at || "").localeCompare(b.at || ""));
   const st = await getStore(), ids = [...new Set(rows.map((m) => m.by).filter(Boolean))];
   if (st.u && ids.length) { try { const ps = await st.u.profiles(ids); ids.forEach((i) => { chNames[i] = (ps[i] && ps[i].name) || ""; }); } catch (e) {} }
-  const nameOf = (m) => (m.by && chNames[m.by]) || m.who || "Membre";
+  const nameOf = (m) => { const f = people[m.by || "local-" + m.role]; return (f && f.nom) || (m.by && chNames[m.by]) || m.who || "Membre"; };
   const pins = rows.filter((m) => m.pinned);
   $("chPinned").hidden = !pins.length;
   $("chPinned").innerHTML = pins.length ? `<b style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase">Épinglé</b>` + pins.slice(-3).map((m) => `<div><b>${esc(nameOf(m))}</b> · ${fmtMsg(m.text.length > 180 ? m.text.slice(0, 180) + "…" : m.text)}</div>`).join("") : "";
@@ -3436,6 +3568,192 @@ async function renderReports() {
     <span class="meta"><span>${esc(rpLabel(r.type))}</span><span>${esc((r.by && chNames[r.by]) || r.author || r.who || "")}</span><span>${esc(dfr(r.at))}</span>${r.status ? `<span class="pill ${r.status === "Bloqué" ? "ko" : r.status === "En cours" ? "warn" : "ok"}">${esc(str(r.status))}</span>` : ""}</span></div>
     <button class="btn" type="button" data-rp="${esc(r.id)}">Ouvrir</button></div>`).join("");
   $("rpList").querySelectorAll("[data-rp]").forEach((b) => b.addEventListener("click", () => openReport(null, rpRows.find((x) => x.id === b.dataset.rp))));
+}
+
+// ---------- Accueil personnel, fiche employé, présence de l'équipe ----------
+const ROLE_LABEL = { admin: "Direction", superviseur: "Encadrant", comptable: "Comptable", stagiaire: "Stagiaire", lecteur: "Lecteur" };
+let hmInit = false, hmWatch = false, myKey = null, loginAt = null, people = {}, myFiche = null, roomNs = null, online = new Map(), events = [], hmDay = "today", hmPhotoData = undefined, profCache = {};
+const keyFor = (uid) => uid || "local-" + (user ? user.role : "");
+const todayISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const hhmm = (d) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+const durTxt = (ms) => { const m = Math.max(0, Math.round(ms / 60000)); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")}`; };
+function avHtml(f, prof, cls) {
+  const photo = f && typeof f.photo === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(f.photo) ? f.photo : prof && prof.avatarUrl && prof.name ? prof.avatarUrl : "";
+  const nm = (f && f.nom) || (prof && prof.name) || "?";
+  return photo ? `<img src="${esc(photo)}" alt="">` : esc(initials(nm));
+}
+async function profilesFor(ids) {
+  const st = await getStore(); const miss = ids.filter((i) => i && !(i in profCache));
+  if (st.u && miss.length) { try { const ps = await st.u.profiles(miss); miss.forEach((i) => { profCache[i] = ps[i] || null; }); } catch (e) {} }
+}
+let homeP = null;
+function startHome() { if (!homeP) homeP = startHome1(); return homeP; }
+async function startHome1() {
+  const st = await getStore(); meUid = st.uid; myKey = keyFor(st.uid); loginAt = new Date();
+  if (!hmWatch) {
+    hmWatch = true;
+    if (st.db) {
+      st.db.collection("annuaire").limit(300).onSnapshot((s) => { people = {}; s.docs.forEach((d) => { people[d.id] = d.data(); }); myFiche = people[myKey] || myFiche; refreshHome(); }, () => {});
+      st.db.collection("agenda").orderBy("date", "desc").limit(500).onSnapshot((s) => { events = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (current === "home") { renderAgenda(); renderNext(); renderTodo(); } }, () => {});
+    } else { people = lsGet("t2annuaire", {}); events = lsGet("t2agenda", []); }
+    try { roomNs = window.claude ? await window.claude.use("room") : null; } catch (e) { roomNs = null; }
+    if (roomNs) roomNs.onPeers((ch) => { online = new Map(); ch.peers.forEach((p) => { if (p.kind === "viewer" && p.by && p.presence && p.presence.since && !p.presence.off) { const o = online.get(p.by); if (!o || p.presence.since < o.since) online.set(p.by, { since: p.presence.since, me: p.isMe }); } }); renderTeam(); }, () => { roomNs = null; renderTeam(); });
+  }
+  if (!st.db) { people = lsGet("t2annuaire", {}); events = lsGet("t2agenda", []); }
+  myFiche = people[myKey] || null;
+  if (roomNs) roomNs.presence({ since: loginAt.toISOString(), off: null }).catch(() => {});
+  // fiche minimale à la connexion pour apparaître dans l'équipe ; mise à jour de la dernière connexion
+  const patch = { role: user.role, lastLogin: loginAt.toISOString() };
+  if (!myFiche) { let nm = ""; if (st.u) { try { const me = await st.u.me(); nm = me && me.name ? me.name : ""; } catch (e) {} } myFiche = Object.assign({ nom: nm, poste: "", service: user.role === "stagiaire" ? "Stage" : user.role === "comptable" ? "Comptabilité" : "Direction financière", matricule: "", site: "Tanger Automotive City", tel: "", photo: "" }, patch); }
+  else myFiche = Object.assign({}, myFiche, patch);
+  await saveFiche(myFiche, true);
+  updateWho();
+}
+async function saveFiche(f, quiet) {
+  const st = await getStore(), clean = JSON.parse(JSON.stringify(f));
+  if (st.db) { try { await st.db.doc("annuaire/" + myKey).set(clean); if (!quiet) $("hmMsg").textContent = "Fiche enregistrée."; } catch (e) { if (!quiet) $("hmMsg").textContent = e && e.code === "too_large" ? "Photo trop lourde : choisissez une image plus petite." : "Enregistrement refusé : vous n'avez peut-être pas le droit d'écrire sur cette page."; return false; } }
+  else { people[myKey] = clean; lsSet("t2annuaire", people); if (!quiet) $("hmMsg").textContent = "Fiche enregistrée dans ce navigateur."; }
+  people[myKey] = clean; myFiche = clean; refreshHome(); updateWho(); return true;
+}
+function updateWho() {
+  if (!user) return;
+  $("whoName").textContent = (myFiche && myFiche.nom) || user.name;
+  $("whoAv").innerHTML = avHtml(myFiche, profCache[meUid] || null);
+}
+async function signOutPresence() { if (roomNs) roomNs.presence({ off: true, since: null }).catch(() => {}); }
+
+async function initHome() {
+  if (!hmInit) {
+    hmInit = true;
+    $("hmEdit").addEventListener("click", () => openFiche());
+    $("hmCancel").addEventListener("click", () => { $("hmForm").hidden = true; });
+    $("hmForm").addEventListener("submit", async (e) => {
+      e.preventDefault(); const nom = $("hmNom").value.trim(); if (!nom) { $("hmMsg").textContent = "Indiquez votre nom complet."; return; }
+      const f = Object.assign({}, myFiche || {}, { nom: nom.slice(0, 60), poste: $("hmPoste").value.trim().slice(0, 60), service: $("hmService").value, matricule: $("hmMatricule").value.trim().slice(0, 20), site: $("hmSite").value, tel: $("hmTel").value.trim().slice(0, 20) });
+      if (hmPhotoData !== undefined) f.photo = hmPhotoData;
+      $("hmSave").disabled = true; const ok = await saveFiche(f); $("hmSave").disabled = false;
+      if (ok) { $("hmForm").hidden = true; hmPhotoData = undefined; logAudit("Fiche employé mise à jour", f.nom); }
+    });
+    $("hmPhoto").addEventListener("change", (e) => pickPhoto(e.target.files[0]));
+    $("hmPhotoDel").addEventListener("click", () => { hmPhotoData = ""; $("hmAv2").innerHTML = esc(initials($("hmNom").value || "?")); $("hmPhotoDel").hidden = true; });
+    seg("hmSeg", [["today", "Aujourd'hui"], ["tomorrow", "Demain"], ["week", "7 prochains jours"]], hmDay, (v) => { hmDay = v; renderAgenda(); });
+    $("evDate").value = todayISO();
+    $("evForm").addEventListener("submit", (e) => { e.preventDefault(); addEvent(); });
+    setInterval(() => { if (user && current === "home") tick(); }, 20000);
+  }
+  await startHome();
+  refreshHome();
+  if (myFiche && !myFiche.nom) openFiche(true);
+}
+function openFiche(first) {
+  const f = myFiche || {};
+  $("hmFormTitle").textContent = first ? "Bienvenue : complétez votre fiche employé" : "Ma fiche employé";
+  $("hmNom").value = f.nom || ""; $("hmPoste").value = f.poste || ""; $("hmService").value = f.service || "Direction financière"; $("hmMatricule").value = f.matricule || ""; $("hmSite").value = f.site || "Tanger Automotive City"; $("hmTel").value = f.tel || "";
+  hmPhotoData = undefined; $("hmAv2").innerHTML = avHtml(f, profCache[meUid] || null); $("hmPhotoDel").hidden = !f.photo; $("hmMsg").textContent = "";
+  $("hmForm").hidden = false; $("hmNom").focus();
+}
+function pickPhoto(file) {
+  if (!file) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { $("hmMsg").textContent = "Choisissez une image JPEG, PNG ou WebP."; return; }
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => { const s = 192, c = document.createElement("canvas"); c.width = c.height = s; const k = Math.max(s / img.width, s / img.height), w = img.width * k, h = img.height * k;
+    c.getContext("2d").drawImage(img, (s - w) / 2, (s - h) / 2, w, h); hmPhotoData = c.toDataURL("image/jpeg", 0.82); URL.revokeObjectURL(url);
+    $("hmAv2").innerHTML = `<img src="${hmPhotoData}" alt="">`; $("hmPhotoDel").hidden = false; $("hmMsg").textContent = "Photo prête : enregistrez la fiche."; };
+  img.onerror = () => { $("hmMsg").textContent = "Cette image n'a pas pu être lue."; };
+  img.src = url;
+}
+async function refreshHome() {
+  if (!user || !hmInit) { renderTeam(); return; }
+  await profilesFor(Object.keys(people).concat(meUid ? [meUid] : []));
+  const f = myFiche || {}, prof = profCache[meUid] || null, nm = f.nom || (prof && prof.name) || user.name;
+  const h = new Date().getHours();
+  $("hmName").textContent = `${h < 18 ? "Bonjour" : "Bonsoir"}, ${nm}`;
+  $("hmAv").innerHTML = avHtml(f, prof);
+  $("hmChips").innerHTML = [["Poste", f.poste], ["Service", f.service], ["Site", f.site], ["Matricule", f.matricule], ["Poste tél.", f.tel], ["Accès", ROLE_LABEL[user.role]]].filter((x) => x[1])
+    .map(([k, v]) => `<span class="chip"><span class="k">${esc(k)}</span>${esc(v)}</span>`).join("");
+  tick(); renderAgenda(); renderNext(); renderTodo(); renderTeam(); updateWho();
+}
+function tick() {
+  const now = new Date();
+  $("hmDate").textContent = now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  $("hmClock").textContent = hhmm(now);
+  if (loginAt) $("hmSince").textContent = `Connecté depuis ${hhmm(loginAt)} · ${durTxt(now - loginAt)}`;
+  if (current === "home") { renderNext(); renderAgenda(); renderTeam(); }
+}
+const forMe = (e) => e && (e.pour === "all" || e.pour === (user && user.role) || (e.pour === "me" && (e.by === (meUid || "local-" + user.role))));
+function evStatus(e, now) { const s = new Date(e.date + "T" + e.debut), en = new Date(e.date + "T" + e.fin); return now > en ? "past" : now >= s ? "now" : "next"; }
+const EV_TYPE = { reunion: "Réunion", tache: "Tâche", echeance: "Échéance", formation: "Formation" };
+const POUR = { all: "Toute l'équipe", comptable: "Comptables", superviseur: "Encadrants", stagiaire: "Stagiaires", admin: "Direction", me: "Moi seulement" };
+function renderAgenda() {
+  if (!$("hmAgenda")) return;
+  const now = new Date(), t0 = todayISO(now), t1 = todayISO(new Date(now.getTime() + 864e5)), t7 = todayISO(new Date(now.getTime() + 7 * 864e5));
+  const list = events.filter(forMe).filter((e) => (hmDay === "today" ? e.date === t0 : hmDay === "tomorrow" ? e.date === t1 : e.date >= t0 && e.date <= t7)).sort((a, b) => (a.date + a.debut).localeCompare(b.date + b.debut));
+  if (!list.length) { $("hmAgenda").innerHTML = `<div class="empty"><b>${hmDay === "today" ? "Rien de prévu aujourd'hui" : hmDay === "tomorrow" ? "Rien de prévu demain" : "Rien de prévu cette semaine"}</b><span>Ajoutez une réunion ou une tâche avec « Planifier » ci-dessous : elle apparaîtra chez les personnes concernées.</span></div>`; return; }
+  const st = (e) => evStatus(e, now);
+  $("hmAgenda").innerHTML = list.map((e) => { const s = st(e), mine = e.by === (meUid || "local-" + user.role) || canSupervise();
+    return `<div class="ev ${esc(e.type || "reunion")} ${s}"><div class="hr">${hmDay === "week" ? `<div class="muted" style="font-size:.78rem">${esc(new Date(e.date + "T12:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }))}</div>` : ""}${esc(e.debut)} – ${esc(e.fin)}</div>
+      <div style="min-width:0"><div class="tt">${esc(e.titre || "")}</div><div class="sub">${esc(EV_TYPE[e.type] || "Réunion")}${e.lieu ? " · " + esc(e.lieu) : ""} · ${esc(POUR[e.pour] || "")}</div>${mine ? `<button class="del" type="button" data-ev="${esc(e.id)}">Retirer</button>` : ""}</div>
+      <span class="pill ${s === "now" ? "warn" : s === "past" ? "" : "ok"}">${s === "now" ? "En cours" : s === "past" ? "Terminé" : "À venir"}</span></div>`; }).join("");
+  $("hmAgenda").querySelectorAll("[data-ev]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.confirm) delEvent(b.dataset.ev); else { b.dataset.confirm = "1"; b.textContent = "Confirmer le retrait"; } }));
+}
+function renderNext() {
+  if (!$("hmNext") || !user) return;
+  const now = new Date(), up = events.filter(forMe).filter((e) => new Date(e.date + "T" + e.fin) >= now).sort((a, b) => (a.date + a.debut).localeCompare(b.date + b.debut));
+  const meet = up.find((e) => e.type === "reunion") || up[0];
+  if (!meet) { $("hmNext").innerHTML = `<h3>Prochaine réunion</h3><div class="empty" style="padding:24px 8px"><b>Aucune réunion prévue</b><span>Les réunions planifiées pour vous s'afficheront ici avec le compte à rebours.</span></div>`; return; }
+  const s = new Date(meet.date + "T" + meet.debut), inProg = now >= s, d = s - now;
+  const when = inProg ? "En cours maintenant" : meet.date === todayISO(now) ? `Dans ${durTxt(d)}` : s.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  $("hmNext").innerHTML = `<div class="lead"><h3>${meet.type === "reunion" ? "Prochaine réunion" : "Prochaine activité"}</h3><span class="pill ${inProg ? "warn" : "ok"}">${esc(when)}</span></div>
+    <div class="ttl">${esc(meet.titre || "")}</div>
+    <div class="facts"><span><b>Date</b>${esc(s.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }))}</span><span><b>Heure</b><span class="when">${esc(meet.debut)} – ${esc(meet.fin)}</span></span>${meet.lieu ? `<span><b>Lieu</b>${esc(meet.lieu)}</span>` : ""}<span><b>Pour</b>${esc(POUR[meet.pour] || "")}</span></div>`;
+}
+async function renderTodo() {
+  const items = [], st = await getStore();
+  await connectStore(); await computeStates(); await watchChat();
+  const unreadAll = CHANNELS.reduce((s, c) => s + unreadOf(c[0]), 0);
+  if (canSupervise()) { const n = cpRows.filter((p) => ["attente", "partielle"].includes(STATES[p.id] || "attente")).length; items.push([n, n ? "warn" : "ok", "Factures à signer", "Validation & signature", () => { show("compta"); const b = $("cpSeg").querySelectorAll("button")[4]; if (b) b.click(); }]); }
+  if (user.role === "comptable" || user.role === "admin") { const n = cpRows.filter((p) => STATES[p.id] === "rejetee" || STATES[p.id] === "alteree").length; items.push([n, n ? "ko" : "ok", "Factures rejetées ou modifiées à reprendre", "Journal", () => { show("compta"); const b = $("cpSeg").querySelectorAll("button")[4]; if (b) b.click(); }]); }
+  items.push([unreadAll, unreadAll ? "warn" : "ok", "Messages non lus", "Messagerie", () => show("chat")]);
+  const today = events.filter(forMe).filter((e) => e.date === todayISO() && evStatus(e, new Date()) !== "past").length;
+  items.push([today, today ? "warn" : "ok", "Réunions et tâches restantes aujourd'hui", "Programme", () => { hmDay = "today"; $("hmAgenda").scrollIntoView({ behavior: "smooth", block: "center" }); }]);
+  if (user.role === "stagiaire") { const m = stMine || lsGet("t2stage", {}).local || null, pr = m ? progressOf(m) : { val: 0 }; items.push([MODULES.length - pr.val, MODULES.length - pr.val ? "warn" : "ok", "Modules de formation à terminer", "Stagiaires", () => show("stage")]); }
+  $("hmTodo").innerHTML = items.map(([n, c, l, go], i) => `<button type="button" data-td="${i}"><span class="n ${c}">${n}</span><span>${esc(l)}</span><span class="go">${esc(go)} →</span></button>`).join("");
+  $("hmTodo").querySelectorAll("[data-td]").forEach((b) => b.addEventListener("click", () => items[+b.dataset.td][4]()));
+}
+async function renderTeam() {
+  if (!$("tmOn") || !user) return;
+  const st = await getStore(), ids = new Set(Object.keys(people));
+  online.forEach((_, by) => ids.add(by));
+  if (!roomNs) { ids.add(myKey); }
+  await profilesFor([...ids].filter((i) => !i.startsWith("local-")));
+  const isOn = (id) => (roomNs ? online.has(id) : id === myKey);
+  const card = (id, on) => { const f = people[id] || {}, p = profCache[id] || null, nm = f.nom || (p && p.name) || ROLE_LABEL[f.role] || "Membre", me = id === myKey;
+    const since = on ? (roomNs && online.get(id) ? new Date(online.get(id).since) : me ? loginAt : null) : null;
+    const desc = on ? `${esc(f.poste || ROLE_LABEL[f.role] || "")}${since ? ` · depuis ${hhmm(since)}` : ""}` : `${esc(f.poste || ROLE_LABEL[f.role] || "")}${f.lastLogin ? ` · vu le ${esc(new Date(f.lastLogin).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }))} à ${esc(hhmm(new Date(f.lastLogin)))}` : ""}`;
+    return `<div class="person${on ? "" : " off"}"><div class="pav">${avHtml(f, p)}<span class="ldot${on ? "" : " off"}"></span></div><div style="min-width:0"><div class="nm">${esc(nm)}${me ? ' <span class="muted" style="font-weight:500">(vous)</span>' : ""}</div><div class="ds">${desc}</div></div></div>`; };
+  const all = [...ids], on = all.filter(isOn), off = all.filter((i) => !isOn(i));
+  const byName = (a, b) => ((people[a] || {}).nom || "").localeCompare((people[b] || {}).nom || "");
+  $("tmOn").innerHTML = on.length ? on.sort((a, b) => (a === myKey ? -1 : b === myKey ? 1 : byName(a, b))).map((i) => card(i, true)).join("") : '<p class="muted" style="margin:0">Personne d\'autre pour l\'instant.</p>';
+  $("tmOff").innerHTML = off.length ? off.sort(byName).map((i) => card(i, false)).join("") : '<p class="muted" style="margin:0;font-size:.88rem">Tout le monde est en ligne.</p>';
+  $("tmCount").textContent = `${on.length} en ligne sur ${all.length}`;
+  $("tmNote").textContent = roomNs ? "La présence se met à jour en direct quand un collègue ouvre ou ferme la plateforme." : "Hors de claude.ai, seule votre propre présence est visible. Ouvrez la page partagée sur claude.ai pour voir vos collègues en ligne.";
+}
+async function addEvent() {
+  const e = { titre: $("evTitre").value.trim().slice(0, 100), type: $("evType").value, date: $("evDate").value, debut: $("evDebut").value, fin: $("evFin").value, lieu: $("evLieu").value.trim().slice(0, 60), pour: $("evPour").value, at: new Date().toISOString() };
+  if (!e.titre || !e.date || !e.debut || !e.fin) { $("evMsg").textContent = "Renseignez l'intitulé, la date et les heures."; return; }
+  if (e.fin <= e.debut) { $("evMsg").textContent = "L'heure de fin doit suivre l'heure de début."; return; }
+  const st = await getStore(); e.by = st.uid || "local-" + user.role;
+  $("evSave").disabled = true;
+  if (st.db) { try { await st.db.collection("agenda").add(e); $("evMsg").textContent = "Ajouté au programme."; } catch (x) { $("evMsg").textContent = "Ajout refusé : vous n'avez peut-être pas le droit d'écrire sur cette page."; } }
+  else { e.id = "e" + Date.now(); events = events.concat([e]); lsSet("t2agenda", events); $("evMsg").textContent = "Ajouté au programme (dans ce navigateur)."; renderAgenda(); renderNext(); renderTodo(); }
+  $("evSave").disabled = false; $("evTitre").value = ""; $("evLieu").value = "";
+  if (e.date !== todayISO()) { hmDay = "week"; seg("hmSeg", [["today", "Aujourd'hui"], ["tomorrow", "Demain"], ["week", "7 prochains jours"]], hmDay, (v) => { hmDay = v; renderAgenda(); }); renderAgenda(); }
+  logAudit(`${EV_TYPE[e.type]} planifiée : ${e.titre}`, `${e.date} ${e.debut}`);
+}
+async function delEvent(id) {
+  const st = await getStore();
+  if (st.db) { try { await st.db.doc("agenda/" + id).delete(); } catch (x) {} }
+  else { events = events.filter((x) => x.id !== id); lsSet("t2agenda", events); renderAgenda(); renderNext(); renderTodo(); }
 }
 
 // thème : redessiner les graphiques quand le thème change
