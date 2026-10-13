@@ -1,9 +1,4 @@
-<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Simulateur et dossier de financement de l'unité industrielle Tanger II (cas pédagogique fictif).">
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Simulateur interactif du financement de l unité industrielle Tanger II (DPA) : scénarios, DSCR, VAN, stress tests, comptabilité CGNC, fiscalité et effet de levier.">
 <style>html,body{height:100%}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Simulateur Tanger II</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -192,8 +187,7 @@ input[type=date],input[type=month]{background:var(--bg);border:1px solid var(--l
 footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
-</head>
-<body>
+</head><body>
 
 <div id="login">
   <form class="lcard" id="loginForm" autocomplete="off">
@@ -557,6 +551,31 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
       <div class="panel"><h3>Table des cas (onglet 02, section 11)</h3><div class="tablewrap"><table id="stTable"></table></div></div>
     </section>
 
+
+    <!-- ===================== EFFET DE LEVIER ===================== -->
+    <section class="page" data-page="levier" hidden>
+      <div class="lead"><div><span class="eyebrow">Analyse</span><h2>Effet de <em class="g">levier</em></h2>
+        <p>La dette augmente la rentabilité des fonds propres tant que l'investissement rapporte plus que la dette ne coûte après impôt. Au-delà, le levier devient un effet de massue.</p></div></div>
+      <div class="panel"><h3>Formule</h3>
+        <div class="formula"><b>Rentabilité financière</b><code>Rf = Re + (Re − i) × D / CP</code><span class="muted">Re = rentabilité économique après impôt = EBIT × (1 − IS) / (CP + D) · i = coût net de la dette après impôt · D / CP = bras de levier</span></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Les trois montages en 2032 (année de croisière)</h3><div class="tablewrap"><table id="lvTable"></table></div>
+          <p class="muted" style="font-size:.84rem">Source : modèle Excel, onglet 17_Valorisation, blocs « Point mort et effet de levier » (capitaux propres et dette nette retraitée d’ouverture 2032, en MDH).</p></div>
+        <div class="panel"><h3>Décomposition de la rentabilité financière (%)</h3><div class="chart" id="lvBars"></div></div>
+      </div>
+      <div class="panel"><div class="lead"><h3>Simulateur</h3><div class="seg" id="lvSeg"></div></div>
+        <div class="grid2">
+          <div class="ctrls">
+            <div class="rng"><div class="row"><label for="lvRe">Rentabilité économique Re</label><output id="lvReO"></output></div><input type="range" id="lvRe" min="0" max="30" step="0.1"></div>
+            <div class="rng"><div class="row"><label for="lvI">Coût net de la dette i</label><output id="lvIO"></output></div><input type="range" id="lvI" min="0" max="15" step="0.1"></div>
+            <div class="rng"><div class="row"><label for="lvL">Bras de levier D / CP</label><output id="lvLO"></output></div><input type="range" id="lvL" min="0" max="3" step="0.05"></div>
+            <div class="tiles" id="lvOut"></div>
+            <div class="verdict" id="lvNote"></div>
+          </div>
+          <div class="chart" id="lvLine"></div>
+        </div></div>
+    </section>
+
     <!-- ===================== MONTE-CARLO ===================== -->
     <section class="page" data-page="mc" hidden>
       <div class="lead"><div><span class="eyebrow">Modèle avancé</span><h2>Monte-<em class="g">Carlo</em></h2><p>Sept facteurs de risque tirés ensemble avec leurs corrélations (copule gaussienne, décomposition de Cholesky) : prix, volumes, matières, énergie, dépassement du CAPEX (loi triangulaire), retard (exponentielle tronquée à 18 mois) et taux.</p></div></div>
@@ -673,7 +692,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
       <div id="cp-journal" hidden style="display:grid;gap:22px">
         <div class="tiles" id="cpTiles"></div>
         <div class="panel"><div class="lead"><h3>Journal des écritures</h3>
-          <div class="toolbar"><label class="f" for="cpMonth" style="min-width:160px">Mois<input type="month" id="cpMonth"></label><button class="btn" id="cpCsv" type="button">Copier en CSV</button></div></div>
+          <div class="toolbar"><label class="f" for="cpMonth" style="min-width:160px">Mois<input type="month" id="cpMonth"></label><button class="btn" id="cpCsv" type="button">Copier en CSV</button><button class="btn" id="cpSap" type="button">Exporter pour SAP</button></div></div>
           <div class="muted" id="cpStore" style="font-size:.86rem"></div>
           <div class="tablewrap"><table id="cpJournal"></table></div>
           <div class="muted" id="cpCsvMsg" aria-live="polite"></div></div>
@@ -687,6 +706,36 @@ footer{color:var(--muted);font-size:.8rem;text-align:center;padding:10px 16px 24
           <div class="toolbar"><button class="btn primary" id="cpAmortSave" type="button">Passer l'écriture de dotation</button><span class="muted" id="cpAmortMsg" aria-live="polite"></span></div></div>
       </div>
 
+      <div id="cp-fisc" hidden style="display:grid;gap:22px">
+        <div class="grid2">
+          <div class="panel gilt"><h3>Impôt sur les sociétés et cotisation minimale</h3>
+            <div class="formgrid">
+              <label class="f" for="isRf">Résultat fiscal (MAD)<input type="number" id="isRf" value="104600000" step="1000"></label>
+              <label class="f" for="isCa">Chiffre d'affaires HT (MAD)<input type="number" id="isCa" value="1360000000" step="1000"></label>
+              <label class="f" for="isAutres">Autres produits imposables à la CM (MAD)<input type="number" id="isAutres" value="0" step="1000"></label>
+              <label class="f" for="isRang">Exercice d'exploitation n°<input type="number" id="isRang" value="3" min="1" max="50"></label>
+              <label class="f" for="isUnder">Exercices consécutifs sous 100 MDH avant celui-ci<input type="number" id="isUnder" value="3" min="0" max="10"></label>
+              <label class="f" for="isClos">Date de clôture<input type="date" id="isClos" value="2030-12-31"></label>
+            </div>
+            <label for="isExo" style="display:flex;gap:8px;align-items:center;font-size:.9rem"><input type="checkbox" id="isExo"> Exonération de 5 ans des sociétés industrielles nouvelles (CGI art. 6-II-B-4°)</label>
+            <div class="tiles" id="isOut"></div>
+            <div id="isNote" class="verdict"></div>
+            <div class="tablewrap"><table id="isEntry"></table></div>
+            <div class="tablewrap"><table id="isAcomptes"></table></div>
+          </div>
+          <div class="panel"><h3>Impôt sur le revenu · salaire mensuel</h3>
+            <div class="formgrid">
+              <label class="f" for="irBrut">Salaire brut imposable mensuel (MAD)<input type="number" id="irBrut" value="12000" step="100"></label>
+              <label class="f" for="irFam">Personnes à charge<input type="number" id="irFam" value="2" min="0" max="10"></label>
+              <label class="f" for="irPat">Charges patronales (% du brut)<input type="number" id="irPat" value="21.09" step="0.01"></label>
+            </div>
+            <div class="tablewrap"><table id="irTable"></table></div>
+            <div class="tiles" id="irOut"></div>
+            <div class="tablewrap"><table id="irEntry"></table></div>
+            <p class="muted" style="font-size:.84rem">Barème annuel de l'IR applicable depuis 2025 (CGI art. 73, loi de finances 2025), frais professionnels (art. 59), cotisations CNSS salariales 4,48 % plafonnées à 6 000 MAD et AMO 2,26 % : paramètres à vérifier avant usage en paie réelle.</p>
+          </div>
+        </div>
+      </div>
       <div id="cp-pcm" hidden style="display:grid;gap:22px">
         <div class="panel"><div class="lead"><h3>Plan comptable marocain (CGNC) · comptes d'une entreprise industrielle</h3>
           <label class="f" for="cpSearch" style="min-width:240px">Rechercher<input type="text" id="cpSearch" placeholder="numéro ou mot : 2332, TVA, amortissement"></label></div>
@@ -736,8 +785,7 @@ Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Tr�
   </main>
   <footer>Cas pédagogique fictif · moteur calé sur le modèle Excel « 01_Modele_financier_Tanger_II », qui reste la référence pour les chiffres du rapport · contrôle d'accès de démonstration, réalisé dans le navigateur.</footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script><script>
 // Moteur financier Tanger II — portage JavaScript de tanger2-app/model.py
 const T2 = (() => {
   const YEARS = Array.from({ length: 12 }, (_, i) => 2027 + i);
@@ -1048,8 +1096,7 @@ const T2 = (() => {
   return { YEARS, SCENARIOS, CASES, SHOCKS, MARKET, FIN, run, drawMC, mcRun, MC_VARS, EQ_CAP, BANK_CAP, CAPEX_BASE };
 })();
 if (typeof module !== "undefined") module.exports = T2;
-</script>
-<script>
+</script><script>
 (() => {
 const $ = (id) => document.getElementById(id);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -1111,7 +1158,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 $("logout").addEventListener("click", () => { user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; });
 
 const PAGES = [["daily", "Au quotidien", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
-  ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"],
+  ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
 let current = "dash";
@@ -1134,7 +1181,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); if (b.dataset.page === id) b.scrollIntoView({ block: "nearest", inline: "nearest" }); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
 }
 function fillSelect(id, names, sel) { const el = $(id); if (el.options.length) return; names.forEach((n) => { const o = document.createElement("option"); o.value = o.textContent = n; el.appendChild(o); }); if (sel) el.value = sel; }
@@ -1877,7 +1924,7 @@ function autoTva() { const ht = parseFloat($("cpHt").value) || 0, t = parseFloat
 
 async function initCompta() {
   if (!rendered.compta) {
-    seg("cpSeg", [["saisie", "Saisie"], ["journal", "Journal"], ["amort", "Amortissements"], ["pcm", "Plan comptable"]], "saisie", (v) => { cpView = v; renderCompta(); });
+    seg("cpSeg", [["saisie", "Saisie"], ["journal", "Journal"], ["amort", "Amortissements"], ["fisc", "Fiscalité : IS, CM, IR"], ["pcm", "Plan comptable"]], "saisie", (v) => { cpView = v; renderCompta(); });
     fillNatures(); $("cpDate").value = new Date().toISOString().slice(0, 10);
     $("cpYear").value = new Date().getFullYear(); $("cpMonth").value = "";
     $("cpSens").addEventListener("change", () => { fillNatures(); if ($("cpSens").value === "vente" && $("cpNature").value === "7122") $("cpTaux").value = "0"; autoTva(); renderEntry(); });
@@ -1896,6 +1943,7 @@ async function initCompta() {
     $("cpStop").addEventListener("click", () => cpCtl && cpCtl.abort());
     $("cpMonth").addEventListener("input", renderJournal);
     $("cpCsv").addEventListener("click", copyCsv);
+    $("cpSap").addEventListener("click", copySap);
     $("cpYear").addEventListener("input", renderAmort);
     $("cpAmortSave").addEventListener("click", saveDotation);
     $("cpSearch").addEventListener("input", renderPcm);
@@ -1905,7 +1953,8 @@ async function initCompta() {
   renderCompta();
 }
 function renderCompta() {
-  ["saisie", "journal", "amort", "pcm"].forEach((v) => { $("cp-" + v).hidden = v !== cpView; });
+  ["saisie", "journal", "amort", "fisc", "pcm"].forEach((v) => { $("cp-" + v).hidden = v !== cpView; });
+  if (cpView === "fisc") renderFisc();
   if (cpView === "journal") renderJournal();
   if (cpView === "amort") renderAmort();
   if (cpView === "pcm") renderPcm();
@@ -2064,11 +2113,119 @@ function renderPcm() {
     + (rows.length ? "" : '<tr><td colspan="3" class="muted">Aucun compte ne correspond.</td></tr>') + "</tbody>";
 }
 
+// ---------- Fiscalité : IS, cotisation minimale, IR ----------
+const IR_BAREME = [[40000, 0, 0], [60000, 0.10, 4000], [80000, 0.20, 10000], [100000, 0.30, 18000], [180000, 0.34, 22000], [Infinity, 0.37, 27400]];
+function renderFisc() {
+  if (!rendered.fisc) {
+    rendered.fisc = true;
+    ["isRf", "isCa", "isAutres", "isRang", "isUnder", "isClos", "isExo"].forEach((id) => $(id).addEventListener("input", renderIS2));
+    ["irBrut", "irFam", "irPat"].forEach((id) => $(id).addEventListener("input", renderIR));
+  }
+  renderIS2(); renderIR();
+}
+function renderIS2() {
+  const rf = parseFloat($("isRf").value) || 0, ca = parseFloat($("isCa").value) || 0, autres = parseFloat($("isAutres").value) || 0;
+  const rang = parseInt($("isRang").value) || 1, under = parseInt($("isUnder").value) || 0, exo = $("isExo").checked;
+  const base = Math.max(rf, 0), haut = base >= 100e6 || under < 3, taux = haut ? 0.35 : 0.20;
+  const isTh = base * taux, cmEx = rang <= 3, cm = cmEx ? 0 : Math.max(0.0025 * (ca + autres), 3000);
+  const exoActive = exo && rang <= 5, du = exoActive ? 0 : Math.max(isTh, cm);
+  $("isOut").innerHTML = tile("Taux d'IS", pct(taux, 0), haut ? (base >= 100e6 ? "bénéfice ≥ 100 MDH" : "moins de 3 exercices sous le seuil") : "taux normal")
+    + tile("IS théorique (MAD)", mad(isTh)) + tile("Cotisation minimale (MAD)", mad(cm), cmEx ? "exonérée les 36 premiers mois" : "0,25 % des produits, 3 000 MAD au moins")
+    + tile("IS dû (MAD)", mad(du), exoActive ? "exonération de 5 ans" : du === cm && cm > isTh ? "la cotisation minimale l'emporte" : "IS théorique");
+  $("isNote").innerHTML = `<b>Règle.</b> IS dû = max(IS théorique ; cotisation minimale). Le taux de 35 % s'applique à la <b>totalité</b> du bénéfice dès 100 MDH (CGI art. 19-I) ; le retour à 20 % n'intervient qu'après 3 exercices consécutifs sous le seuil. Cotisation minimale : CGI art. 144.`;
+  $("isEntry").innerHTML = `<thead><tr><th>Écriture de clôture</th><th class="wrap">Intitulé</th><th>Débit (MAD)</th><th>Crédit (MAD)</th></tr></thead><tbody>
+    <tr><td class="n">6701</td><td class="wrap">Impôts sur les bénéfices</td><td class="n">${mad(du)}</td><td></td></tr>
+    <tr><td class="n">4453</td><td class="wrap">État - impôts sur les résultats</td><td></td><td class="n">${mad(du)}</td></tr></tbody>`;
+  const clos = new Date($("isClos").value || "2030-12-31"), rows = [];
+  for (let k = 1; k <= 4; k++) { const d = new Date(clos.getFullYear(), clos.getMonth() + 3 * k + 1, 0); rows.push(`<tr><td class="wrap" style="min-width:110px">Acompte n° ${k}</td><td class="n">${d.toLocaleDateString("fr-FR")}</td><td class="n">${mad(du * 0.25)}</td></tr>`); }
+  $("isAcomptes").innerHTML = `<thead><tr><th>Exercice suivant</th><th>Avant le</th><th>Montant (25 % de l'IS dû)</th></tr></thead><tbody>${rows.join("")}
+    <tr><td colspan="3" class="muted" style="white-space:normal">Acomptes provisionnels (CGI art. 170) ; déclaration du résultat fiscal dans les 3 mois suivant la clôture (art. 20).</td></tr></tbody>`;
+}
+function renderIR() {
+  const brut = parseFloat($("irBrut").value) || 0, fam = Math.max(0, parseInt($("irFam").value) || 0), patR = (parseFloat($("irPat").value) || 0) / 100;
+  const cnss = Math.min(brut, 6000) * 0.0448, amo = brut * 0.0226, annBrut = brut * 12;
+  const fpRate = annBrut <= 78000 ? 0.35 : 0.25, fp = Math.min(annBrut * fpRate, annBrut <= 78000 ? Infinity : 35000);
+  const sni = Math.max(0, annBrut - fp - (cnss + amo) * 12);
+  const tr = IR_BAREME.find(([max]) => sni <= max), irBrutAnn = Math.max(0, sni * tr[1] - tr[2]);
+  const famDed = Math.min(fam * 500, 3000), irAnn = Math.max(0, irBrutAnn - famDed), ir = irAnn / 12;
+  const net = brut - cnss - amo - ir, pat = brut * patR;
+  $("irTable").innerHTML = `<thead><tr><th>Étape (par an)</th><th>Montant (MAD)</th></tr></thead><tbody>
+    <tr><td class="wrap">Salaire brut imposable</td><td class="n">${mad(annBrut)}</td></tr>
+    <tr><td class="wrap">− Frais professionnels (${fmt(fpRate * 100, 0)} %${annBrut > 78000 ? ", plafond 35 000" : ""})</td><td class="n">${mad(fp)}</td></tr>
+    <tr><td class="wrap">− CNSS (4,48 %, plafond 6 000/mois) et AMO (2,26 %)</td><td class="n">${mad((cnss + amo) * 12)}</td></tr>
+    <tr class="hl"><td class="wrap">Salaire net imposable</td><td class="n">${mad(sni)}</td></tr>
+    <tr><td class="wrap">IR au barème (${fmt(tr[1] * 100, 0)} % − ${mad(tr[2])} de somme à déduire)</td><td class="n">${mad(irBrutAnn)}</td></tr>
+    <tr><td class="wrap">− Charges de famille (500 par personne, 3 000 au plus)</td><td class="n">${mad(famDed)}</td></tr>
+    <tr class="hl"><td class="wrap"><b>IR annuel</b></td><td class="n"><b>${mad(irAnn)}</b></td></tr></tbody>`;
+  $("irOut").innerHTML = tile("IR du mois (MAD)", mad(ir)) + tile("Net à payer (MAD)", mad(net)) + tile("Taux moyen d'IR", pct(brut ? ir / brut : 0, 1)) + tile("Coût employeur (MAD)", mad(brut + pat));
+  $("irEntry").innerHTML = `<thead><tr><th>Écriture de paie</th><th class="wrap">Intitulé</th><th>Débit</th><th>Crédit</th></tr></thead><tbody>
+    <tr><td class="n">6171</td><td class="wrap">Rémunérations du personnel</td><td class="n">${mad(brut)}</td><td></td></tr>
+    <tr><td class="n">4441</td><td class="wrap">CNSS (part salariale + AMO)</td><td></td><td class="n">${mad(cnss + amo)}</td></tr>
+    <tr><td class="n">4452</td><td class="wrap">État - IR retenu à la source</td><td></td><td class="n">${mad(ir)}</td></tr>
+    <tr><td class="n">4432</td><td class="wrap">Rémunérations dues au personnel</td><td></td><td class="n">${mad(net)}</td></tr>
+    <tr><td class="n">6174</td><td class="wrap">Charges sociales (part patronale)</td><td class="n">${mad(pat)}</td><td></td></tr>
+    <tr><td class="n">4441</td><td class="wrap">CNSS (part patronale)</td><td></td><td class="n">${mad(pat)}</td></tr></tbody>`;
+}
+
+// ---------- Export SAP (saisie de pièce FB01 / chargement LSMW) ----------
+function sapCsv() {
+  const rows = journalLines(), out = ["BUKRS;BLDAT;BUDAT;BLART;WAERS;XBLNR;BKTXT;BUZEI;BSCHL;HKONT;WRBTR;SGTXT"];
+  const d = (s) => (s || "").replace(/-/g, "");
+  rows.forEach((p) => {
+    const blart = p.type === "achat" ? "KR" : p.type === "vente" ? "DR" : "SA";
+    (p.lines || []).forEach((l, i) => {
+      const isVendor = l.compte === "4411" || l.compte === "4481", isCust = l.compte === "3421";
+      const key = l.debit ? (isCust ? "01" : "40") : (isVendor ? "31" : "50");
+      const amt = (l.debit || l.credit || 0).toFixed(2).replace(".", ",");
+      out.push(["DPA1", d(p.date), d(p.date), blart, "MAD", (p.numero || "").slice(0, 16), (p.tiers || "").slice(0, 25), i + 1, key, l.compte, amt, (l.libelle || "").slice(0, 50)].map((v) => String(v).replace(/;/g, ",")).join(";"));
+    });
+  });
+  return out.join("\n");
+}
+async function copySap() {
+  const text = sapCsv();
+  try { await navigator.clipboard.writeText(text); $("cpCsvMsg").textContent = `Fichier SAP copié (${text.split("\n").length - 1} lignes) : collez-le dans un fichier .csv pour un chargement LSMW ou une saisie FB01.`; }
+  catch (e) { $("cpCsvMsg").textContent = "Copie bloquée : sélectionnez le texte ci-dessous."; const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "width:100%;height:140px"; ta.setAttribute("aria-label", "Export SAP"); $("cpCsvMsg").appendChild(ta); ta.select(); }
+}
+
+// ---------- Effet de levier ----------
+const LEV = { A: { re: 0.16083, i: 0.06244, l: 0.38620, cp: 547.9, d: 211.6 }, B: { re: 0.15777, i: 0.05141, l: 0.64707, cp: 450.9, d: 291.8 }, C: { re: 0.15765, i: 0.06400, l: 0.42867, cp: 520.0, d: 222.9 } };
+let lvSc = "B";
+function renderLevier() {
+  const c = COLS();
+  if (!rendered.levier) {
+    seg("lvSeg", [["A", "Partir de A"], ["B", "Partir de B"], ["C", "Partir de C"]], "B", (v) => { lvSc = v; setLv(LEV[v]); drawLv(); });
+    ["lvRe", "lvI", "lvL"].forEach((id) => $(id).addEventListener("input", drawLv));
+    setLv(LEV.B);
+  }
+  const rf = (o) => o.re + (o.re - o.i) * o.l;
+  $("lvTable").innerHTML = `<thead><tr><th>Montage</th><th>CP</th><th>Dette</th><th>D / CP</th><th>Re</th><th>i</th><th>Rf</th><th>Levier</th></tr></thead><tbody>`
+    + "ABC".split("").map((k) => { const o = LEV[k]; return `<tr${k === "B" ? ' class="hl"' : ""}><td><span class="dot" style="background:${c[k]}"></span> ${k}</td><td class="n">${fmt(o.cp, 1)}</td><td class="n">${fmt(o.d, 1)}</td><td class="n">${xx(o.l)}</td><td class="n">${pct(o.re)}</td><td class="n">${pct(o.i)}</td><td class="n"><b>${pct(rf(o))}</b></td><td class="n">+${fmt((rf(o) - o.re) * 100, 2)} pts</td></tr>`; }).join("") + "</tbody>";
+  plot("lvBars", [{ type: "bar", x: ["A", "B", "C"], y: "ABC".split("").map((k) => LEV[k].re * 100), name: "Rentabilité économique Re", marker: { color: c.muted } },
+    { type: "bar", x: ["A", "B", "C"], y: "ABC".split("").map((k) => (rf(LEV[k]) - LEV[k].re) * 100), name: "Effet de levier", marker: { color: "ABC".split("").map((k) => c[k]) },
+      text: "ABC".split("").map((k) => pct(rf(LEV[k]), 1)), textposition: "outside" }],
+    { barmode: "stack", hovermode: "closest", yaxis: { ticksuffix: " %", gridcolor: c.line, color: c.muted, range: [0, 27] } });
+  drawLv();
+}
+function setLv(o) { $("lvRe").value = (o.re * 100).toFixed(1); $("lvI").value = (o.i * 100).toFixed(1); $("lvL").value = o.l.toFixed(2); }
+function drawLv() {
+  const c = COLS(), re = +$("lvRe").value / 100, i = +$("lvI").value / 100, l = +$("lvL").value, rf = re + (re - i) * l, eff = rf - re;
+  $("lvReO").value = pct(re, 1); $("lvIO").value = pct(i, 1); $("lvLO").value = xx(l);
+  $("lvOut").innerHTML = tile("Rentabilité financière", pct(rf, 1)) + tile("Effet de levier", (eff >= 0 ? "+" : "") + fmt(eff * 100, 2) + " pts") + tile("Écart Re − i", (re - i >= 0 ? "+" : "") + fmt((re - i) * 100, 1) + " pts");
+  const note = $("lvNote");
+  note.className = "verdict " + (re > i ? "ok" : re < i ? "ko" : "warn");
+  note.innerHTML = re > i ? "<b>Levier positif.</b> L'investissement rapporte plus que la dette ne coûte : chaque dirham emprunté augmente la rentabilité des actionnaires. Le risque augmente aussi (DSCR, covenants)."
+    : re < i ? "<b>Effet de massue.</b> La dette coûte plus qu'elle ne rapporte : plus l'entreprise s'endette, plus la rentabilité des fonds propres baisse." : "<b>Levier neutre.</b> Re = i : la dette ne change pas la rentabilité des fonds propres.";
+  const xs = Array.from({ length: 31 }, (_, k) => k * 0.1);
+  plot("lvLine", [{ type: "scatter", x: xs, y: xs.map((x) => (re + (re - i) * x) * 100), name: "Rf selon le levier", line: { color: re >= i ? c.ok : c.ko, width: 3 } },
+    { type: "scatter", x: xs, y: xs.map(() => re * 100), name: "Re (sans dette)", line: { color: c.muted, dash: "dot" } },
+    { type: "scatter", mode: "markers", x: [l], y: [rf * 100], name: "Position actuelle", marker: { size: 12, color: c[lvSc] } }],
+    { xaxis: { title: { text: "Bras de levier D / CP" }, gridcolor: c.line, color: c.muted }, yaxis: { title: { text: "Rentabilité financière (%)" }, ticksuffix: " %", gridcolor: c.line, color: c.muted }, hovermode: "closest" });
+}
+
 // thème : redessiner les graphiques quand le thème change
 const rerender = () => { if (!user) return; show(current); if (current === "opt") drawOpt(); if (current === "live" && liveMode === "film") filmFrame(11); };
 try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rerender); } catch (e) {}
 new MutationObserver(rerender).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 })();
-</script>
-</body>
-</html>
+</script></body></html>
