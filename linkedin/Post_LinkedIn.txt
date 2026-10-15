@@ -1,27 +1,35 @@
-Mon modèle XGBoost a perdu face à une règle d'une seule ligne.
-Et c'est la conclusion dont je suis la plus fière de mon stage. 👇
+En FP&A, un forecast n'est pas un exercice de style : c'est un engagement budgétaire.
+Surestimer le chiffre d'affaires, c'est engager des dépenses que les revenus ne couvriront pas.
+Le sous-estimer, c'est brider ses investissements. 📊
 
-Pendant mon stage de perfectionnement au sein du département FP&A d'Expleo Maroc (Tanger), j'ai travaillé sur une question simple :
-le Machine Learning prévoit-il mieux le chiffre d'affaires qu'une méthode financière simple ?
+C'est le sujet de mon stage de perfectionnement au sein du département FP&A d'Expleo Maroc (Tanger) :
+👉 Comment fiabiliser le forecast mensuel du chiffre d'affaires pour mieux piloter la performance ?
 
-Ce que j'ai construit :
-🔹 Un pipeline ETL contrôlé : du grand livre des ventes à une base analytique fiable
-🔹 Un backtest walk-forward qui reproduit un vrai rolling forecast, sans aucune fuite d'information
-🔹 Une comparaison rigoureuse XGBoost vs baseline naïve (CA du mois = CA du mois précédent), validée par des tests statistiques
-🔹 Un outil de pilotage FP&A : forecasts traçables, écarts suivis par section, comparaison systématique à une référence
+Ma démarche, de la donnée comptable à la décision financière :
 
-Le verdict : sur un historique réel encore court, la méthode simple l'emporte, et de façon statistiquement significative.
-Sur 6 ans de données synthétiques, le même pipeline atteint pourtant un R² de 0,945.
+🔹 Fiabiliser la donnée : retraitement et contrôle du grand livre des ventes, rattachement au référentiel analytique, base exploitable par section.
 
-Ce que j'en retiens :
-1️⃣ La complexité n'est pas une preuve. Un modèle avancé doit battre une référence simple avant d'être industrialisé.
-2️⃣ La profondeur des données limite plus que l'algorithme.
-3️⃣ La valeur d'un forecast vient de la qualité des données, de la rigueur de l'évaluation et de son utilité pour la décision.
+🔹 Analyser le chiffre d'affaires : dynamique de croissance, concentration du portefeuille (indice de Herfindahl-Hirschman), volatilité et creux saisonniers.
 
-Ma recommandation : sécuriser avant d'industrialiser. On garde la référence simple, et on challenge XGBoost quand l'historique le permettra.
+🔹 Fixer une référence : avant tout modèle avancé, une règle simple et explicable (le CA du mois = celui du mois précédent). C'est le seuil minimal à battre.
 
-Merci à Mme Yasmina El Amarti pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement tout au long de ce projet. 🙏
+🔹 Simuler un vrai rolling forecast : chaque mois est prévu avec les seules informations disponibles à la clôture précédente, comme en conditions réelles.
 
-Je suis à l'écoute d'opportunités de stage PFE en FP&A, modélisation financière, risque ou data finance. N'hésitez pas à me contacter !
+🔹 Arbitrer comme un financier : précision, risque d'erreur et coût de complexité. Un modèle n'est retenu que si son gain est stable, significatif et économiquement utile.
 
-#FPA #Forecasting #MachineLearning #XGBoost #FinancialEngineering #Actuariat #DataFinance #EMSI #Expleo
+Le verdict ? Sur un historique encore court, la méthode simple l'emporte sur le modèle de Machine Learning (XGBoost), et l'écart est statistiquement significatif.
+Ma recommandation à l'équipe FP&A : sécuriser avant d'industrialiser.
+✔️ Court terme : garder la référence simple et suivre les écarts forecast / réalisé chaque mois
+✔️ Moyen terme : constituer un historique multi-annuel et intégrer budget, carnet de commandes et effectifs
+✔️ Long terme : logique champion / challenger et intervalles de prévision pour mesurer l'incertitude
+
+Ce que je retiens :
+1️⃣ La sophistication d'un modèle ne prouve rien. Seul compte son apport mesurable à la décision.
+2️⃣ La qualité et la profondeur des données financières priment sur l'algorithme.
+3️⃣ Un bon forecast est traçable, comparable et utile pour arbitrer.
+
+Merci à Mme Yasmina El Amarti, Senior FP&A Specialist, pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement tout au long de ce projet. 🙏
+
+Élève ingénieure en Génie Financier, Actuariat & Finance, je suis à la recherche d'un stage PFE en FP&A, contrôle de gestion, modélisation financière ou gestion des risques. Mes messages sont ouverts !
+
+#FPA #ControleDeGestion #Forecast #PilotageDeLaPerformance #ModelisationFinanciere #Finance #Actuariat #GestionDesRisques #EMSI #Expleo
