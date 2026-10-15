@@ -7,7 +7,7 @@ Le sous-estimer, c'est brider ses investissements. 📊
 Mon sujet :
 👉 Comment fiabiliser le forecast mensuel du chiffre d'affaires pour mieux piloter la performance, et l'intelligence artificielle peut-elle y contribuer ?
 
-Ma démarche, de la donnée comptable à la décision financière :
+De la donnée comptable à la décision financière :
 
 🔹 Fiabiliser la donnée : retraitement et contrôle du grand livre des ventes, rattachement au référentiel analytique.
 
@@ -15,13 +15,15 @@ Ma démarche, de la donnée comptable à la décision financière :
 
 🔹 Fixer une référence : une règle simple et explicable, seuil minimal que tout modèle avancé doit battre.
 
-🔹 Simuler un vrai rolling forecast : chaque mois est prévu avec les seules informations disponibles à la clôture précédente, comme en conditions réelles.
+🔹 Simuler un vrai rolling forecast : chaque mois est prévu avec les seules informations disponibles à la clôture précédente.
 
-🔹 Arbitrer comme un financier : précision, risque d'erreur et coût de complexité. Un modèle n'est retenu que si son gain est stable, significatif et économiquement utile.
+🔹 Arbitrer comme un financier : un modèle n'est retenu que si son gain est stable, significatif et économiquement utile.
+
+🔹 Concevoir un outil de pilotage FP&A : forecasts traçables et reproductibles, suivi des écarts forecast / réalisé par section, comparaison systématique à la référence avant toute décision.
 
 Le verdict ? Sur un historique encore court, la méthode simple l'emporte sur le modèle de Machine Learning (XGBoost), et l'écart est statistiquement significatif.
 Ma recommandation à l'équipe FP&A : sécuriser avant d'industrialiser.
-✔️ Court terme : garder la référence simple et suivre les écarts forecast / réalisé chaque mois
+✔️ Court terme : garder la référence simple et suivre les écarts chaque mois
 ✔️ Moyen terme : constituer un historique multi-annuel et intégrer budget, carnet de commandes et effectifs
 ✔️ Long terme : logique champion / challenger et intervalles de prévision pour mesurer l'incertitude
 
@@ -30,10 +32,10 @@ Ce que je retiens :
 2️⃣ La qualité et la profondeur des données financières priment sur l'algorithme.
 3️⃣ Un bon forecast est traçable, comparable et utile pour arbitrer.
 
-Merci à Mme Yasmina El Amarti pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement tout au long de ce projet. 🙏
+Merci à Mme Yasmina El Amarti pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement. 🙏
 
 Élève ingénieure en Génie Financier, Actuariat & Finance, je suis particulièrement intéressée par la rencontre entre la finance et l'intelligence artificielle : utiliser l'IA de façon rigoureuse et mesurable pour mieux anticiper, piloter et décider.
 
 Je suis à la recherche d'un stage PFE en FP&A, contrôle de gestion, modélisation financière, gestion des risques ou IA appliquée à la finance. Mes messages sont ouverts !
 
-#FPA #ControleDeGestion #IA #IAetFinance #Forecast #PilotageDeLaPerformance #ModelisationFinanciere #Finance #Actuariat #GestionDesRisques #EMSI #Expleo
+#FPA #ControleDeGestion #IA #IAetFinance #Forecast #PilotageDeLaPerformance #ModelisationFinanciere #Actuariat #GestionDesRisques #EMSI #Expleo
