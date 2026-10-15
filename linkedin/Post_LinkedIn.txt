@@ -9,11 +9,11 @@ Mon sujet :
 
 Ma démarche, de la donnée comptable à la décision financière :
 
-🔹 Fiabiliser la donnée : retraitement et contrôle du grand livre des ventes, rattachement au référentiel analytique, base exploitable par section.
+🔹 Fiabiliser la donnée : retraitement et contrôle du grand livre des ventes, rattachement au référentiel analytique.
 
-🔹 Analyser le chiffre d'affaires : dynamique de croissance, concentration du portefeuille (indice de Herfindahl-Hirschman), volatilité et creux saisonniers.
+🔹 Analyser le chiffre d'affaires : croissance, concentration du portefeuille (indice HHI) et volatilité.
 
-🔹 Fixer une référence : avant tout modèle avancé, une règle simple et explicable (le CA du mois = celui du mois précédent). C'est le seuil minimal à battre.
+🔹 Fixer une référence : une règle simple et explicable, seuil minimal que tout modèle avancé doit battre.
 
 🔹 Simuler un vrai rolling forecast : chaque mois est prévu avec les seules informations disponibles à la clôture précédente, comme en conditions réelles.
 
@@ -30,7 +30,7 @@ Ce que je retiens :
 2️⃣ La qualité et la profondeur des données financières priment sur l'algorithme.
 3️⃣ Un bon forecast est traçable, comparable et utile pour arbitrer.
 
-Merci à Mme Yasmina El Amarti, Senior FP&A Specialist, pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement tout au long de ce projet. 🙏
+Merci à Mme Yasmina El Amarti pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement tout au long de ce projet. 🙏
 
 Élève ingénieure en Génie Financier, Actuariat & Finance, je suis particulièrement intéressée par la rencontre entre la finance et l'intelligence artificielle : utiliser l'IA de façon rigoureuse et mesurable pour mieux anticiper, piloter et décider.
 
