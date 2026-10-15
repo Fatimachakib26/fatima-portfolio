@@ -1,0 +1,27 @@
+Mon modèle XGBoost a perdu face à une règle d'une seule ligne.
+Et c'est la conclusion dont je suis la plus fière de mon stage. 👇
+
+Pendant mon stage de perfectionnement au sein du département FP&A d'Expleo Maroc (Tanger), j'ai travaillé sur une question simple :
+le Machine Learning prévoit-il mieux le chiffre d'affaires qu'une méthode financière simple ?
+
+Ce que j'ai construit :
+🔹 Un pipeline ETL contrôlé : du grand livre des ventes à une base analytique fiable
+🔹 Un backtest walk-forward qui reproduit un vrai rolling forecast, sans aucune fuite d'information
+🔹 Une comparaison rigoureuse XGBoost vs baseline naïve (CA du mois = CA du mois précédent), validée par des tests statistiques
+🔹 Un outil de pilotage FP&A : forecasts traçables, écarts suivis par section, comparaison systématique à une référence
+
+Le verdict : sur un historique réel encore court, la méthode simple l'emporte, et de façon statistiquement significative.
+Sur 6 ans de données synthétiques, le même pipeline atteint pourtant un R² de 0,945.
+
+Ce que j'en retiens :
+1️⃣ La complexité n'est pas une preuve. Un modèle avancé doit battre une référence simple avant d'être industrialisé.
+2️⃣ La profondeur des données limite plus que l'algorithme.
+3️⃣ La valeur d'un forecast vient de la qualité des données, de la rigueur de l'évaluation et de son utilité pour la décision.
+
+Ma recommandation : sécuriser avant d'industrialiser. On garde la référence simple, et on challenge XGBoost quand l'historique le permettra.
+
+Merci à Mme Yasmina El Amarti pour son encadrement et sa confiance, et à Mme Zohra Filali Halime pour son accompagnement tout au long de ce projet. 🙏
+
+Je suis à l'écoute d'opportunités de stage PFE en FP&A, modélisation financière, risque ou data finance. N'hésitez pas à me contacter !
+
+#FPA #Forecasting #MachineLearning #XGBoost #FinancialEngineering #Actuariat #DataFinance #EMSI #Expleo
