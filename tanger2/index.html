@@ -1203,6 +1203,37 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
       </div>
     </section>
 
+    <!-- ===================== TAUX DE CHANGE ===================== -->
+    <section class="page" data-page="fx" hidden>
+      <div class="lead"><div><span class="eyebrow">Trésorerie</span><h2>Taux de <em class="g">change</em></h2>
+        <p>Le cours de référence de Bank Al-Maghrib et les cours affichés par chaque banque marocaine, avec leur date et leur source. Comparez avant de payer un fournisseur étranger ou de céder des devises d'export.</p></div>
+        <div class="toolbar"><span class="muted" id="fxWhen" style="font-size:.86rem"></span><button class="btn steel" id="fxAdd" type="button">Saisir le cours d'une banque</button></div></div>
+
+      <div class="tiles" id="fxTiles"></div>
+
+      <div class="panel"><div class="lead"><h3>Comparatif des banques</h3><div class="seg" id="fxSeg"></div></div>
+        <div class="tablewrap"><table id="fxTable"></table></div>
+        <p class="muted" style="font-size:.84rem;margin:0">Achat : prix auquel la banque vous achète la devise (vos recettes d'export). Vente : prix auquel elle vous la vend (vos paiements fournisseurs). L'écart est mesuré par rapport au cours de référence de Bank Al-Maghrib.</p></div>
+
+      <div class="grid2">
+        <div class="panel"><h3>Convertisseur</h3>
+          <div class="formgrid">
+            <label class="f" for="fxAmt">Montant en devise<input type="number" id="fxAmt" value="100000" min="0" step="100"></label>
+            <label class="f" for="fxDir">Opération<select id="fxDir"><option value="vente">Payer un fournisseur (j'achète la devise)</option><option value="achat">Encaisser un export (je vends la devise)</option></select></label>
+          </div>
+          <div class="tablewrap"><table id="fxConv"></table></div></div>
+        <div class="panel"><h3>Effet sur le projet Tanger II</h3><div class="tiles" id="fxImpact"></div>
+          <p class="muted" id="fxImpactNote" style="font-size:.86rem;margin:0"></p></div>
+      </div>
+
+      <div class="panel"><h3>D'où viennent les cours</h3>
+        <div class="checklist">
+          <div><b>Relevé automatique chaque jour ouvré</b><span class="muted">Claude relève le cours de référence de Bank Al-Maghrib et les cours publiés en ligne par les banques, puis met à jour cette page. Seuls les cours datés et trouvés sur la source sont retenus.</span></div>
+          <div><b>Saisie par la trésorerie</b><span class="muted">Plusieurs banques ne publient pas leurs cours en ligne. Le trésorier saisit alors le cours donné par l'agence ou le chargé de clientèle : il devient visible pour toute l'équipe.</span></div>
+          <div><b>Cours négociés</b><span class="muted">Pour une grosse opération, la salle des marchés de la banque propose un cours négocié, plus proche de la référence que le cours affiché au guichet. Demandez une cotation à au moins deux banques.</span></div>
+        </div></div>
+    </section>
+
     <!-- ===================== CONTRÔLE DE GESTION ===================== -->
     <section class="page" data-page="cdg" hidden>
       <div class="lead"><div><span class="eyebrow">Pilotage &amp; contrôle</span><h2>Contrôle de <em class="g">gestion</em></h2>
@@ -1450,6 +1481,26 @@ Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Tr�
         <label class="f" for="csReco">Recommandation<textarea id="csReco" rows="3" maxlength="1500"></textarea></label>
       </form>
       <div class="sheetft"><span class="muted" id="csMsg" aria-live="polite" style="font-size:.88rem"></span><div class="toolbar"><button class="btn primary" id="csSave" type="button">Enregistrer</button></div></div>
+    </div>
+  </div>
+  <div class="overlay" id="fxOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fxH" style="width:min(680px,100%)">
+      <div class="sheethd"><div style="display:grid;gap:4px"><span class="eyebrow">Trésorerie</span><h2 id="fxH">Saisir le cours d'une banque</h2></div><button class="btn" id="fxClose" type="button">Fermer</button></div>
+      <form class="sheetbody" id="fxForm" autocomplete="off" style="display:grid;gap:18px">
+        <div class="formgrid">
+          <label class="f" for="fxBank">Banque<select id="fxBank"></select></label>
+          <label class="f" for="fxType">Type de cours<select id="fxType"><option value="virement">Virement</option><option value="billets">Billets</option><option value="negocie">Cours négocié</option></select></label>
+          <label class="f" for="fxDate">Date du cours<input type="date" id="fxDate" required></label>
+          <label class="f" for="fxSrc">Source<input type="text" id="fxSrc" maxlength="80" placeholder="ex. agence Tanger Centre, chargé de clientèle"></label>
+        </div>
+        <div class="formgrid">
+          <label class="f" for="fxEurA">EUR achat<input type="number" id="fxEurA" step="0.0001" min="0"></label>
+          <label class="f" for="fxEurV">EUR vente<input type="number" id="fxEurV" step="0.0001" min="0"></label>
+          <label class="f" for="fxUsdA">USD achat<input type="number" id="fxUsdA" step="0.0001" min="0"></label>
+          <label class="f" for="fxUsdV">USD vente<input type="number" id="fxUsdV" step="0.0001" min="0"></label>
+        </div>
+      </form>
+      <div class="sheetft"><span class="muted" id="fxMsg" aria-live="polite" style="font-size:.88rem"></span><div class="toolbar"><button class="btn primary" id="fxSave" type="button">Enregistrer le cours</button></div></div>
     </div>
   </div>
   <div class="overlay" id="rpOverlay" hidden>
@@ -1868,7 +1919,7 @@ $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeR
 const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
-  ["compta", "Saisie des factures", false, "Comptabilité"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
+  ["compta", "Saisie des factures", false, "Comptabilité"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
 let current = "dash";
 function enterApp() {
   $("login").hidden = true; $("app").hidden = false; lastAct = Date.now(); logAudit("Connexion");
@@ -1891,7 +1942,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, fx: initFx, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -4364,6 +4415,108 @@ function closeIntro() {
 $("introSkip").addEventListener("click", closeIntro);
 $("intro").addEventListener("click", (e) => { if (e.target === $("intro")) closeIntro(); });
 addEventListener("keydown", (e) => { if (!$("intro").hidden && (e.key === "Escape" || e.key === "Enter")) { e.preventDefault(); closeIntro(); } });
+
+// relevé embarqué, utilisé seulement hors de claude.ai (sans base partagée)
+const FX_SNAPSHOT = {"bam": {"banque": "Bank Al-Maghrib", "type": "reference", "date": "2026-10-19", "source": "Cours de référence, bkam.ma", "url": "https://www.bkam.ma/Marches/Principaux-indicateurs/Marche-des-changes/Cours-de-change/Cours-de-reference", "rates": {"EUR": {"ref": 10.9681}, "USD": {"ref": 9.7828}}, "maj": "2026-10-20T10:00:00.000Z", "par": "Relevé automatique (Claude)"}, "attijari": {"banque": "Attijariwafa bank", "type": "billets", "date": "2026-10-18", "source": "Attijarinet, cours des billets", "url": "https://attijarinet.attijariwafa.com/particulier/public/coursdevise", "rates": {"EUR": {"achat": 10.6369, "vente": 11.2776}, "USD": {"achat": 9.4596, "vente": 10.0294}}, "maj": "2026-10-20T10:00:00.000Z", "par": "Relevé automatique (Claude)"}, "bp": {"banque": "Banque Populaire (Chaabi)", "type": "affiche", "date": "", "source": "Chaabi Net, cours des devises (date non affichée)", "url": "https://bpnet.gbp.ma/Public/FinaServices/ExchangeRate", "rates": {"EUR": {"achat": 10.635, "vente": 11.287}, "USD": {"achat": 9.487, "vente": 10.068}}, "maj": "2026-10-20T10:00:00.000Z", "par": "Relevé automatique (Claude)"}};
+// ---------- Taux de change par banque ----------
+const FX_BANKS = [["bam", "Bank Al-Maghrib", "https://www.bkam.ma/Marches/Principaux-indicateurs/Marche-des-changes/Cours-de-change/Cours-de-reference"],
+  ["attijari", "Attijariwafa bank", "https://attijarinet.attijariwafa.com/particulier/public/coursdevise"], ["bp", "Banque Populaire (Chaabi)", "https://bpnet.gbp.ma/Public/FinaServices/ExchangeRate"],
+  ["boa", "Bank of Africa", "https://www.bankofafrica.ma"], ["cih", "CIH Bank", "https://www.cihbank.ma"], ["cdm", "Crédit du Maroc", "https://www.creditdumaroc.ma"],
+  ["bmci", "BMCI", "https://www.bmci.ma"], ["saham", "Saham Bank", "https://www.sahambank.com"], ["abb", "Al Barid Bank", "https://www.albaridbank.ma"]];
+const FX_MODEL = { EUR: 11.0448, USD: 9.8499, date: "09/10/2026", capexEur: 356 };
+const FX_TYPE = { reference: "Référence officielle", billets: "Billets", virement: "Virement", negocie: "Cours négocié", affiche: "Cours affiché" };
+let fxInit = false, fxWatch = false, fxDocs = {}, fxCur = "EUR";
+const canFx = () => !!user && ["admin", "analyste", "controleur"].includes(user.role);
+async function watchFx() {
+  if (fxWatch) return; fxWatch = true; const st = await getStore();
+  if (st.db) st.db.collection("fx").limit(50).onSnapshot((s) => { fxDocs = {}; s.docs.forEach((d) => { fxDocs[d.id] = d.data(); }); if (current === "fx") renderFx(); }, () => {});
+  else fxDocs = Object.assign({}, typeof FX_SNAPSHOT === "object" ? JSON.parse(JSON.stringify(FX_SNAPSHOT)) : {}, lsGet("t2fx", {}));
+}
+async function initFx() {
+  if (!fxInit) {
+    fxInit = true;
+    seg("fxSeg", [["EUR", "Euro (EUR)"], ["USD", "Dollar (USD)"]], fxCur, (v) => { fxCur = v; renderFx(); });
+    ["fxAmt", "fxDir"].forEach((id) => $(id).addEventListener("input", renderFxConv));
+    $("fxBank").innerHTML = FX_BANKS.filter(([k]) => k !== "bam").map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join("");
+    $("fxAdd").addEventListener("click", () => openFx());
+    $("fxClose").addEventListener("click", closeFx);
+    $("fxOverlay").addEventListener("click", (e) => { if (e.target === $("fxOverlay")) closeFx(); });
+    $("fxSave").addEventListener("click", saveFx);
+  }
+  $("fxAdd").hidden = !canFx();
+  await watchFx(); renderFx();
+}
+const fxNum = (v) => (typeof v === "number" && isFinite(v) && v > 0 ? v : null);
+const fx4 = (v) => (v == null ? "—" : fmt(v, 4));
+function fxRate(k, side, cur = fxCur) { const d = fxDocs[k]; return d && d.rates && d.rates[cur] ? fxNum(d.rates[cur][side]) : null; }
+function fxFresh(d) {
+  if (!d || !d.date) return ["warn", "Date non affichée"];
+  const n = Math.round((new Date(todayISO() + "T12:00") - new Date(d.date + "T12:00")) / 864e5);
+  return n <= 0 ? ["ok", "Aujourd'hui"] : n === 1 ? ["ok", "Hier"] : n <= 3 ? ["warn", `Il y a ${n} jours`] : ["ko", `Ancien (${n} jours)`];
+}
+function renderFx() {
+  const ref = fxRate("bam", "ref"), banks = FX_BANKS.filter(([k]) => k !== "bam");
+  const withV = banks.filter(([k]) => fxRate(k, "vente")), withA = banks.filter(([k]) => fxRate(k, "achat"));
+  const bestV = withV.sort((a, b) => fxRate(a[0], "vente") - fxRate(b[0], "vente"))[0], bestA = withA.sort((a, b) => fxRate(b[0], "achat") - fxRate(a[0], "achat"))[0];
+  const last = Object.values(fxDocs).filter((d) => d && d.maj).sort((a, b) => String(b.maj).localeCompare(String(a.maj)))[0];
+  $("fxWhen").textContent = last ? `Dernière mise à jour : ${dfr(last.maj)}${last.par ? " · " + last.par : ""}` : "Aucun cours enregistré pour l'instant.";
+  const bam = fxDocs.bam;
+  $("fxTiles").innerHTML = tile(`Référence BAM · ${fxCur}/MAD`, fx4(ref), bam && bam.date ? "séance du " + dday(bam.date) : "non disponible")
+    + tile(`Référence BAM · ${fxCur === "EUR" ? "USD" : "EUR"}/MAD`, fx4(fxRate("bam", "ref", fxCur === "EUR" ? "USD" : "EUR")), "cours moyen")
+    + tile(`Payer en ${fxCur} au meilleur cours`, bestV ? fx4(fxRate(bestV[0], "vente")) : "—", bestV ? bestV[1] : "aucun cours de vente")
+    + tile(`Encaisser des ${fxCur} au meilleur cours`, bestA ? fx4(fxRate(bestA[0], "achat")) : "—", bestA ? bestA[1] : "aucun cours d'achat")
+    + tile("Hypothèse du modèle", fx4(FX_MODEL[fxCur]), `cours BAM du ${FX_MODEL.date}`);
+  const rows = FX_BANKS.map(([k, n, url]) => {
+    const d = fxDocs[k], a = fxRate(k, "achat"), v = fxRate(k, "vente"), r = k === "bam" ? ref : null, has = a || v || r;
+    const [fc, fl] = has ? fxFresh(d) : ["", ""], spread = v && ref ? (v / ref - 1) : null;
+    const best = (bestV && bestV[0] === k) || (bestA && bestA[0] === k);
+    return `<tr${best ? ' class="hl"' : ""}><td class="wrap"><b>${esc(n)}</b>${best ? ` <span class="pill ok">${bestV && bestV[0] === k ? "meilleure vente" : ""}${bestV && bestV[0] === k && bestA && bestA[0] === k ? " · " : ""}${bestA && bestA[0] === k ? "meilleur achat" : ""}</span>` : ""}</td>
+      <td>${has ? esc(FX_TYPE[d.type] || d.type || "") : '<span class="muted">Non publié en ligne</span>'}</td>
+      <td class="n">${k === "bam" ? "—" : fx4(a)}</td><td class="n">${k === "bam" ? `<b>${fx4(r)}</b>` : fx4(v)}</td>
+      <td class="n">${spread == null ? "—" : `<span class="ecart ${spread > 0.04 ? "ko" : "ok"}">+${fmt(spread * 100, 2)} %</span>`}</td>
+      <td class="n">${has && d.date ? esc(dday(d.date)) : "—"}</td><td>${has ? `<span class="pill ${fc}">${fl}</span>` : canFx() ? `<button class="btn" type="button" data-fx="${k}" style="padding:5px 10px;font-size:.8rem">Saisir</button>` : ""}</td>
+      <td class="wrap"><a href="${esc((d && d.url) || url)}" target="_blank" rel="noopener" style="color:var(--steel)">${esc((d && d.source) || "Site de la banque")}</a></td></tr>`; }).join("");
+  $("fxTable").innerHTML = `<thead><tr><th class="wrap">Banque</th><th>Type</th><th>Achat</th><th>Vente</th><th>Écart / réf.</th><th>Date</th><th>Fraîcheur</th><th class="wrap">Source</th></tr></thead><tbody>${rows}</tbody>`;
+  $("fxTable").querySelectorAll("[data-fx]").forEach((b) => b.addEventListener("click", () => openFx(b.dataset.fx)));
+  renderFxConv();
+  const refE = fxRate("bam", "ref", "EUR");
+  if (refE) { const dv = refE / FX_MODEL.EUR - 1;
+    $("fxImpact").innerHTML = tile("Euro depuis l'hypothèse", `${dv >= 0 ? "+" : ""}${fmt(dv * 100, 2)} %`, `${fx4(refE)} contre ${fx4(FX_MODEL.EUR)}`, Math.abs(dv) > 0.02 ? "ko" : "")
+      + tile("Effet sur le CAPEX importé", `${dv >= 0 ? "+" : ""}${fmt(FX_MODEL.capexEur * dv, 1)} MDH`, `sur ${FX_MODEL.capexEur} MDH payés en euros`);
+    $("fxImpactNote").textContent = `Environ 45 % du CAPEX est payé en euros (≈ ${FX_MODEL.capexEur} MDH au cours du modèle). Un euro plus faible réduit ce coût, un euro plus fort l'augmente : une couverture à terme adossée aux commandes fige le cours (Instruction générale des opérations de change 2026, art. 211 à 218).`; }
+  else { $("fxImpact").innerHTML = ""; $("fxImpactNote").textContent = "Le cours de référence de Bank Al-Maghrib n'est pas encore disponible."; }
+}
+function renderFxConv() {
+  const amt = parseFloat($("fxAmt").value) || 0, side = $("fxDir").value, ref = fxRate("bam", "ref");
+  const list = FX_BANKS.filter(([k]) => k !== "bam" && fxRate(k, side)).map(([k, n]) => ({ n, r: fxRate(k, side) })).sort((a, b) => (side === "vente" ? a.r - b.r : b.r - a.r));
+  if (!list.length) { $("fxConv").innerHTML = '<tbody><tr><td class="muted">Aucun cours de banque disponible pour cette opération.</td></tr></tbody>'; return; }
+  const best = list[0].r * amt;
+  $("fxConv").innerHTML = `<thead><tr><th class="wrap">Banque</th><th>Cours</th><th>${side === "vente" ? "Vous payez" : "Vous recevez"} (MAD)</th><th>Écart / meilleur</th></tr></thead><tbody>`
+    + list.map((x, i) => `<tr${i === 0 ? ' class="hl"' : ""}><td class="wrap">${esc(x.n)}</td><td class="n">${fx4(x.r)}</td><td class="n"><b>${mad(x.r * amt)}</b></td><td class="n">${i === 0 ? '<span class="pill ok">meilleur</span>' : `<span class="ecart ko">${side === "vente" ? "+" : "−"}${mad(Math.abs(x.r * amt - best))}</span>`}</td></tr>`).join("")
+    + (ref ? `<tr><td class="wrap muted">Référence Bank Al-Maghrib (indicatif)</td><td class="n muted">${fx4(ref)}</td><td class="n muted">${mad(ref * amt)}</td><td></td></tr>` : "") + "</tbody>";
+}
+function openFx(bank) {
+  if (!canFx()) return;
+  if (bank) $("fxBank").value = bank;
+  const d = fxDocs[$("fxBank").value] || {}, r = d.rates || {};
+  $("fxType").value = d.type && d.type !== "reference" ? d.type : "virement"; $("fxDate").value = todayISO(); $("fxSrc").value = "";
+  $("fxEurA").value = (r.EUR || {}).achat || ""; $("fxEurV").value = (r.EUR || {}).vente || ""; $("fxUsdA").value = (r.USD || {}).achat || ""; $("fxUsdV").value = (r.USD || {}).vente || "";
+  $("fxMsg").textContent = ""; $("fxOverlay").hidden = false; document.body.style.overflow = "hidden";
+}
+function closeFx() { $("fxOverlay").hidden = true; document.body.style.overflow = ""; }
+async function saveFx() {
+  const k = $("fxBank").value, bank = FX_BANKS.find((b) => b[0] === k), n = (id) => { const v = parseFloat($(id).value); return v > 0 ? Math.round(v * 10000) / 10000 : null; };
+  const rates = { EUR: { achat: n("fxEurA"), vente: n("fxEurV") }, USD: { achat: n("fxUsdA"), vente: n("fxUsdV") } };
+  if (!rates.EUR.achat && !rates.EUR.vente && !rates.USD.achat && !rates.USD.vente) { $("fxMsg").textContent = "Saisissez au moins un cours."; return; }
+  const bad = [rates.EUR, rates.USD].some((x) => x.achat && x.vente && x.achat > x.vente);
+  if (bad) { $("fxMsg").textContent = "Le cours d'achat doit être inférieur au cours de vente."; return; }
+  const ref = fxRate("bam", "ref", "EUR"); if (ref && rates.EUR.vente && Math.abs(rates.EUR.vente / ref - 1) > 0.15) { $("fxMsg").textContent = "Ce cours s'écarte de plus de 15 % de la référence : vérifiez la saisie."; return; }
+  const st = await getStore(), doc = { banque: bank[1], type: $("fxType").value, date: $("fxDate").value, source: $("fxSrc").value.trim().slice(0, 80) || "Saisie de la trésorerie", url: bank[2], rates, maj: new Date().toISOString(), par: (myFiche && myFiche.nom) || user.name };
+  $("fxSave").disabled = true;
+  if (st.db) { try { await st.db.doc("fx/" + k).set(doc); closeFx(); } catch (e) { $("fxMsg").textContent = "Enregistrement refusé : droits insuffisants sur cette page."; } }
+  else { fxDocs[k] = doc; const l = lsGet("t2fx", {}); l[k] = doc; lsSet("t2fx", l); closeFx(); renderFx(); }
+  $("fxSave").disabled = false; logAudit(`Cours de change saisi : ${bank[1]}`, `${doc.date}`);
+}
 
 // thème : redessiner les graphiques quand le thème change
 const rerender = () => { if (!user) return; show(current); if (current === "opt") drawOpt(); if (current === "live" && liveMode === "film") filmFrame(11); };
