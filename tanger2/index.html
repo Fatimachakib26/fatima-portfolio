@@ -477,6 +477,13 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
 @keyframes irule{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
 @keyframes ifade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.motto .w span,.intro-rule,.intro-sub,.intro-hello,.intro-in img.logo{animation:none!important}}
+.mod .tags{display:flex;flex-wrap:wrap;gap:6px}
+.mod .why{font-size:.88rem;color:var(--muted);line-height:1.55}
+.mod details summary{font-weight:600}
+.lessons{display:grid;gap:10px;margin-top:10px}
+.lessons .task .d{display:block;font-size:.85rem;color:var(--muted);font-weight:400;margin-top:2px;line-height:1.5}
+.cert{border:2px solid var(--hair);border-radius:12px;padding:16px 18px;background:var(--glow);display:grid;gap:4px;text-align:center}
+.cert b{font:italic 700 1.2rem "Playfair Display",Georgia,serif;color:var(--orange)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -625,6 +632,41 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
 
       <div class="panel"><div class="lead"><h3>Mes rapports</h3><button class="btn" id="anAll" type="button">Tous les rapports</button></div>
         <div class="rplist" id="anReports"></div></div>
+    </section>
+
+    <!-- ===================== FORMATIONS ===================== -->
+    <section class="page" data-page="formations" hidden>
+      <div class="lead"><div><span class="eyebrow">Équipe</span><h2>Formations <em class="g">continues</em></h2>
+        <p>Pour chaque employé qui veut progresser : un catalogue de formations courtes reliées aux outils de la plateforme, avec leçons, quiz de validation et heures comptabilisées.</p></div>
+        <div class="seg" id="foSeg"></div></div>
+
+      <div id="fo-cat" style="display:grid;gap:32px">
+        <div class="tiles" id="foMyTiles" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))"></div>
+        <div class="panel"><div class="lead"><h3>Catalogue</h3>
+          <div class="toolbar"><label class="f" for="foDom" style="min-width:200px">Domaine<select id="foDom"><option value="">Tous les domaines</option></select></label>
+            <label class="f" for="foLvl" style="min-width:160px">Niveau<select id="foLvl"><option value="">Tous les niveaux</option><option>Débutant</option><option>Intermédiaire</option><option>Avancé</option></select></label></div></div>
+          <div class="modules" id="foCatalog"></div></div>
+      </div>
+
+      <div id="fo-mine" hidden style="display:grid;gap:32px">
+        <div class="modules" id="foMine"></div>
+      </div>
+
+      <div id="fo-rh" hidden style="display:grid;gap:32px">
+        <div class="tiles" id="foRhTiles"></div>
+        <div class="panel"><h3>Suivi des formations par employé</h3><div class="tablewrap"><table id="foTeam"></table></div></div>
+        <div class="grid2">
+          <div class="panel"><h3>Proposer une formation</h3>
+            <div class="formgrid">
+              <label class="f" for="foPropF">Formation<select id="foPropF"></select></label>
+              <label class="f" for="foPropR">Pour<select id="foPropR"><option value="all">Toute l'équipe</option><option value="comptable">Comptables</option><option value="superviseur">Encadrants</option><option value="analyste">Analystes</option><option value="controleur">Contrôle de gestion</option><option value="interne">Contrôle interne</option><option value="auditeur">Audit interne</option><option value="rh">RH</option><option value="stagiaire">Stagiaires</option></select></label>
+            </div>
+            <label class="f" for="foPropN">Message<input type="text" id="foPropN" maxlength="160" placeholder="ex. Avant la clôture annuelle"></label>
+            <div class="toolbar"><button class="btn primary" id="foPropSave" type="button">Proposer</button><span class="muted" id="foPropMsg" aria-live="polite"></span></div></div>
+          <div class="panel"><h3>Formations les plus suivies</h3><div class="tablewrap"><table id="foTop"></table></div>
+            <p class="muted" style="font-size:.84rem;margin:0">Les formations externes peuvent être remboursées en partie par les contrats spéciaux de formation (CSF) gérés par l'OFPPT : conditions à vérifier avant l'engagement.</p></div>
+        </div>
+      </div>
     </section>
 
     <!-- ===================== RESSOURCES HUMAINES ===================== -->
@@ -1987,7 +2029,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 });
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
-const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["formations", "Formations", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["treso", "Trésorerie", false, "Pilotage & contrôle"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -2013,7 +2055,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -4748,6 +4790,207 @@ async function markPaid(id) {
 async function delFlow(id) {
   const st = await getStore();
   if (st.db) { try { await st.db.doc("flux/" + id).delete(); } catch (e) {} } else { flows = flows.filter((f) => f.id !== id); lsSet("t2flux", flows); renderTreso(); }
+}
+
+// ---------- Formations continues ----------
+const FORMATIONS = [
+  { id: "excel", t: "Modélisation financière sous Excel", dom: "Finance", lvl: "Intermédiaire", h: 6, fmt: "E-learning interne",
+    why: "Construire un modèle lisible et fiable, comme le modèle Tanger II.", roles: ["analyste", "controleur", "stagiaire"],
+    les: [["Structurer un modèle", "Séparer les hypothèses, les calculs et les résultats ; une hypothèse n'est saisie qu'une fois.", "methode"],
+      ["Les formules clés", "INDEX/EQUIV pour chercher, SOMMEPROD pour pondérer, VAN et TRI pour la rentabilité.", "methode"],
+      ["Scénarios et sensibilités", "Faire varier une hypothèse à la fois, puis combiner les chocs dans des cas de stress.", "stress"],
+      ["Contrôles de cohérence", "Le plan de financement doit retomber sur la variation de trésorerie, année par année.", "plan"]],
+    q: [["La fonction VAN d'Excel actualise le premier flux…", ["au début de la première période", "à la fin de la première période", "sans actualisation"], 1],
+      ["Le TRI est le taux qui…", ["annule la VAN", "égale le WACC", "maximise l'EBITDA"], 0],
+      ["Un bon modèle sépare…", ["les onglets par année", "hypothèses, calculs et résultats", "les couleurs par devise"], 1]] },
+  { id: "dscr", t: "Financement de projet et covenants bancaires", dom: "Finance", lvl: "Avancé", h: 4, fmt: "E-learning interne",
+    why: "Comprendre ce que la banque surveille et pourquoi le montage B est retenu.", roles: ["analyste", "admin", "lecteur"],
+    les: [["Fonds propres, dette et crédit-bail", "Chaque ressource a un coût et un risque ; le crédit-bail finance directement le matériel.", "montage"],
+      ["CFADS et DSCR", "Le DSCR rapporte le flux disponible pour le service de la dette (CFADS) au service de la dette.", "methode"],
+      ["Marge de sécurité des covenants", "Mesurer de combien le DSCR et le levier peuvent se dégrader avant le bris.", "analyste"],
+      ["Le plan de financement", "Emplois et ressources année par année ; le solde explique la trésorerie.", "plan"]],
+    q: [["Le DSCR se calcule comme…", ["CFADS / service de la dette", "dette nette / EBITDA", "EBITDA / chiffre d'affaires"], 0],
+      ["Le covenant de levier du projet est…", ["dette nette / EBITDA ≤ 3,5x", "DSCR ≥ 3,5x", "fonds propres ≥ 3,5 MDH"], 0],
+      ["Une marge DSCR négative signifie…", ["un bris de covenant", "une trésorerie positive", "un levier faible"], 0]] },
+  { id: "cgnc", t: "Plan comptable marocain (CGNC) : la pratique", dom: "Comptabilité", lvl: "Débutant", h: 5, fmt: "E-learning interne",
+    why: "Saisir juste du premier coup : comptes, TVA, immobilisations.", roles: ["comptable", "superviseur", "stagiaire"],
+    les: [["Les 7 classes du CGNC", "Financement permanent, actif immobilisé, actif et passif circulants, trésorerie, charges, produits.", "compta"],
+      ["Achats et ventes avec TVA", "Charge au débit, TVA récupérable (34552) au débit, fournisseur (4411) au crédit.", "compta"],
+      ["Immobilisations et amortissements", "Immobilisation en classe 2, TVA 34551, dotation 6193 au débit et amortissements 28xx au crédit.", "compta"],
+      ["Contrôles avant clôture", "Écritures équilibrées, pièces signées, rapprochements bancaires.", "compta"]],
+    q: [["La TVA récupérable sur immobilisations va au compte…", ["34551", "34552", "4455"], 0],
+      ["Une vente de produits finis au Maroc se crédite au…", ["7121", "6121", "3421"], 0],
+      ["Les amortissements cumulés du matériel sont en…", ["classe 2 (comptes 28xx)", "classe 6", "classe 5"], 0]] },
+  { id: "tva", t: "La TVA au Maroc", dom: "Fiscalité", lvl: "Intermédiaire", h: 3, fmt: "E-learning interne",
+    why: "Appliquer le bon taux, récupérer la TVA et déclarer à temps.", roles: ["comptable", "superviseur"],
+    les: [["Les taux", "Taux normal de 20 % et taux réduits de 14 %, 10 % et 7 % selon le bien ou le service (CGI art. 98 à 100).", "compta"],
+      ["Exonérations à l'export", "Les ventes à l'export sont exonérées avec droit à déduction (CGI art. 92).", "compta"],
+      ["Déclarer", "Déclaration mensuelle si le chiffre d'affaires dépasse 1 MDH, trimestrielle sinon (CGI art. 108).", "fisc"]],
+    q: [["Le taux normal de TVA est de…", ["14 %", "20 %", "10 %"], 1], ["Une vente à l'export est…", ["taxée à 20 %", "exonérée", "taxée à 7 %"], 1],
+      ["Au-delà de 1 MDH de chiffre d'affaires, la déclaration est…", ["mensuelle", "annuelle", "trimestrielle"], 0]] },
+  { id: "is", t: "IS, cotisation minimale et IR", dom: "Fiscalité", lvl: "Intermédiaire", h: 3, fmt: "E-learning interne",
+    why: "Calculer l'impôt de l'entreprise et l'impôt retenu sur les salaires.", roles: ["comptable", "rh", "admin"],
+    les: [["L'impôt sur les sociétés", "20 % ; 35 % sur tout le bénéfice dès 100 MDH (CGI art. 19-I).", "fisc"],
+      ["La cotisation minimale", "0,25 % des produits, au moins 3 000 MAD ; l'entreprise paie le plus élevé des deux.", "fisc"],
+      ["L'IR sur salaires", "Du brut au net imposable, barème de 0 à 37 %, déductions pour charges de famille.", "fisc"]],
+    q: [["L'IS à 35 % s'applique dès…", ["10 MDH de bénéfice", "100 MDH de bénéfice", "1 MDH de bénéfice"], 1], ["Taux de la cotisation minimale :", ["0,25 %", "2,5 %", "20 %"], 0],
+      ["L'IR retenu sur les salaires est crédité au compte…", ["4452", "6171", "3421"], 0]] },
+  { id: "treso", t: "Gestion de trésorerie et risque de change", dom: "Trésorerie", lvl: "Intermédiaire", h: 4, fmt: "E-learning interne",
+    why: "Prévoir les besoins de liquidité et payer les fournisseurs étrangers au meilleur cours.", roles: ["analyste", "admin", "comptable"],
+    les: [["Position de trésorerie", "Soldes par banque, découverts autorisés, comptes en devises convertis au cours de référence.", "treso"],
+      ["Prévision à 13 semaines", "Encaissements et décaissements à leur échéance ; seuil d'alerte.", "treso"],
+      ["Cours d'achat, de vente et de référence", "La banque vous vend la devise au cours de vente ; comparez les banques.", "fx"],
+      ["Couvrir le risque de change", "Achat à terme adossé à une commande réelle (Instruction des opérations de change 2026).", "fx"]],
+    q: [["Pour payer un fournisseur en euros, on regarde le cours…", ["de vente de la banque", "d'achat de la banque", "de l'or"], 0],
+      ["Délai de paiement légal par défaut (loi 69-21) :", ["30 jours", "60 jours", "180 jours"], 1],
+      ["Une couverture de change au Maroc doit être…", ["adossée à une opération réelle", "spéculative", "en dirhams uniquement"], 0]] },
+  { id: "ci", t: "Contrôle interne et prévention de la fraude", dom: "Contrôle", lvl: "Débutant", h: 3, fmt: "E-learning interne",
+    why: "Les contrôles qui protègent l'entreprise et chacun de ses employés.", roles: ["interne", "superviseur", "comptable", "auditeur"],
+    les: [["Séparation des tâches", "Celui qui saisit ne valide pas ; deux signatures au-delà de 500 000 MAD.", "compta"],
+      ["Signaux de fraude", "Doublons, ICE invalide, montants ronds, fractionnement, nouveau fournisseur avec gros montant.", "compta"],
+      ["Matrice des risques", "Un risque, un contrôle, un propriétaire, une preuve ; tester régulièrement.", "ci"]],
+    q: [["Qui peut valider une facture que vous avez saisie ?", ["vous-même", "un autre superviseur", "un stagiaire"], 1], ["Un montant juste sous le seuil de double signature est…", ["un signal d'alerte", "normal", "interdit"], 0],
+      ["Une pièce modifiée après signature est détectée par…", ["son empreinte SHA-256", "sa couleur", "son numéro"], 0]] },
+  { id: "audit", t: "Techniques d'audit et échantillonnage", dom: "Contrôle", lvl: "Avancé", h: 4, fmt: "E-learning interne",
+    why: "Tester une population de factures sans tout relire.", roles: ["auditeur", "interne"],
+    les: [["Programme d'audit par cycle", "Achats, ventes, immobilisations, trésorerie, fiscalité, paie, systèmes.", "audit"],
+      ["Échantillonnage", "Tirage aléatoire, pondéré par le montant ou orienté sur les risques.", "audit"],
+      ["Rédiger un constat", "Constat, cause, conséquence, recommandation, responsable et échéance.", "audit"]],
+    q: [["L'échantillonnage pondéré par le montant favorise…", ["les grosses factures", "les petites factures", "les factures de vente seulement"], 0],
+      ["Un constat d'audit comprend toujours…", ["une recommandation", "une sanction", "un montant de TVA"], 0],
+      ["L'auditeur interne sur la plateforme…", ["consulte sans modifier", "signe les factures", "saisit les budgets"], 0]] },
+  { id: "cdg", t: "Contrôle de gestion : budget et coûts de revient", dom: "Pilotage", lvl: "Intermédiaire", h: 4, fmt: "E-learning interne",
+    why: "Suivre les écarts et connaître le coût d'un kit.", roles: ["controleur", "analyste", "admin"],
+    les: [["Budget et réalisé", "Comparer chaque mois le budget aux factures saisies ; analyser les écarts au-delà de 5 %.", "cdg"],
+      ["Coût de revient", "Coût variable plus coûts fixes répartis par kit, avant amortissements.", "cdg"],
+      ["Seuil de rentabilité", "Chiffre d'affaires qui couvre toutes les charges ; marge de sécurité.", "cdg"]],
+    q: [["Un écart défavorable sur une charge signifie…", ["réalisé > budget", "réalisé < budget", "aucun écart"], 0],
+      ["La marge de sécurité mesure…", ["la baisse de chiffre d'affaires supportable", "le taux d'IS", "le DSCR"], 0],
+      ["Le coût de revient d'un kit comprend…", ["coûts variables et fixes", "seulement les matières", "seulement les salaires"], 0]] },
+  { id: "ifrs", t: "Normes IFRS : les bases", dom: "Comptabilité", lvl: "Avancé", h: 6, fmt: "Formation externe",
+    why: "Parler le langage des groupes et des investisseurs étrangers.", roles: ["controleur", "analyste", "auditeur", "admin"],
+    les: [["IFRS 16 : les contrats de location", "Le preneur inscrit un droit d'utilisation à l'actif et une dette de location au passif.", "montage"],
+      ["IAS 16 : les immobilisations corporelles", "Coût d'entrée, amortissement par composant, dépréciation.", "compta"],
+      ["IFRS 15 : le chiffre d'affaires", "Reconnaître le revenu quand le contrôle du bien passe au client.", "projet"],
+      ["IFRS et CGNC", "Au CGNC, les redevances de crédit-bail restent en charges ; en IFRS, le bien loué entre au bilan.", "montage"]],
+    q: [["En IFRS 16, un crédit-bail apparaît…", ["au bilan (droit d'utilisation et dette)", "seulement en charges", "hors bilan"], 0],
+      ["IFRS 15 traite…", ["du chiffre d'affaires", "des stocks", "de la TVA"], 0], ["Au CGNC, les redevances de crédit-bail sont…", ["des charges", "des immobilisations", "des capitaux propres"], 0]] },
+  { id: "ia", t: "L'IA au service de la finance", dom: "Outils", lvl: "Débutant", h: 2, fmt: "E-learning interne",
+    why: "Utiliser l'agent IA de la plateforme avec méthode et prudence.", roles: ["stagiaire", "rh", "comptable", "lecteur"],
+    les: [["Poser une bonne question", "Donner le contexte, le chiffre recherché et la forme de réponse attendue.", "agent"],
+      ["Vérifier la réponse", "Toujours contrôler les chiffres et les articles de loi cités.", "agent"],
+      ["Protéger les données", "Ne jamais coller de mots de passe ni de données personnelles sensibles.", "agent"]],
+    q: [["Une réponse de l'IA doit être…", ["vérifiée", "copiée telle quelle", "ignorée"], 0], ["On peut coller dans un chat…", ["un mot de passe", "une question sur un compte du CGNC", "le RIB d'un salarié"], 1],
+      ["L'agent IA de la plateforme…", ["remplace l'expert-comptable", "assiste et cite ses sources", "signe les factures"], 1]] },
+  { id: "comm", t: "Présenter un dossier financier à un comité", dom: "Compétences", lvl: "Intermédiaire", h: 3, fmt: "Atelier en présentiel",
+    why: "Convaincre un comité de crédit ou un jury en dix minutes.", roles: ["admin", "analyste", "rh"],
+    les: [["Commencer par la décision", "Dire d'abord ce que l'on demande au comité, puis le justifier.", "dash"],
+      ["Trois chiffres, pas trente", "Besoin, rentabilité, risque : le reste en annexe.", "dash"],
+      ["Anticiper les questions", "Préparer les cas de stress et les réponses aux objections.", "stress"]],
+    q: [["Une présentation à un comité commence par…", ["la décision demandée", "l'historique de l'entreprise", "les annexes"], 0],
+      ["Les détails chiffrés vont…", ["en annexe", "sur la première diapositive", "nulle part"], 0], ["Pour anticiper les objections, on prépare…", ["des cas de stress", "plus de couleurs", "un texte plus long"], 0]] },
+];
+let foInit = false, foView = "cat", foWatch = false, foDocs = {}, foMine = null, foRecos = [], foTimer = null;
+const foKey = () => (meUid ? meUid : "local-" + user.role);
+function foFlatten() { const out = {}; Object.entries(foDocs).forEach(([id, v]) => { if (v && v.roles) Object.entries(v.roles).forEach(([r, d]) => { if (d && typeof d === "object") out[id + "|" + r] = Object.assign({ role: r }, d); }); }); return out; }
+async function watchFormations() {
+  if (foWatch) return; foWatch = true; const st = await getStore();
+  if (st.db) {
+    st.db.collection("formations").limit(300).onSnapshot((s) => { foDocs = {}; s.docs.forEach((d) => { foDocs[d.id] = d.data(); }); if (!foMine) { const m = (foDocs[foKey()] || {}).roles; foMine = m && m[user.role] ? JSON.parse(JSON.stringify(m[user.role])) : null; } if (current === "formations" && foView === "rh") renderFoRh(); }, () => {});
+    st.db.collection("form_reco").orderBy("at", "desc").limit(100).onSnapshot((s) => { foRecos = s.docs.map((d) => d.data()); if (current === "formations" && foView === "cat") renderFoCat(); }, () => {});
+  } else { const l = lsGet("t2formations", {}); foDocs = {}; Object.entries(l).forEach(([k, v]) => { foDocs[k] = { roles: { [k.replace("local-", "")]: v } }; }); foRecos = lsGet("t2formreco", []); }
+}
+const foMy = () => { if (!foMine) foMine = { items: {} }; return foMine; };
+function foSave() {
+  const m = foMy(); m.nom = (myFiche && myFiche.nom) || user.name; m.updatedAt = new Date().toISOString();
+  clearTimeout(foTimer); foTimer = setTimeout(async () => { const st = await getStore(), clean = JSON.parse(JSON.stringify(m));
+    if (st.db) { const ref = st.db.doc("formations/" + foKey()), patch = { roles: { [user.role]: clean } }; try { await ref.update(patch); } catch (x) { try { await ref.set(patch); } catch (e) {} } }
+    else { const l = lsGet("t2formations", {}); l[foKey()] = clean; lsSet("t2formations", l); foDocs[foKey()] = { roles: { [user.role]: clean } }; } }, 400);
+}
+const foHours = (m) => Object.entries((m && m.items) || {}).filter(([, it]) => it.statut === "terminee").reduce((s, [id]) => s + ((FORMATIONS.find((f) => f.id === id) || {}).h || 0), 0);
+async function initFormations() {
+  const st = await getStore(); meUid = st.uid;
+  if (!foInit) {
+    foInit = true;
+    $("foDom").innerHTML += [...new Set(FORMATIONS.map((f) => f.dom))].map((d) => `<option>${esc(d)}</option>`).join("");
+    ["foDom", "foLvl"].forEach((id) => $(id).addEventListener("change", renderFoCat));
+    $("foPropF").innerHTML = FORMATIONS.map((f) => `<option value="${f.id}">${esc(f.t)}</option>`).join("");
+    $("foPropSave").addEventListener("click", proposeFormation);
+  }
+  if (foInit && foInit !== user.role) { foMine = null; foInit = user.role; }
+  const rh = ["rh", "admin", "superviseur"].includes(user.role);
+  if (!rh && foView === "rh") foView = "cat";
+  seg("foSeg", [["cat", "Catalogue"], ["mine", "Mes formations"]].concat(rh ? [["rh", "Suivi RH"]] : []), foView, (v) => { foView = v; renderFormations(); });
+  await watchFormations(); if (!foMine) { const m = (foDocs[foKey()] || {}).roles; foMine = m && m[user.role] ? JSON.parse(JSON.stringify(m[user.role])) : null; }
+  renderFormations();
+}
+function renderFormations() {
+  ["cat", "mine", "rh"].forEach((v) => { $("fo-" + v).hidden = v !== foView; });
+  if (foView === "cat") renderFoCat(); else if (foView === "mine") renderFoMine(); else renderFoRh();
+}
+function foCard(f, full) {
+  const it = (foMy().items || {})[f.id], reco = f.roles.includes(user.role), prop = foRecos.find((r) => r.fid === f.id && (r.pour === "all" || r.pour === user.role));
+  const st = it ? (it.statut === "terminee" ? '<span class="pill ok">Terminée</span>' : '<span class="pill warn">En cours</span>') : "";
+  const done = it ? (it.lessons || []).filter(Boolean).length : 0;
+  return `<div class="mod${it && it.statut === "terminee" ? " done" : ""}"><h4><span>${esc(f.t)}</span>${st}</h4>
+    <div class="tags"><span class="chip">${esc(f.dom)}</span><span class="chip">${esc(f.lvl)}</span><span class="chip">${f.h} h</span><span class="chip">${esc(f.fmt)}</span>${reco ? '<span class="pill gold">Recommandée pour votre poste</span>' : ""}${prop ? '<span class="pill ok">Proposée par l\'encadrement</span>' : ""}</div>
+    <p class="why" style="margin:0">${esc(f.why)}${prop && prop.note ? ` <i>« ${esc(str(prop.note))} »</i>` : ""}</p>
+    ${it ? `<span class="bar"><span style="width:${Math.round(100 * (done + (it.statut === "terminee" ? 1 : 0)) / (f.les.length + 1))}%"></span></span>` : ""}
+    ${full ? foDetail(f, it) : `<div class="toolbar"><button class="btn ${it ? "" : "primary"}" type="button" data-fo="${f.id}">${it ? "Continuer" : "S'inscrire"}</button></div>`}</div>`;
+}
+function foDetail(f, it) {
+  const ls = (it && it.lessons) || [];
+  return `<div class="lessons">${f.les.map(([t, d, pg], i) => `<label class="task${ls[i] ? " done" : ""}"><input type="checkbox" data-fl="${f.id}:${i}"${ls[i] ? " checked" : ""}><span><span class="t">${i + 1}. ${esc(t)}</span><span class="d">${esc(d)}</span><button class="btn" type="button" data-fp="${pg}" style="padding:4px 10px;font-size:.78rem;margin-top:6px">Ouvrir l'outil</button></span></label>`).join("")}</div>
+    ${it && it.statut === "terminee" ? `<div class="cert"><span class="muted" style="font-size:.78rem;letter-spacing:.1em;text-transform:uppercase">Attestation</span><b>${esc((myFiche && myFiche.nom) || user.name)}</b><span>a terminé « ${esc(f.t)} » (${f.h} h) le ${esc(dday(it.end))}</span><span class="muted" style="font-size:.8rem">Score au quiz : ${it.score}/${f.q.length}</span></div>`
+    : `<form class="quiz" data-fq="${f.id}"><b style="font-size:.9rem">Quiz de validation${ls.filter(Boolean).length < f.les.length ? " · terminez d'abord les leçons" : ""}</b>
+      ${f.q.map(([qq, o], qi) => `<fieldset><legend>${qi + 1}. ${esc(qq)}</legend>${o.map((x, oi) => `<label><input type="radio" name="fq${f.id}${qi}" value="${oi}"> ${esc(x)}</label>`).join("")}</fieldset>`).join("")}
+      <div class="toolbar"><button class="btn primary" type="submit"${ls.filter(Boolean).length < f.les.length ? " disabled" : ""}>Valider</button><span class="muted" data-fqm="${f.id}" aria-live="polite"></span></div></form>`}`;
+}
+function foBind(el) {
+  el.querySelectorAll("[data-fo]").forEach((b) => b.addEventListener("click", () => { const m = foMy(); m.items = m.items || {}; if (!m.items[b.dataset.fo]) { m.items[b.dataset.fo] = { statut: "encours", start: todayISO(), lessons: [] }; foSave(); logAudit("Inscription à une formation", (FORMATIONS.find((f) => f.id === b.dataset.fo) || {}).t); } foView = "mine"; initFormations(); }));
+  el.querySelectorAll("[data-fl]").forEach((c) => c.addEventListener("change", () => { const [id, i] = c.dataset.fl.split(":"); const m = foMy(); m.items[id] = m.items[id] || { statut: "encours", start: todayISO(), lessons: [] }; m.items[id].lessons[+i] = c.checked; foSave(); renderFoMine(); }));
+  el.querySelectorAll("[data-fp]").forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); show(b.dataset.fp); window.scrollTo({ top: 0 }); }));
+  el.querySelectorAll("form[data-fq]").forEach((fm) => fm.addEventListener("submit", (e) => {
+    e.preventDefault(); const f = FORMATIONS.find((x) => x.id === fm.dataset.fq); let sc = 0, miss = 0;
+    f.q.forEach(([, o, good], qi) => { const v = fm.querySelector(`input[name="fq${f.id}${qi}"]:checked`); if (!v) { miss++; return; } if (+v.value === good) sc++; fm.querySelectorAll(`input[name="fq${f.id}${qi}"]`).forEach((inp) => { inp.parentElement.className = +inp.value === good ? "right" : inp.checked ? "wrong" : ""; }); });
+    const msg = fm.querySelector("[data-fqm]");
+    if (miss) { msg.textContent = "Répondez à toutes les questions."; return; }
+    const it = foMy().items[f.id]; it.score = sc;
+    if (sc === f.q.length) { it.statut = "terminee"; it.end = todayISO(); foSave(); logAudit("Formation terminée", f.t); renderFoMine(); }
+    else { msg.textContent = `${sc}/${f.q.length} : relisez les leçons et réessayez.`; foSave(); }
+  }));
+}
+function renderFoCat() {
+  const m = foMy(), items = m.items || {}, dom = $("foDom").value, lvl = $("foLvl").value;
+  const enc = Object.values(items).filter((x) => x.statut === "encours").length, ter = Object.values(items).filter((x) => x.statut === "terminee").length;
+  $("foMyTiles").innerHTML = tile("Formations terminées", ter) + tile("En cours", enc) + tile("Heures validées", foHours(m) + " h") + tile("Recommandées pour vous", FORMATIONS.filter((f) => f.roles.includes(user.role)).length, ROLE_LABEL[user.role] || "");
+  const list = FORMATIONS.filter((f) => (!dom || f.dom === dom) && (!lvl || f.lvl === lvl)).sort((a, b) => (b.roles.includes(user.role) - a.roles.includes(user.role)));
+  $("foCatalog").innerHTML = list.map((f) => foCard(f, false)).join("") || '<div class="empty"><b>Aucune formation</b><span>Changez de domaine ou de niveau.</span></div>';
+  foBind($("foCatalog"));
+}
+function renderFoMine() {
+  const items = foMy().items || {}, ids = Object.keys(items);
+  $("foMine").innerHTML = ids.length ? ids.map((id) => FORMATIONS.find((f) => f.id === id)).filter(Boolean).sort((a, b) => (items[a.id].statut === "terminee") - (items[b.id].statut === "terminee")).map((f) => foCard(f, true)).join("")
+    : '<div class="panel empty"><b>Aucune formation en cours</b><span>Inscrivez-vous depuis le catalogue : les formations recommandées pour votre poste apparaissent en premier.</span></div>';
+  foBind($("foMine"));
+}
+function renderFoRh() {
+  const all = foFlatten(), rows = Object.entries(all), today = todayISO();
+  const tot = rows.reduce((s, [, d]) => s + foHours(d), 0), ter = rows.reduce((s, [, d]) => s + Object.values(d.items || {}).filter((x) => x.statut === "terminee").length, 0);
+  $("foRhTiles").innerHTML = tile("Employés en formation", rows.length) + tile("Formations terminées", ter) + tile("Heures validées", tot + " h") + tile("Moyenne par employé", rows.length ? fmt(tot / rows.length, 1) + " h" : "—");
+  $("foTeam").innerHTML = rows.length ? `<thead><tr><th class="wrap">Employé</th><th>Poste</th><th>Inscrit</th><th>Terminées</th><th>Heures</th><th class="wrap">En cours</th><th>Dernière activité</th></tr></thead><tbody>`
+    + rows.sort((a, b) => foHours(b[1]) - foHours(a[1])).map(([, d]) => { const it = d.items || {}, en = Object.entries(it).filter(([, x]) => x.statut === "encours").map(([id]) => (FORMATIONS.find((f) => f.id === id) || {}).t || id);
+      return `<tr><td class="wrap"><b>${esc(str(d.nom || ""))}</b></td><td>${esc(ROLE_LABEL[d.role] || d.role || "")}</td><td class="n">${Object.keys(it).length}</td><td class="n">${Object.values(it).filter((x) => x.statut === "terminee").length}</td><td class="n"><b>${foHours(d)} h</b></td><td class="wrap muted" style="font-size:.86rem">${esc(en.join(" · ") || "—")}</td><td>${d.updatedAt ? esc(dday(String(d.updatedAt).slice(0, 10))) : "—"}</td></tr>`; }).join("") + "</tbody>"
+    : '<tbody><tr><td class="muted">Aucun employé inscrit pour l\'instant.</td></tr></tbody>';
+  const cnt = {}; rows.forEach(([, d]) => Object.keys(d.items || {}).forEach((id) => { cnt[id] = (cnt[id] || 0) + 1; }));
+  const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  $("foTop").innerHTML = top.length ? `<thead><tr><th class="wrap">Formation</th><th>Inscrits</th></tr></thead><tbody>${top.map(([id, n]) => `<tr><td class="wrap">${esc((FORMATIONS.find((f) => f.id === id) || {}).t || id)}</td><td class="n">${n}</td></tr>`).join("")}</tbody>` : '<tbody><tr><td class="muted">Pas encore de données.</td></tr></tbody>';
+}
+async function proposeFormation() {
+  const st = await getStore(), r = { fid: $("foPropF").value, pour: $("foPropR").value, note: $("foPropN").value.trim().slice(0, 160), by: st.uid || null, who: (myFiche && myFiche.nom) || user.name, at: new Date().toISOString() };
+  if (st.db) { try { await st.db.collection("form_reco").add(r); $("foPropMsg").textContent = "Formation proposée : elle apparaît dans le catalogue des personnes concernées."; } catch (e) { $("foPropMsg").textContent = "Envoi refusé : droits insuffisants sur cette page."; } }
+  else { foRecos = [r].concat(foRecos); lsSet("t2formreco", foRecos); $("foPropMsg").textContent = "Formation proposée (dans ce navigateur)."; }
+  $("foPropN").value = ""; logAudit("Formation proposée", (FORMATIONS.find((f) => f.id === r.fid) || {}).t);
 }
 
 // thème : redessiner les graphiques quand le thème change
