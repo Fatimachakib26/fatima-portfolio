@@ -1221,6 +1221,35 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
       </div>
     </section>
 
+    <!-- ===================== TRÉSORERIE ===================== -->
+    <section class="page" data-page="treso" hidden>
+      <div class="lead"><div><span class="eyebrow">Trésorerie</span><h2>Position et prévision de <em class="g">trésorerie</em></h2>
+        <p>Les soldes de chaque compte bancaire, les factures à payer et à encaisser, et la trésorerie prévue semaine par semaine sur les 13 prochaines semaines.</p></div>
+        <div class="toolbar"><button class="btn" id="trFlow" type="button">Ajouter un flux prévu</button><button class="btn steel" id="trAcc" type="button">Mettre à jour un compte</button></div></div>
+
+      <div class="tiles" id="trTiles" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))"></div>
+
+      <div class="panel"><div class="lead"><h3>Comptes bancaires</h3><span class="muted" id="trAccNote" style="font-size:.86rem"></span></div>
+        <div class="tablewrap"><table id="trAccounts"></table></div></div>
+
+      <div class="panel"><div class="lead"><h3>Prévision sur 13 semaines</h3>
+          <div class="toolbar"><label class="f" for="trSeuil" style="min-width:200px">Seuil d'alerte (MAD)<input type="number" id="trSeuil" value="500000" step="50000" min="0"></label></div></div>
+        <div class="chart" id="trChart"></div>
+        <div class="tablewrap"><table id="trWeeks"></table></div>
+        <p class="muted" style="font-size:.84rem;margin:0">Les factures à crédit sont placées à leur échéance de 60 jours (loi 69-21) ; une facture déjà échue apparaît dans la semaine en cours. Les comptes en devises sont convertis au cours de référence de Bank Al-Maghrib.</p></div>
+
+      <div class="grid2">
+        <div class="panel"><div class="lead"><h3>Échéancier des factures</h3>
+          <label class="f" for="trHor" style="min-width:160px">Horizon<select id="trHor"><option value="30">30 jours</option><option value="60">60 jours</option><option value="91" selected>13 semaines</option></select></label></div>
+          <div class="tablewrap"><table id="trDue"></table></div></div>
+        <div class="panel"><h3>Flux prévus hors factures</h3><div class="rplist" id="trFlows"></div>
+          <p class="muted" style="font-size:.84rem;margin:0">Salaires, échéances d'emprunt, TVA, loyers, apports en capital… Un flux mensuel se répète chaque mois à la même date.</p></div>
+      </div>
+
+      <div class="panel"><h3>Trésorerie du projet Tanger II</h3><div class="tiles" id="trProj"></div>
+        <div class="toolbar"><button class="btn" id="trPlan" type="button">Ouvrir le plan de financement</button></div></div>
+    </section>
+
     <!-- ===================== TAUX DE CHANGE ===================== -->
     <section class="page" data-page="fx" hidden>
       <div class="lead"><div><span class="eyebrow">Trésorerie</span><h2>Taux de <em class="g">change</em></h2>
@@ -1519,6 +1548,29 @@ Trésorerie = CALCULATE(SUM(fait_annuel[Valeur]), fait_annuel[Indicateur] = "Tr�
         </div>
       </form>
       <div class="sheetft"><span class="muted" id="fxMsg" aria-live="polite" style="font-size:.88rem"></span><div class="toolbar"><button class="btn primary" id="fxSave" type="button">Enregistrer le cours</button></div></div>
+    </div>
+  </div>
+  <div class="overlay" id="trOverlay" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="trH" style="width:min(680px,100%)">
+      <div class="sheethd"><div style="display:grid;gap:4px"><span class="eyebrow">Trésorerie</span><h2 id="trH">Mettre à jour un compte</h2></div><button class="btn" id="trClose" type="button">Fermer</button></div>
+      <form class="sheetbody" id="trForm" autocomplete="off" style="display:grid;gap:18px">
+        <div id="trAccFields" class="formgrid">
+          <label class="f" for="taBank">Banque<select id="taBank"></select></label>
+          <label class="f" for="taDev">Devise du compte<select id="taDev"><option>MAD</option><option>EUR</option><option>USD</option></select></label>
+          <label class="f" for="taLib">Intitulé<input type="text" id="taLib" maxlength="60" placeholder="ex. Compte courant principal"></label>
+          <label class="f" for="taSolde">Solde<input type="number" id="taSolde" step="0.01"></label>
+          <label class="f" for="taDate">Solde au<input type="date" id="taDate"></label>
+          <label class="f" for="taDec">Découvert autorisé (MAD)<input type="number" id="taDec" step="1000" min="0" value="0"></label>
+        </div>
+        <div id="trFlowFields" class="formgrid" hidden>
+          <label class="f" for="tfLib">Libellé<input type="text" id="tfLib" maxlength="80" placeholder="ex. Salaires d'octobre"></label>
+          <label class="f" for="tfSens">Sens<select id="tfSens"><option value="out">Décaissement</option><option value="in">Encaissement</option></select></label>
+          <label class="f" for="tfMt">Montant (MAD)<input type="number" id="tfMt" step="100" min="0"></label>
+          <label class="f" for="tfDate">Date<input type="date" id="tfDate"></label>
+          <label class="f" for="tfRec">Fréquence<select id="tfRec"><option value="unique">Une seule fois</option><option value="mensuel">Chaque mois</option></select></label>
+        </div>
+      </form>
+      <div class="sheetft"><span class="muted" id="trMsg" aria-live="polite" style="font-size:.88rem"></span><div class="toolbar"><button class="btn primary" id="trSave" type="button">Enregistrer</button></div></div>
     </div>
   </div>
   <div class="overlay" id="rpOverlay" hidden>
@@ -1938,7 +1990,7 @@ $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeR
 const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
-  ["compta", "Saisie des factures", false, "Comptabilité"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
+  ["compta", "Saisie des factures", false, "Comptabilité"], ["treso", "Trésorerie", false, "Pilotage & contrôle"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
 let current = "dash";
 function enterApp() {
   $("login").hidden = true; $("app").hidden = false; lastAct = Date.now(); logAudit("Connexion");
@@ -1961,7 +2013,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -3102,7 +3154,7 @@ function fraudChecks(p, all) {
     const tot = month.reduce((s, q) => s + (+q.ttc || 0), 0);
     if (month.length >= 3 && tot >= SEUIL2) add("warn", `${month.length} factures de ce fournisseur ce mois-ci, chacune sous le seuil, ${mad(tot)} MAD au total : fractionnement possible.`, "Contrôle interne");
     if (ttc >= 100000 && !others.some((q) => norm(q.tiers) === norm(p.tiers) && (q.date || "") < (p.date || ""))) add("warn", "Premier achat chez ce fournisseur pour un montant important : vérifier son existence (ICE, RC, RIB).", "");
-    if (p.reglement === "credit" && p.date && (Date.now() - new Date(p.date)) / 864e5 > 60 && (STATES[p.id] || "") !== "rejetee") add("warn", "Facture fournisseur à crédit de plus de 60 jours : vérifier qu'elle est payée.", "Loi 69-21 (60 jours, 120 au plus)");
+    if (p.reglement === "credit" && !p.paye && p.date && (Date.now() - new Date(p.date)) / 864e5 > 60 && (STATES[p.id] || "") !== "rejetee") add("warn", "Facture fournisseur à crédit de plus de 60 jours : vérifier qu'elle est payée.", "Loi 69-21 (60 jours, 120 au plus)");
   }
   if (p.type === "vente" && p.nature === "7122" && tva > 0) add("warn", "Vente à l'export avec TVA : en principe exonérée.", "CGI art. 92-I");
   return F;
@@ -4585,6 +4637,117 @@ function renderPlan() {
     { type: "scatter", x: t.year, y: t.cash, name: "Trésorerie fin d'année", line: { color: c.A, width: 3 } }], { barmode: "relative", legend: { orientation: "h", y: -0.2 }, yaxis: { ticksuffix: "" } });
   const init = d.res.slice(1).map(([l, a]) => [l, a[0] + a[1]]).concat([["CAF 2027-2028", d.res[0][1][0] + d.res[0][1][1]]]).filter(([, v]) => v > 0.05);
   plot("pfPie", [{ type: "pie", labels: init.map((x) => x[0]), values: init.map((x) => x[1]), hole: 0.55, sort: false, textinfo: "percent", marker: { colors: [c.A, c.B, c.C, c.X, c.muted, c.warn] } }], { legend: { orientation: "h", y: -0.1 }, margin: { t: 10, b: 10, l: 10, r: 10 } });
+}
+
+// ---------- Trésorerie : position, prévision 13 semaines, échéancier ----------
+let trInit = false, trWatch = false, accounts = {}, flows = [], trMode = "acc";
+const addDays = (iso, n) => { const d = new Date(iso + "T12:00"); d.setDate(d.getDate() + n); return todayISO(d); };
+const mondayOf = (d) => { const x = new Date(d); x.setHours(12, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+const toMad = (a) => { const s = +a.solde || 0; if (a.devise === "MAD" || !a.devise) return s; const r = fxRate("bam", "ref", a.devise); return r ? s * r : null; };
+const isOpen = (p) => p.reglement === "credit" && !p.paye && !["rejetee", "alteree"].includes(STATES[p.id] || "");
+const dueOf = (p) => addDays(p.date || todayISO(), 60);
+async function watchTreso() {
+  if (trWatch) return; trWatch = true; const st = await getStore();
+  if (st.db) {
+    st.db.collection("comptes").limit(60).onSnapshot((s) => { accounts = {}; s.docs.forEach((d) => { accounts[d.id] = d.data(); }); if (current === "treso") renderTreso(); }, () => {});
+    st.db.collection("flux").limit(300).onSnapshot((s) => { flows = s.docs.map((d) => Object.assign({ id: d.id }, d.data())); if (current === "treso") renderTreso(); }, () => {});
+  } else { accounts = lsGet("t2comptes", {}); flows = lsGet("t2flux", []); }
+}
+async function initTreso() {
+  if (!trInit) {
+    trInit = true;
+    $("taBank").innerHTML = FX_BANKS.filter(([k]) => k !== "bam").map(([k, n]) => `<option value="${k}">${esc(n)}</option>`).join("");
+    $("trAcc").addEventListener("click", () => openTr("acc")); $("trFlow").addEventListener("click", () => openTr("flow"));
+    $("trClose").addEventListener("click", closeTr); $("trOverlay").addEventListener("click", (e) => { if (e.target === $("trOverlay")) closeTr(); });
+    $("trSave").addEventListener("click", saveTr);
+    ["trSeuil", "trHor"].forEach((id) => $(id).addEventListener("input", renderTreso));
+    $("trPlan").addEventListener("click", () => show("plan"));
+  }
+  $("trAcc").hidden = $("trFlow").hidden = !canFx();
+  await connectStore(); await computeStates(); await watchFx(); await watchTreso(); renderTreso();
+}
+function trItems(h) {
+  const today = todayISO(), end = addDays(today, h), items = [];
+  cpRows.filter(isOpen).forEach((p) => { const due = dueOf(p); if (due <= end) items.push({ date: due < today ? today : due, late: due < today, due, lib: `${p.numero} · ${p.tiers}`, mt: (+p.ttc || 0) * (p.type === "vente" ? 1 : -1), kind: p.type === "vente" ? "Client" : "Fournisseur", p }); });
+  flows.forEach((f) => { const base = f.date || today; if (f.recurrence === "mensuel") { let d = new Date(base + "T12:00"); for (let i = 0; i < 24; i++) { const iso = todayISO(d); if (iso > end) break; if (iso >= today) items.push({ date: iso, due: iso, lib: f.libelle, mt: (+f.montant || 0) * (f.sens === "in" ? 1 : -1), kind: "Prévu", f }); d.setMonth(d.getMonth() + 1); } }
+    else if (base >= today && base <= end) items.push({ date: base, due: base, lib: f.libelle, mt: (+f.montant || 0) * (f.sens === "in" ? 1 : -1), kind: "Prévu", f }); });
+  return items.sort((a, b) => a.date.localeCompare(b.date));
+}
+function renderTreso() {
+  const acc = Object.entries(accounts), today = todayISO(), seuil = parseFloat($("trSeuil").value) || 0;
+  const solde = acc.reduce((s, [, a]) => s + (toMad(a) || 0), 0), dec = acc.reduce((s, [, a]) => s + (+a.decouvert || 0), 0), noRate = acc.some(([, a]) => toMad(a) == null);
+  const it30 = trItems(30), out30 = -it30.filter((x) => x.mt < 0).reduce((s, x) => s + x.mt, 0), in30 = it30.filter((x) => x.mt > 0).reduce((s, x) => s + x.mt, 0), late = trItems(0).filter((x) => x.late);
+  $("trTiles").innerHTML = tile("Solde des comptes (MAD)", fmt(solde, 0), acc.length ? `${acc.length} compte(s)` : "aucun compte saisi") + tile("Disponible avec découverts (MAD)", fmt(solde + dec, 0), `découverts autorisés : ${mad(dec)}`)
+    + tile("À payer sous 30 jours (MAD)", fmt(out30, 0), `${it30.filter((x) => x.mt < 0).length} échéance(s)`) + tile("À encaisser sous 30 jours (MAD)", fmt(in30, 0), `${it30.filter((x) => x.mt > 0).length} échéance(s)`)
+    + tile("Position à 30 jours (MAD)", fmt(solde + in30 - out30, 0), late.length ? `${late.length} facture(s) déjà échue(s)` : "", solde + in30 - out30 < seuil ? "ko" : "");
+  $("trAccNote").textContent = noRate ? "Un compte en devise n'a pas de cours de référence : il n'est pas compté." : acc.length ? "Comptes en devises convertis au cours de référence de Bank Al-Maghrib." : "";
+  $("trAccounts").innerHTML = acc.length ? `<thead><tr><th class="wrap">Banque</th><th class="wrap">Compte</th><th>Devise</th><th>Solde</th><th>Contre-valeur (MAD)</th><th>Découvert</th><th>Solde au</th><th>Mis à jour par</th></tr></thead><tbody>`
+    + acc.sort((a, b) => (toMad(b[1]) || 0) - (toMad(a[1]) || 0)).map(([k, a]) => { const stale = a.date && (new Date(today) - new Date(a.date)) / 864e5 > 3;
+      return `<tr><td class="wrap"><b>${esc(str(a.banque))}</b></td><td class="wrap">${esc(str(a.libelle || ""))}</td><td>${esc(str(a.devise || "MAD"))}</td><td class="n">${mad(+a.solde || 0)}</td><td class="n">${toMad(a) == null ? "—" : mad(toMad(a))}</td><td class="n">${mad(+a.decouvert || 0)}</td>
+        <td>${a.date ? `<span class="pill ${stale ? "warn" : "ok"}">${esc(dday(a.date))}</span>` : "—"}</td><td>${esc(str(a.par || ""))}</td></tr>`; }).join("")
+      + `<tr class="hl"><td colspan="4"><b>Total</b></td><td class="n"><b>${mad(solde)}</b></td><td class="n"><b>${mad(dec)}</b></td><td></td><td></td></tr></tbody>`
+    : `<tbody><tr><td class="muted">${canFx() ? "Aucun compte saisi : cliquez sur « Mettre à jour un compte » pour entrer le solde de chaque banque." : "Aucun compte saisi pour l'instant : la trésorerie (direction, analystes) renseigne les soldes."}</td></tr></tbody>`;
+  // prévision hebdomadaire
+  const items = trItems(91), w0 = mondayOf(new Date()), weeks = [];
+  for (let i = 0; i < 13; i++) { const s = new Date(w0); s.setDate(s.getDate() + 7 * i); const e = new Date(s); e.setDate(e.getDate() + 6); weeks.push({ s: todayISO(s), e: todayISO(e), inn: 0, out: 0 }); }
+  items.forEach((x) => { const w = weeks.find((w) => x.date >= w.s && x.date <= w.e) || weeks[0]; if (x.mt > 0) w.inn += x.mt; else w.out -= x.mt; });
+  let bal = solde; weeks.forEach((w) => { w.start = bal; bal += w.inn - w.out; w.end = bal; });
+  const c = COLS(), lbl = weeks.map((w) => new Date(w.s + "T12:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }));
+  plot("trChart", [{ type: "bar", x: lbl, y: weeks.map((w) => w.inn), name: "Encaissements", marker: { color: c.C } }, { type: "bar", x: lbl, y: weeks.map((w) => -w.out), name: "Décaissements", marker: { color: c.B } },
+    { type: "scatter", x: lbl, y: weeks.map((w) => w.end), name: "Trésorerie fin de semaine", line: { color: c.A, width: 3 } }], { barmode: "relative", shapes: [hline(seuil, c.ko, "dot")], legend: { orientation: "h", y: -0.22 } });
+  $("trWeeks").innerHTML = `<thead><tr><th class="wrap">Semaine du</th>${lbl.map((l) => `<th>${l}</th>`).join("")}</tr></thead><tbody>`
+    + `<tr><td class="wrap">Trésorerie début</td>${weeks.map((w) => `<td class="n">${fmt(w.start / 1000, 0)}</td>`).join("")}</tr>`
+    + `<tr><td class="wrap">+ Encaissements</td>${weeks.map((w) => `<td class="n">${w.inn ? fmt(w.inn / 1000, 0) : "–"}</td>`).join("")}</tr>`
+    + `<tr><td class="wrap">− Décaissements</td>${weeks.map((w) => `<td class="n">${w.out ? fmt(w.out / 1000, 0) : "–"}</td>`).join("")}</tr>`
+    + `<tr class="hl"><td class="wrap"><b>Trésorerie fin (k MAD)</b></td>${weeks.map((w) => `<td class="n"><b><span class="${w.end < seuil ? "ecart ko" : ""}">${fmt(w.end / 1000, 0)}</span></b></td>`).join("")}</tr></tbody>`;
+  // échéancier
+  const h = parseInt($("trHor").value) || 91, due = trItems(h).filter((x) => x.p);
+  $("trDue").innerHTML = due.length ? `<thead><tr><th>Échéance</th><th class="wrap">Pièce</th><th>Montant (MAD)</th><th></th></tr></thead><tbody>`
+    + due.map((x) => `<tr><td class="n">${x.late ? `<span class="pill ko">échue le ${esc(dday(x.due))}</span>` : esc(dday(x.due))}</td><td class="wrap">${esc(x.lib)}<div class="muted" style="font-size:.78rem">${x.kind}</div></td>
+      <td class="n"><span class="${x.mt < 0 ? "ecart ko" : "ecart ok"}">${x.mt < 0 ? "−" : "+"}${mad(Math.abs(x.mt))}</span></td><td>${canFx() ? `<button class="btn" type="button" data-pay="${esc(x.p.id)}" style="padding:5px 10px;font-size:.8rem">${x.mt < 0 ? "Marquer payée" : "Marquer encaissée"}</button>` : ""}</td></tr>`).join("") + "</tbody>"
+    : '<tbody><tr><td class="muted">Aucune facture à crédit à échéance sur cette période.</td></tr></tbody>';
+  $("trDue").querySelectorAll("[data-pay]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.confirm) markPaid(b.dataset.pay); else { b.dataset.confirm = "1"; b.textContent = "Confirmer"; } }));
+  $("trFlows").innerHTML = flows.length ? flows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).map((f) => `<div class="rpitem"><div style="display:grid;gap:4px;min-width:0"><span class="t">${esc(str(f.libelle))}</span>
+      <span class="meta"><span class="${f.sens === "in" ? "ecart ok" : "ecart ko"}">${f.sens === "in" ? "+" : "−"}${mad(+f.montant || 0)} MAD</span><span>${f.recurrence === "mensuel" ? "chaque mois à partir du " : "le "}${esc(dday(f.date))}</span><span>${esc(str(f.par || ""))}</span></span></div>
+      ${canFx() ? `<button class="btn" type="button" data-fdel="${esc(f.id)}">Retirer</button>` : "<span></span>"}</div>`).join("")
+    : '<div class="empty"><b>Aucun flux prévu</b><span>Ajoutez les salaires, échéances d\'emprunt ou apports attendus avec « Ajouter un flux prévu ».</span></div>';
+  $("trFlows").querySelectorAll("[data-fdel]").forEach((b) => b.addEventListener("click", () => { if (b.dataset.confirm) delFlow(b.dataset.fdel); else { b.dataset.confirm = "1"; b.textContent = "Confirmer"; } }));
+  const t = run(S.B, CASES["1. Central"]).table, mi = t.cash.indexOf(Math.min(...t.cash));
+  $("trProj").innerHTML = tile("Trésorerie fin 2027 (MDH)", fmt(t.cash[0], 1), "montage B, cas central") + tile("Point bas (MDH)", fmt(t.cash[mi], 1), "en " + t.year[mi], t.cash[mi] < 0 ? "ko" : "")
+    + tile("Trésorerie fin 2032 (MDH)", fmt(t.cash[t.year.indexOf(2032)], 1)) + tile("Trésorerie fin 2038 (MDH)", fmt(t.cash[t.cash.length - 1], 1));
+}
+function openTr(mode) {
+  if (!canFx()) return; trMode = mode;
+  $("trAccFields").hidden = mode !== "acc"; $("trFlowFields").hidden = mode !== "flow";
+  $("trH").textContent = mode === "acc" ? "Mettre à jour un compte" : "Ajouter un flux prévu";
+  if (mode === "acc") { $("taDate").value = todayISO(); $("taSolde").value = ""; $("taLib").value = ""; $("taDec").value = "0"; $("taDev").value = "MAD"; } else { $("tfDate").value = todayISO(); $("tfLib").value = ""; $("tfMt").value = ""; }
+  $("trMsg").textContent = ""; $("trOverlay").hidden = false; document.body.style.overflow = "hidden";
+}
+function closeTr() { $("trOverlay").hidden = true; document.body.style.overflow = ""; }
+async function saveTr() {
+  const st = await getStore(), by = (myFiche && myFiche.nom) || user.name;
+  if (trMode === "acc") {
+    const bank = FX_BANKS.find((b) => b[0] === $("taBank").value), dev = $("taDev").value, sol = parseFloat($("taSolde").value);
+    if (!isFinite(sol)) { $("trMsg").textContent = "Saisissez le solde du compte."; return; }
+    const id = bank[0] + "-" + dev, doc = { banque: bank[1], devise: dev, libelle: $("taLib").value.trim().slice(0, 60) || "Compte courant", solde: Math.round(sol * 100) / 100, date: $("taDate").value || todayISO(), decouvert: Math.max(0, parseFloat($("taDec").value) || 0), par: by, maj: new Date().toISOString() };
+    try { if (st.db) await st.db.doc("comptes/" + id).set(doc); else { accounts[id] = doc; lsSet("t2comptes", accounts); } logAudit(`Solde mis à jour : ${bank[1]} (${dev})`, mad(doc.solde)); closeTr(); if (!st.db) renderTreso(); }
+    catch (e) { $("trMsg").textContent = "Enregistrement refusé : droits insuffisants sur cette page."; }
+  } else {
+    const mt = parseFloat($("tfMt").value), lib = $("tfLib").value.trim();
+    if (!lib || !(mt > 0)) { $("trMsg").textContent = "Indiquez un libellé et un montant."; return; }
+    const doc = { libelle: lib.slice(0, 80), sens: $("tfSens").value, montant: Math.round(mt * 100) / 100, date: $("tfDate").value || todayISO(), recurrence: $("tfRec").value, par: by, at: new Date().toISOString() };
+    try { if (st.db) await st.db.collection("flux").add(doc); else { doc.id = "f" + Date.now(); flows = flows.concat([doc]); lsSet("t2flux", flows); } logAudit("Flux de trésorerie prévu : " + doc.libelle, mad(doc.montant)); closeTr(); if (!st.db) renderTreso(); }
+    catch (e) { $("trMsg").textContent = "Enregistrement refusé : droits insuffisants sur cette page."; }
+  }
+}
+async function markPaid(id) {
+  const p = cpRows.find((x) => x.id === id); if (!p || !canFx()) return;
+  try { await updatePiece(id, { paye: { date: todayISO(), par: (myFiche && myFiche.nom) || user.name } }); logAudit(p.type === "vente" ? "Facture encaissée" : "Facture payée", `${p.numero} · ${p.tiers}`); } catch (e) {}
+  if (!cpDb) renderTreso();
+}
+async function delFlow(id) {
+  const st = await getStore();
+  if (st.db) { try { await st.db.doc("flux/" + id).delete(); } catch (e) {} } else { flows = flows.filter((f) => f.id !== id); lsSet("t2flux", flows); renderTreso(); }
 }
 
 // thème : redessiner les graphiques quand le thème change
