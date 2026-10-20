@@ -833,6 +833,24 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
     </section>
 
 
+    <!-- ===================== PLAN DE FINANCEMENT ===================== -->
+    <section class="page" data-page="plan" hidden>
+      <div class="lead"><div><span class="eyebrow">Dossier</span><h2>Plan de <em class="g">financement</em></h2>
+        <p>Année par année, ce que le projet consomme (emplois) et ce qui le finance (ressources). Le solde de chaque année est la variation de la trésorerie.</p></div>
+        <div class="toolbar">
+          <label class="f" for="pfScen" style="min-width:220px">Montage<select id="pfScen"></select></label>
+          <label class="f" for="pfCase" style="min-width:220px">Cas<select id="pfCase"></select></label>
+          <button class="btn steel" id="pfReport" type="button">Rapport</button></div></div>
+      <div class="tiles" id="pfTiles" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))"></div>
+      <div class="panel"><div class="lead"><h3>Tableau emplois-ressources (MDH)</h3><span id="pfCheck"></span></div>
+        <div class="tablewrap"><table id="pfTable"></table></div>
+        <p class="muted" style="font-size:.84rem;margin:0">CAF = EBITDA − loyers de crédit-bail − intérêts − impôt sur les sociétés. Le crédit-bail apparaît en ressource l'année où le matériel est livré, et ses loyers sont déduits de la CAF.</p></div>
+      <div class="grid2">
+        <div class="panel"><h3>Ressources et emplois par année</h3><div class="chart" id="pfChart"></div></div>
+        <div class="panel"><h3>Structure du financement initial (2027-2028)</h3><div class="chart" id="pfPie"></div></div>
+      </div>
+    </section>
+
     <!-- ===================== CADRE JURIDIQUE ===================== -->
     <section class="page" data-page="legal" hidden>
       <div class="lead"><div><span class="eyebrow">Partie 2.3, partie 4.6, annexes 4 et 5</span><h2>Cadre juridique et fiscal <em class="g">marocain</em></h2>
@@ -1798,6 +1816,7 @@ const T2 = (() => {
     return {
       table: { year: YEARS, vol, ca, varc, fixed, ebitda, rents, interest, tax: taxCo, net, bfr, dbfr, capex: capexTot,
         fcff, cfads, service, dscr, debtBal, leaseBal, brBal, cash, netDebt, lev, eqIn, div, primeY,
+        capexInit, renew, debtDraw, principal, leaseY, brDraw, brRep, feesY,
         margin: ebitda.map((e, k) => ca[k] > 0 ? e / ca[k] : 0) },
       kpi: { need: sum(capexInit) + bfr[1] + reserve + fees + sum(idc), wacc, ke, betaL, npv, tri, triEq,
         dscrMin, dscrAvg, levMax, minCash, gap, dilution: Math.max(0, (E - EQ_CAP) / E), tv, breakeven,
@@ -1916,7 +1935,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 });
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
-const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -1942,7 +1961,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, fx: initFx, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -3619,8 +3638,8 @@ async function delMsg(id) {
 const RP_TYPES = [["tache", "Compte rendu de tâche"], ["synthese", "Synthèse du montage financier"], ["stress", "Tests de résistance"], ["levier", "Effet de levier"],
   ["journal", "Journal comptable"], ["validation", "Contrôle et signature des factures"], ["fiscalite", "Fiscalité : IS, cotisation minimale, IR"],
   ["audit", "Audit de fiabilité (agent IA)"], ["stage", "Suivi des stagiaires"], ["canal", "Échanges d'un canal de la messagerie"],
-  ["cdg", "Contrôle de gestion : budget et réalisé"], ["constats", "Contrôle interne et audit : constats"], ["rh", "Effectif et congés"]];
-const RP_PAGE = { dash: "synthese", projet: "synthese", montage: "synthese", legal: "synthese", oeuvre: "synthese", sim: "synthese", form: "synthese", live: "synthese", stress: "stress", mc: "stress", opt: "stress", levier: "levier", agent: "audit", stage: "stage", chat: "canal", analyste: "synthese", cdg: "cdg", ci: "constats", audit: "constats", rh: "rh" };
+  ["plan", "Plan de financement"], ["cdg", "Contrôle de gestion : budget et réalisé"], ["constats", "Contrôle interne et audit : constats"], ["rh", "Effectif et congés"]];
+const RP_PAGE = { dash: "synthese", projet: "synthese", montage: "synthese", legal: "synthese", oeuvre: "synthese", sim: "synthese", form: "synthese", live: "synthese", stress: "stress", mc: "stress", opt: "stress", levier: "levier", agent: "audit", stage: "stage", chat: "canal", analyste: "synthese", plan: "plan", cdg: "cdg", ci: "constats", audit: "constats", rh: "rh" };
 const RP_CP = { saisie: "journal", journal: "journal", amort: "journal", pcm: "journal", fisc: "fiscalite", valid: "validation" };
 const rpLabel = (t) => (RP_TYPES.find((x) => x[0] === t) || RP_TYPES[0])[1];
 let rpInit = false, rpCur = null, rpData = [], rpView = null, rpCtl = null, rpRows = [], rpWatch = false, rpTimer = null;
@@ -3684,6 +3703,12 @@ async function rpBuild(type) {
   if (type === "canal") {
     await watchChat(); const [, cn] = chOf(chCur), rows = chRows.filter((m) => m.ch === chCur).sort((a, b) => (a.at || "").localeCompare(b.at || "")).slice(-40);
     return [{ h: `Canal # ${cn} : ${rows.length} dernier(s) message(s)`, blocks: [rows.length ? TB(["Date", "Auteur", "Message"], rows.map((m) => [dfr(m.at), (m.by && chNames[m.by]) || m.who || "", (m.urgent ? "[Urgent] " : "") + m.text])) : P("Aucun message.")] }];
+  }
+  if (type === "plan") {
+    if (!pfInit) initPlan();
+    const k = $("pfScen").value || "B", cas = $("pfCase").value || "1. Central", d = pfData(k, cas), t = d.t, f1 = (v) => (Math.abs(v) < 0.05 ? "–" : fmt(v, 1));
+    const rows = d.res.map(([l, a]) => [l, ...a.map(f1)]).concat([["Total des ressources", ...d.tR.map(f1)]], d.emp.map(([l, a]) => [l, ...a.map(f1)]), [["Total des emplois", ...d.tE.map(f1)], ["Solde de l'année", ...d.solde.map(f1)], ["Trésorerie fin d'année", ...t.cash.map(f1)]]);
+    return [{ h: `Plan de financement · ${S[k].name} · ${cas} (MDH)`, blocks: [TB(["", ...t.year.map(String)], rows), P(`Contrôle : chaque solde annuel est égal à la variation de trésorerie du modèle (écart maximal ${fmt(d.check, 6)} MDH). Trésorerie la plus basse : ${fmt(Math.min(...t.cash), 1)} MDH.`)] }];
   }
   if (type === "cdg") {
     await connectStore(); await watchBudget(); if (!$("cgMonth").value) $("cgMonth").value = todayISO().slice(0, 7);
@@ -4516,6 +4541,50 @@ async function saveFx() {
   if (st.db) { try { await st.db.doc("fx/" + k).set(doc); closeFx(); } catch (e) { $("fxMsg").textContent = "Enregistrement refusé : droits insuffisants sur cette page."; } }
   else { fxDocs[k] = doc; const l = lsGet("t2fx", {}); l[k] = doc; lsSet("t2fx", l); closeFx(); renderFx(); }
   $("fxSave").disabled = false; logAudit(`Cours de change saisi : ${bank[1]}`, `${doc.date}`);
+}
+
+// ---------- Plan de financement ----------
+let pfInit = false;
+function pfData(k, cas) {
+  const t = run(S[k], CASES[cas]).table, n = t.year.length, z = (f) => t.year.map((_, i) => f(i));
+  const emp = [["Investissements initiaux", z((i) => t.capexInit[i])], ["Renouvellement des équipements", z((i) => t.renew[i])], ["Frais d'emprunt", z((i) => t.feesY[i])],
+    ["Variation du BFR", z((i) => t.dbfr[i])], ["Remboursement des emprunts", z((i) => t.principal[i])], ["Remboursement du crédit relais", z((i) => t.brRep[i])], ["Dividendes versés", z((i) => t.div[i])]];
+  const res = [["Capacité d'autofinancement (CAF)", z((i) => t.ebitda[i] - t.rents[i] - t.interest[i] - t.tax[i])], ["Apports en fonds propres", z((i) => t.eqIn[i])], ["Emprunts bancaires", z((i) => t.debtDraw[i])],
+    ["Crédit-bail", z((i) => t.leaseY[i])], ["Crédit relais", z((i) => t.brDraw[i])], ["Prime d'investissement", z((i) => t.primeY[i])]];
+  const tE = z((i) => emp.reduce((s, r) => s + r[1][i], 0)), tR = z((i) => res.reduce((s, r) => s + r[1][i], 0)), solde = z((i) => tR[i] - tE[i]);
+  const start = z((i) => (i ? t.cash[i - 1] : 0)), check = Math.max(...z((i) => Math.abs(solde[i] - (t.cash[i] - start[i]))));
+  return { t, n, emp, res, tE, tR, solde, start, check };
+}
+function initPlan() {
+  if (!pfInit) {
+    pfInit = true; fillScen("pfScen", "B"); fillSelect("pfCase", Object.keys(CASES), "1. Central");
+    ["pfScen", "pfCase"].forEach((id) => $(id).addEventListener("change", renderPlan));
+    $("pfReport").addEventListener("click", () => openReport("plan"));
+  }
+  renderPlan();
+}
+function renderPlan() {
+  const k = $("pfScen").value, cas = $("pfCase").value, d = pfData(k, cas), t = d.t, sum = (a, from = 0, to = d.n) => a.slice(from, to).reduce((x, y) => x + y, 0);
+  const i29 = t.year.indexOf(2029), minI = t.cash.indexOf(Math.min(...t.cash));
+  const ext = sum(d.res.slice(1).reduce((acc, r) => acc.map((v, i) => v + r[1][i]), new Array(d.n).fill(0)));
+  $("pfTiles").innerHTML = tile("Besoins 2027-2028 (MDH)", fmt(sum(d.tE, 0, 2), 1), "investissements, frais et BFR de démarrage")
+    + tile("Ressources externes (MDH)", fmt(ext, 1), "fonds propres, dettes, crédit-bail, prime") + tile("CAF cumulée 2029-2038 (MDH)", fmt(sum(d.res[0][1], i29), 1))
+    + tile("Trésorerie la plus basse (MDH)", fmt(t.cash[minI], 1), "en " + t.year[minI], t.cash[minI] < 0 ? "ko" : "") + tile("Trésorerie fin 2038 (MDH)", fmt(t.cash[d.n - 1], 1));
+  $("pfCheck").innerHTML = d.check < 1e-6 ? '<span class="pill ok">Équilibré : solde = variation de trésorerie</span>' : `<span class="pill ko">Écart de ${fmt(d.check, 4)} MDH</span>`;
+  const cell = (v, bold) => `<td class="n">${bold ? "<b>" : ""}${Math.abs(v) < 0.05 ? '<span class="muted">–</span>' : `<span${v < 0 ? ' class="ecart ko"' : ""}>${fmt(v, 1)}</span>`}${bold ? "</b>" : ""}</td>`;
+  const row = (l, a, cls = "", bold = false) => `<tr${cls ? ` class="${cls}"` : ""}><td class="wrap">${bold ? `<b>${l}</b>` : l}</td>${a.map((v) => cell(v, bold)).join("")}${cell(sum(a), true)}</tr>`;
+  const head = (l) => `<tr><td colspan="${d.n + 2}" style="padding-top:18px"><span class="eyebrow">${l}</span></td></tr>`;
+  $("pfTable").innerHTML = `<thead><tr><th class="wrap">MDH</th>${t.year.map((y) => `<th>${y}</th>`).join("")}<th>Total</th></tr></thead><tbody>`
+    + head("Ressources") + d.res.map(([l, a]) => row(l, a)).join("") + row("Total des ressources", d.tR, "hl", true)
+    + head("Emplois") + d.emp.map(([l, a]) => row(l, a)).join("") + row("Total des emplois", d.tE, "hl", true)
+    + head("Trésorerie") + row("Solde de l'année (ressources − emplois)", d.solde, "", true)
+    + `<tr><td class="wrap">Trésorerie en début d'année</td>${d.start.map((v) => cell(v)).join("")}<td></td></tr>`
+    + `<tr class="hl"><td class="wrap"><b>Trésorerie en fin d'année</b></td>${t.cash.map((v) => cell(v, true)).join("")}<td></td></tr></tbody>`;
+  const c = COLS();
+  plot("pfChart", [{ type: "bar", x: t.year, y: d.tR, name: "Ressources", marker: { color: c.C } }, { type: "bar", x: t.year, y: d.tE.map((v) => -v), name: "Emplois", marker: { color: c.B } },
+    { type: "scatter", x: t.year, y: t.cash, name: "Trésorerie fin d'année", line: { color: c.A, width: 3 } }], { barmode: "relative", legend: { orientation: "h", y: -0.2 }, yaxis: { ticksuffix: "" } });
+  const init = d.res.slice(1).map(([l, a]) => [l, a[0] + a[1]]).concat([["CAF 2027-2028", d.res[0][1][0] + d.res[0][1][1]]]).filter(([, v]) => v > 0.05);
+  plot("pfPie", [{ type: "pie", labels: init.map((x) => x[0]), values: init.map((x) => x[1]), hole: 0.55, sort: false, textinfo: "percent", marker: { colors: [c.A, c.B, c.C, c.X, c.muted, c.warn] } }], { legend: { orientation: "h", y: -0.1 }, margin: { t: 10, b: 10, l: 10, r: 10 } });
 }
 
 // thème : redessiner les graphiques quand le thème change
