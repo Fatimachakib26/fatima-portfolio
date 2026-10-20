@@ -1,0 +1,1071 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Past Tense Coach</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one column "carnet" — sticky header with streak/XP, a 7-tab rail, then one focused activity card at a time. */
+:root{
+  --paper:#f8f7fc; --card:#ffffff; --ink:#1c1f3a; --muted:#5d6080; --line:#e2e0f0;
+  --violet:#5b45e0; --violet-soft:#ece8ff; --coral:#e8513f; --coral-soft:#fde9e5;
+  --teal:#0d8a7e; --teal-soft:#dff4f0; --amber:#c97a06; --amber-soft:#fdf1da;
+  --ok:#14804a; --ok-soft:#ddf3e6; --bad:#c43a2b; --bad-soft:#fbe4e0;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --shadow:0 1px 0 rgba(28,31,58,.04), 0 6px 20px rgba(28,31,58,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#13142a; --card:#1c1e38; --ink:#eeedfb; --muted:#a6a8c8; --line:#2f3156;
+  --violet:#9b8cff; --violet-soft:#2a2856; --coral:#ff8a78; --coral-soft:#3d2228;
+  --teal:#4fd1c0; --teal-soft:#14353a; --amber:#f2b448; --amber-soft:#3a2e15;
+  --ok:#5fd394; --ok-soft:#163626; --bad:#ff8a7a; --bad-soft:#3d2023;
+  --shadow:0 1px 0 rgba(0,0,0,.2), 0 6px 20px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#13142a; --card:#1c1e38; --ink:#eeedfb; --muted:#a6a8c8; --line:#2f3156;
+  --violet:#9b8cff; --violet-soft:#2a2856; --coral:#ff8a78; --coral-soft:#3d2228;
+  --teal:#4fd1c0; --teal-soft:#14353a; --amber:#f2b448; --amber-soft:#3a2e15;
+  --ok:#5fd394; --ok-soft:#163626; --bad:#ff8a7a; --bad-soft:#3d2023;
+  --shadow:0 1px 0 rgba(0,0,0,.2), 0 6px 20px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--card)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.logo{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.logo svg{flex:none}
+.logo b{font-family:var(--display);font-size:1.15rem;font-weight:800;white-space:nowrap}
+.logo small{display:block;color:var(--muted);font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stats{display:flex;gap:8px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;font-weight:700;font-size:.85rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.fire{background:var(--coral-soft);color:var(--coral)}
+.pill.xp{background:var(--violet-soft);color:var(--violet)}
+.ring{width:38px;height:38px;flex:none}
+.ring circle{fill:none;stroke-width:5}
+.tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding-bottom:6px}
+.tab{background:none;border:0;border-radius:10px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:.72rem;font-weight:700;min-width:0}
+.tab svg{width:22px;height:22px}
+.tab[aria-selected="true"]{color:var(--violet);background:var(--violet-soft)}
+.tab span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+main{padding-block:20px 60px}
+.view{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);min-width:0}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.lead{color:var(--muted);margin:6px 0 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:700;background:var(--violet);color:#fff;display:inline-flex;align-items:center;gap:8px;justify-content:center;min-height:44px}
+:root[data-theme="dark"] .btn{color:#14122e}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#14122e}}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.soft{background:var(--violet-soft);color:var(--violet)}
+.btn.coral{background:var(--coral)}
+.btn.teal{background:var(--teal)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.sm{min-height:36px;padding:7px 12px;font-size:.88rem;border-radius:10px}
+.icon-btn{border:1.5px solid var(--line);background:var(--card);border-radius:999px;width:40px;height:40px;display:inline-grid;place-items:center;flex:none;color:var(--violet)}
+.icon-btn.live{background:var(--coral);border-color:var(--coral);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--coral) 25%,transparent)}}
+.say{cursor:pointer;border-bottom:1.5px dashed color-mix(in srgb,var(--violet) 45%,transparent);display:inline}
+.say::after{content:"";display:inline-block;width:.95em;height:.95em;margin-left:.3em;vertical-align:-.12em;background:var(--violet);-webkit-mask:var(--spk) center/contain no-repeat;mask:var(--spk) center/contain no-repeat}
+:root{--spk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 5 6 9H3v6h3l5 4z'/%3E%3Cpath d='M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13'/%3E%3C/svg%3E")}
+.say:hover{color:var(--violet)}
+input[type=text],textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:11px 13px;min-height:46px}
+textarea{min-height:120px;resize:vertical}
+input[type=text]:focus,textarea:focus{border-color:var(--violet);outline:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:.88rem;font-weight:700;color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--violet);background:var(--violet-soft);color:var(--violet)}
+.note{font-size:.88rem;color:var(--muted)}
+.tip{border-radius:12px;padding:10px 13px;font-size:.92rem;background:var(--amber-soft);color:var(--ink)}
+.tip b:first-child{color:var(--amber);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;margin-right:6px}
+.fb{border-radius:12px;padding:10px 13px;font-weight:700}
+.fb.ok{background:var(--ok-soft);color:var(--ok)}
+.fb.bad{background:var(--bad-soft);color:var(--bad)}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--violet);border-radius:99px;transition:width .4s}
+.hidden{display:none}
+
+/* today */
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:center}
+.hero h1{font-size:clamp(1.6rem,5vw,2.3rem);font-weight:800}
+.hero h1 em{font-style:normal;color:var(--violet)}
+.timeline{display:flex;align-items:center;gap:0;margin-top:14px}
+.timeline span{font-size:.68rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.timeline i{flex:1;height:3px;background:linear-gradient(90deg,var(--teal),var(--violet),var(--coral));margin:0 6px;border-radius:3px}
+.mission{display:flex;flex-direction:column;gap:10px}
+.task{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--card);text-align:left;width:100%}
+.task .check{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:transparent}
+.task.done .check{background:var(--ok);border-color:var(--ok);color:#fff}
+.task div{flex:1;min-width:0}
+.task b{display:block}
+.task small{color:var(--muted)}
+.task .count{font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted);font-size:.85rem}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{border-radius:12px;padding:8px 4px;text-align:center;background:var(--paper);border:1.5px solid var(--line);font-size:.75rem;min-width:0}
+.day b{display:block;font-family:var(--display);font-size:.95rem}
+.day.today{border-color:var(--violet)}
+.day.hit{background:var(--ok-soft);border-color:var(--ok)}
+.plan{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.plan div{display:flex;gap:10px;padding:7px 10px;border-radius:10px;font-size:.92rem}
+.plan div.now{background:var(--violet-soft);font-weight:700}
+.plan span{width:44px;flex:none;font-weight:700;color:var(--violet)}
+
+/* lessons */
+.lesson summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px}
+.lesson summary::-webkit-details-marker{display:none}
+.lesson .num{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);font-weight:800;flex:none;color:#fff}
+.lesson summary h2{font-size:1.15rem}
+.lesson summary small{color:var(--muted)}
+.lesson[open] summary{margin-bottom:14px}
+.lesson .body{display:flex;flex-direction:column;gap:14px}
+.lesson h3{font-size:1rem;color:var(--violet)}
+.forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.forms div{border-radius:12px;padding:10px;background:var(--paper);border:1px solid var(--line)}
+.forms b{display:block;font-family:var(--display);font-size:1.1rem}
+.forms small{color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--paper)}
+tr:last-child td{border-bottom:0}
+.bad-ex{color:var(--bad);text-decoration:line-through}
+.good-ex{color:var(--ok);font-weight:700}
+.sound{display:inline-block;padding:1px 8px;border-radius:99px;font-weight:700;font-size:.82rem}
+.s-t{background:var(--teal-soft);color:var(--teal)} .s-d{background:var(--violet-soft);color:var(--violet)} .s-id{background:var(--coral-soft);color:var(--coral)}
+.bubble-line{display:flex;gap:8px;align-items:flex-start}
+.bubble-line b{width:48px;flex:none;font-size:.8rem;padding-top:3px}
+
+/* flashcards */
+.flash{text-align:center;padding:26px 18px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.flash .base{font-family:var(--display);font-size:clamp(2.2rem,9vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+.flash .fr{color:var(--muted);font-style:italic}
+.flash .grp{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;max-width:460px}
+.three div{border-radius:12px;padding:10px 4px;background:var(--paper);border:1px solid var(--line);min-width:0}
+.three small{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.three b{font-family:var(--display);font-size:1.15rem;overflow-wrap:anywhere}
+.answer-row{display:flex;gap:8px;width:100%;max-width:460px}
+.answer-row input{flex:1;min-width:0;text-align:center;font-size:1.1rem}
+.boxes{display:flex;gap:4px;justify-content:center}
+.boxes i{width:22px;height:6px;border-radius:3px;background:var(--line)}
+.boxes i.on{background:var(--teal)}
+
+/* diff */
+.diff{line-height:2}
+.diff span{padding:2px 5px;border-radius:6px;margin-right:3px}
+.w-ok{background:var(--ok-soft);color:var(--ok)}
+.w-miss{background:var(--bad-soft);color:var(--bad);text-decoration:underline wavy}
+.w-extra{color:var(--muted);text-decoration:line-through}
+
+/* quiz */
+.qcard{display:flex;flex-direction:column;gap:14px}
+.qtext{font-size:1.2rem;font-weight:700}
+.qtext .blank{display:inline-block;min-width:70px;border-bottom:2px solid var(--violet);margin:0 4px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.opt{border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:12px;font-weight:700;text-align:left}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.setlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.set{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.set b{font-family:var(--display);font-size:1.02rem}
+.set small{color:var(--muted)}
+.set em{font-style:normal;font-size:.78rem;font-weight:700;color:var(--teal)}
+
+/* chat */
+.chat{display:flex;flex-direction:column;gap:10px;max-height:58vh;overflow-y:auto;padding:4px}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.t{background:var(--violet-soft);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.u{background:var(--teal-soft);align-self:flex-end;border-bottom-right-radius:4px}
+.msg .corr{display:block;background:var(--card);border-left:4px solid var(--coral);border-radius:8px;padding:6px 9px;margin-bottom:8px;font-size:.92rem}
+.msg .corr b{color:var(--coral)}
+.msg .astuce{display:block;font-size:.88rem;color:var(--muted);margin-bottom:8px}
+.msg .tools{display:flex;gap:6px;margin-top:6px}
+.msg .tools button{border:0;background:none;color:var(--violet);font-size:.8rem;font-weight:700;padding:2px 0}
+.composer{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{min-height:48px;height:48px;flex:1;min-width:0}
+.teacher{display:flex;gap:12px;align-items:center}
+.avatar{width:52px;height:52px;border-radius:16px;background:var(--violet);display:grid;place-items:center;flex:none;color:#fff;font-family:var(--display);font-weight:800;font-size:1.3rem}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-weight:700;z-index:20;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1}
+.settings{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:none;padding:6px 12px;font-weight:700;font-size:.85rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--violet);color:#fff}
+@media (max-width:520px){
+  .timeline i{margin:0 3px}
+  .stats .pill.xp{display:none}
+  .tab{font-size:.64rem}
+  .card{padding:15px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="logo">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="var(--violet)"/><path d="M10 12a8 8 0 1 1 -1 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M7 9v5h5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 13v5l3 2" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+      <div style="min-width:0"><b>Past Tense Coach</b><small>Anglais A1–A2 · 10 minutes par jour</small></div>
+    </div>
+    <div class="stats">
+      <span class="pill fire" title="Jours d'affilée"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2s5 5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 11 11c0-4 1-9 1-9z"/></svg><span id="streak">0</span></span>
+      <span class="pill xp"><span id="xp">0</span> XP</span>
+      <svg class="ring" viewBox="0 0 40 40" aria-label="Objectif du jour"><circle cx="20" cy="20" r="16" stroke="var(--line)"/><circle id="ringArc" cx="20" cy="20" r="16" stroke="var(--teal)" stroke-linecap="round" stroke-dasharray="100.5" stroke-dashoffset="100.5" transform="rotate(-90 20 20)" pathLength="100.5"/><text id="ringTxt" x="20" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">0%</text></svg>
+    </div>
+  </div>
+  <nav class="wrap tabs" role="tablist" id="tabs"></nav>
+</header>
+
+<main class="wrap" id="main"></main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ DATA (from "Past Tense Made Easy") ============ */
+const REG = `agree|agreed|d|être d'accord|We agreed on a plan.
+answer|answered|d|répondre|She answered the phone.
+arrive|arrived|d|arriver|We arrived late yesterday.
+ask|asked|t|demander|I asked a question in class.
+call|called|d|appeler|I called my mother last night.
+carry|carried|d|porter|He carried the heavy boxes.
+change|changed|d|changer|He changed his clothes.
+clean|cleaned|d|nettoyer|They cleaned the kitchen.
+close|closed|d|fermer|She closed the window.
+cook|cooked|t|cuisiner|My dad cooked dinner.
+cry|cried|d|pleurer|The baby cried all night.
+dance|danced|t|danser|We danced at the party.
+decide|decided|id|décider|I decided to stay home.
+enjoy|enjoyed|d|apprécier|We enjoyed the concert.
+finish|finished|t|finir|I finished work at six.
+fix|fixed|t|réparer|He fixed my bike.
+hate|hated|id|détester|I hated the noise.
+help|helped|t|aider|She helped me with my bag.
+hope|hoped|t|espérer|We hoped for good weather.
+invite|invited|id|inviter|They invited us to dinner.
+jump|jumped|t|sauter|The cat jumped on the table.
+learn|learned|d|apprendre|I learned to swim at six.
+like|liked|t|aimer (bien)|I liked the food.
+listen|listened|d|écouter|We listened to the radio.
+live|lived|d|habiter, vivre|He lived in Paris for a year.
+look|looked|t|regarder|She looked at the photo.
+love|loved|d|adorer|The children loved the zoo.
+miss|missed|t|rater, manquer|I missed the bus this morning.
+move|moved|d|déménager, bouger|They moved to a new flat.
+need|needed|id|avoir besoin de|I needed some help.
+open|opened|d|ouvrir|He opened the door.
+order|ordered|d|commander|We ordered a pizza.
+paint|painted|id|peindre|She painted her room blue.
+plan|planned|d|planifier|We planned our holiday.
+play|played|d|jouer|The kids played football.
+prefer|preferred|d|préférer|I preferred the red dress.
+rain|rained|d|pleuvoir|It rained all day.
+relax|relaxed|t|se détendre|We relaxed on the beach.
+remember|remembered|d|se souvenir|I remembered her name.
+rest|rested|id|se reposer|He rested after lunch.
+shop|shopped|t|faire les courses|We shopped at the market.
+smile|smiled|d|sourire|She smiled at me.
+start|started|id|commencer|The film started at eight.
+stay|stayed|d|rester, séjourner|We stayed at a small hotel.
+stop|stopped|t|arrêter|The car stopped at the light.
+study|studied|d|étudier|I studied English last year.
+talk|talked|t|parler, discuter|We talked for hours.
+thank|thanked|t|remercier|I thanked the waiter.
+travel|travelled|d|voyager|They travelled to Spain.
+try|tried|d|essayer|I tried a new recipe.
+turn|turned|d|tourner|She turned left at the bank.
+use|used|d|utiliser|I used my phone to pay.
+visit|visited|id|visiter, rendre visite|We visited our grandparents.
+wait|waited|id|attendre|I waited for the bus.
+walk|walked|t|marcher|We walked to school.
+want|wanted|id|vouloir|She wanted a coffee.
+wash|washed|t|laver|I washed the dishes.
+watch|watched|t|regarder (TV)|We watched a film last night.
+work|worked|t|travailler|He worked late on Friday.
+worry|worried|d|s'inquiéter|My mum worried about me.`;
+
+const IRR = `AAA|cost|cost|cost|coûter|The ticket cost ten euros.
+AAA|cut|cut|cut|couper|I cut the bread.
+AAA|hit|hit|hit|frapper|He hit the ball hard.
+AAA|hurt|hurt|hurt|blesser, faire mal|I hurt my leg yesterday.
+AAA|let|let|let|laisser|My boss let me leave early.
+AAA|put|put|put|mettre|She put the keys on the table.
+AAA|read|read|read|lire|I read a good book last week.
+AAA|set|set|set|régler, fixer|I set my alarm for 7 a.m.
+AAA|shut|shut|shut|fermer|He shut the door quietly.
+ABA|become|became|become|devenir|She became a doctor in 2020.
+ABA|come|came|come|venir|They came to my party.
+ABA|run|ran|run|courir|I ran in the park this morning.
+ABB|bring|brought|brought|apporter|She brought a cake.
+ABB|build|built|built|construire|They built a new school.
+ABB|buy|bought|bought|acheter|I bought some bread.
+ABB|catch|caught|caught|attraper|He caught the last train.
+ABB|feel|felt|felt|(se) sentir|I felt tired after work.
+ABB|find|found|found|trouver|I found my keys!
+ABB|get|got|got|obtenir, recevoir|I got a message from Sara.
+ABB|have|had|had|avoir|We had lunch at noon.
+ABB|hear|heard|heard|entendre|I heard a strange noise.
+ABB|hold|held|held|tenir|She held the baby.
+ABB|keep|kept|kept|garder|He kept the receipt.
+ABB|leave|left|left|partir, quitter|I left home at eight.
+ABB|lend|lent|lent|prêter|She lent me her pen.
+ABB|lose|lost|lost|perdre|I lost my wallet.
+ABB|make|made|made|faire, fabriquer|Mum made a chocolate cake.
+ABB|mean|meant|meant|vouloir dire|I meant to call you.
+ABB|meet|met|met|rencontrer|I met Tom at the café.
+ABB|pay|paid|paid|payer|We paid by card.
+ABB|say|said|said|dire|He said hello to everyone.
+ABB|sell|sold|sold|vendre|They sold their old car.
+ABB|send|sent|sent|envoyer|I sent you an email.
+ABB|sit|sat|sat|s'asseoir|We sat near the window.
+ABB|sleep|slept|slept|dormir|I slept for nine hours.
+ABB|spend|spent|spent|dépenser, passer (du temps)|We spent the day at the beach.
+ABB|stand|stood|stood|être debout|We stood in the queue.
+ABB|teach|taught|taught|enseigner|She taught me French.
+ABB|tell|told|told|raconter, dire|He told me a funny story.
+ABB|think|thought|thought|penser|I thought about you.
+ABB|understand|understood|understood|comprendre|I understood the lesson.
+ABB|win|won|won|gagner|Our team won the match.
+ABC|be|was / were|been|être|I was at home yesterday.
+ABC|begin|began|begun|commencer|The lesson began at nine.
+ABC|break|broke|broken|casser|I broke a glass.
+ABC|choose|chose|chosen|choisir|She chose the blue one.
+ABC|do|did|done|faire|I did my homework.
+ABC|draw|drew|drawn|dessiner|The child drew a cat.
+ABC|drink|drank|drunk|boire|We drank some mint tea.
+ABC|drive|drove|driven|conduire|He drove to work.
+ABC|eat|ate|eaten|manger|We ate pasta for dinner.
+ABC|fall|fell|fallen|tomber|The boy fell off his bike.
+ABC|fly|flew|flown|voler (en avion)|We flew to London.
+ABC|forget|forgot|forgotten|oublier|I forgot my umbrella.
+ABC|give|gave|given|donner|She gave me a present.
+ABC|go|went|gone|aller|We went to the cinema.
+ABC|grow|grew|grown|grandir, pousser|He grew up in a small town.
+ABC|hide|hid|hidden|cacher|The cat hid under the bed.
+ABC|know|knew|known|savoir, connaître|I knew the answer.
+ABC|ride|rode|ridden|aller à (vélo, cheval)|She rode her bike to school.
+ABC|ring|rang|rung|sonner|The phone rang twice.
+ABC|see|saw|seen|voir|I saw a great film.
+ABC|show|showed|shown|montrer|He showed me his photos.
+ABC|sing|sang|sung|chanter|They sang a song together.
+ABC|speak|spoke|spoken|parler|She spoke to the manager.
+ABC|swim|swam|swum|nager|We swam in the sea.
+ABC|take|took|taken|prendre|I took the bus to work.
+ABC|throw|threw|thrown|lancer, jeter|He threw the ball to me.
+ABC|wake|woke|woken|(se) réveiller|I woke up at six.
+ABC|wear|wore|worn|porter (vêtement)|She wore a red dress.
+ABC|write|wrote|written|écrire|I wrote a letter to my aunt.`;
+
+const VERBS = [
+  ...REG.split("\n").map(l=>{const [b,p,s,fr,ex]=l.split("|");return {b,p,pp:p,fr,ex,g:"REG",s}}),
+  ...IRR.split("\n").map(l=>{const [g,b,p,pp,fr,ex]=l.split("|");return {b,p,pp,fr,ex,g}})
+];
+const GROUP_LABEL={REG:"Régulier",AAA:"Irrégulier A–A–A",ABA:"Irrégulier A–B–A",ABB:"Irrégulier A–B–B",ABC:"Irrégulier A–B–C"};
+const GROUP_COLOR={REG:"var(--teal)",AAA:"var(--coral)",ABA:"var(--coral)",ABB:"var(--coral)",ABC:"var(--coral)"};
+
+const VOCAB = {
+ "Daily routine":"wake up=se réveiller;get up=se lever;have a shower=prendre une douche;get dressed=s'habiller;have breakfast=prendre le petit-déj.;go to work=aller au travail;have lunch=déjeuner;come home=rentrer;do the housework=faire le ménage;go to bed=aller se coucher",
+ "At home":"kitchen=cuisine;bedroom=chambre;bathroom=salle de bain;living room=salon;table=table;chair=chaise;bed=lit;fridge=réfrigérateur;window=fenêtre;key=clé",
+ "Food & drinks":"bread=pain;water=eau;coffee=café;tea=thé;milk=lait;egg=œuf;chicken=poulet;rice=riz;vegetables=légumes;cheese=fromage",
+ "In town":"shop=magasin;supermarket=supermarché;bank=banque;post office=la poste;pharmacy=pharmacie;hospital=hôpital;train station=gare;park=parc;library=bibliothèque;market=marché",
+ "Time words":"yesterday=hier;the day before yesterday=avant-hier;last night=hier soir;last week=la semaine dernière;ago=il y a;early=tôt;late=tard;then=ensuite;after that=après ça;finally=enfin",
+ "Weather":"sunny=ensoleillé;rainy=pluvieux;cloudy=nuageux;windy=venteux;hot=chaud;cold=froid;warm=doux, tiède;snow=neige;storm=orage, tempête;It was sunny.=Il faisait beau.",
+ "Family & people":"mother=mère;father=père;brother=frère;sister=sœur;parents=parents;husband=mari;wife=épouse;friend=ami(e);neighbour=voisin(e);colleague=collègue",
+ "Feelings":"happy=heureux;sad=triste;tired=fatigué;angry=en colère;bored=qui s'ennuie;excited=enthousiaste;worried=inquiet;surprised=surpris;hungry=avoir faim;thirsty=avoir soif",
+ "Transport":"car=voiture;bus=bus;train=train;plane=avion;bike=vélo;taxi=taxi;boat=bateau;on foot=à pied;by bus / by car=en bus / en voiture;ticket=billet"
+};
+const VOC = Object.entries(VOCAB).flatMap(([t,s])=>s.split(";").map(p=>{const [en,fr]=p.split("=");return {en,fr,t}}));
+
+const PHRASES = [
+ ["What did you do last weekend?","Qu'as-tu fait le week-end dernier ?"],
+ ["How was your day?","Comment s'est passée ta journée ?"],
+ ["It was great, OK, boring.","C'était super, bien, ennuyeux."],
+ ["I had a great time.","Je me suis bien amusé(e)."],
+ ["What happened?","Que s'est-il passé ?"],
+ ["I didn't have time.","Je n'ai pas eu le temps."],
+ ["I've just arrived.","Je viens d'arriver."],
+ ["Have you ever been to London?","Es-tu déjà allé(e) à Londres ?"],
+ ["I've never seen it.","Je ne l'ai jamais vu."],
+ ["It took me two hours.","Ça m'a pris deux heures."],
+ ["I used to live in Rabat.","Avant, j'habitais à Rabat."],
+ ["Long time no see!","Ça fait longtemps !"]
+];
+const DIALOGUE = [
+ ["Leila","Hi Omar! How was your weekend?"],
+ ["Omar","It was great, thanks! I went to Chefchaouen with my brother."],
+ ["Leila","Really? What did you do there?"],
+ ["Omar","We walked around the old town and took lots of photos."],
+ ["Leila","Did you stay in a hotel?"],
+ ["Omar","No, we didn't. We stayed with a friend. And you?"],
+ ["Leila","I stayed at home. I was tired, so I read a book and watched a film."]
+];
+const SARA = ["Last Saturday, Sara woke up at nine o'clock.","She had breakfast with her brother and then she went to the market.","She bought some fruit, bread and cheese.","In the afternoon, it rained, so she stayed at home and read a book.","In the evening, she met her friends at a restaurant.","They ate pizza and talked for hours.","Sara came home late, but she was very happy."];
+const STORY = ["First, I woke up late.","Then, I missed the bus.","After that, it started to rain.","Finally, I arrived at work at ten!"];
+
+/* ============ STATE ============ */
+const today = () => new Date().toLocaleDateString("en-CA");
+const GOAL = 100;
+let S = {xp:0,streak:0,lastDay:null,days:{},boxes:{},mission:{},settings:{accent:"gb",slow:false,autoRead:true},chat:[],scenario:"weekend",updatedAt:0};
+try{const raw=localStorage.getItem("ptc-state"); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+let dbDoc=null, saveTimer=null;
+function save(){
+  S.updatedAt=Date.now();
+  try{localStorage.setItem("ptc-state",JSON.stringify(S));}catch(e){}
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{ if(dbDoc) dbDoc.set(JSON.parse(JSON.stringify(S))).catch(()=>{}); },2500);
+}
+function mission(){const d=today(); if(!S.mission[d]) S.mission[d]={cards:0,listen:0,speak:0,write:0,chat:0}; return S.mission[d];}
+function addXP(n,kind){
+  const d=today();
+  if(S.lastDay!==d){
+    const y=new Date(); y.setDate(y.getDate()-1);
+    S.streak = (S.lastDay===y.toLocaleDateString("en-CA")) ? S.streak+1 : 1;
+    S.lastDay=d;
+  }
+  S.xp+=n; S.days[d]=(S.days[d]||0)+n;
+  if(kind){mission()[kind]=(mission()[kind]||0)+1;}
+  const before=(S.days[d]-n), after=S.days[d];
+  if(before<GOAL && after>=GOAL) toast("Objectif du jour atteint. Great job!");
+  save(); renderStats();
+}
+function renderStats(){
+  const d=today(); const streakAlive = S.lastDay===d || (()=>{const y=new Date();y.setDate(y.getDate()-1);return S.lastDay===y.toLocaleDateString("en-CA")})();
+  $("#streak").textContent = streakAlive?S.streak:0;
+  $("#xp").textContent=S.xp;
+  const p=Math.min(1,(S.days[d]||0)/GOAL);
+  $("#ringArc").setAttribute("stroke-dashoffset",(100.5*(1-p)).toFixed(1));
+  $("#ringTxt").textContent=Math.round(p*100)+"%";
+}
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=(a,n)=>shuffle(a).slice(0,n);
+const SAY=t=>`<span class="say" tabindex="0" role="button" data-say="${esc(t)}">${esc(t)}</span>`;
+let toastT; function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600);}
+const CONTR={"didn't":"did not","wasn't":"was not","weren't":"were not","haven't":"have not","hasn't":"has not","don't":"do not","doesn't":"does not","i've":"i have","i'm":"i am","it's":"it is","we've":"we have","they've":"they have","you've":"you have","she's":"she has","he's":"he has","couldn't":"could not","can't":"cannot"};
+function norm(s){
+  s=String(s).toLowerCase().replace(/[’‘`]/g,"'").replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," ").trim();
+  return s.split(" ").map(w=>CONTR[w]||w).join(" ").replace(/\b(\d+)\b/g,m=>m);
+}
+const NUMW={"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine","10":"ten","12":"twelve"};
+const words=s=>norm(s).split(" ").filter(Boolean).map(w=>NUMW[w]||w);
+function diffWords(target,said){
+  const a=words(target), b=words(said);
+  const dp=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=a.length-1;i>=0;i--)for(let j=b.length-1;j>=0;j--) dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  let i=0,j=0,out=[];
+  while(i<a.length||j<b.length){
+    if(i<a.length&&j<b.length&&a[i]===b[j]){out.push(["ok",a[i]]);i++;j++;}
+    else if(j<b.length&&(i>=a.length||dp[i][j+1]>=dp[i+1][j])){out.push(["extra",b[j]]);j++;}
+    else {out.push(["miss",a[i]]);i++;}
+  }
+  const score=a.length?dp[0][0]/Math.max(a.length,b.length):0;
+  return {html:`<div class="diff">${out.map(([k,w])=>`<span class="w-${k}">${esc(w)}</span>`).join("")}</div>`,score};
+}
+
+/* ============ VOICE: listen (TTS) ============ */
+let voices=[];
+function loadVoices(){try{voices=speechSynthesis.getVoices()}catch(e){}}
+if("speechSynthesis" in window){loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}
+function pickVoice(alt){
+  const pref=S.settings.accent==="us"?"en-US":"en-GB";
+  let vs=voices.filter(v=>v.lang.replace("_","-")===pref);
+  if(!vs.length) vs=voices.filter(v=>/^en/i.test(v.lang));
+  if(!vs.length) return null;
+  return vs[alt?Math.min(1,vs.length-1):0];
+}
+function utter(text,opt={}){
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=S.settings.accent==="us"?"en-US":"en-GB";
+  const v=pickVoice(opt.alt); if(v) u.voice=v;
+  u.rate=opt.rate ?? (S.settings.slow?0.72:0.92);
+  if(opt.alt) u.pitch=1.3;
+  if(opt.onend) u.onend=opt.onend;
+  return u;
+}
+function say(text,opt={}){
+  if(!("speechSynthesis" in window)){toast("Ton navigateur ne peut pas lire l'audio.");return;}
+  speechSynthesis.cancel(); speechSynthesis.speak(utter(text,opt));
+}
+function sayQueue(items){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  items.forEach(([t,alt])=>speechSynthesis.speak(utter(t,{alt})));
+}
+document.addEventListener("click",e=>{const s=e.target.closest("[data-say]"); if(s){say(s.dataset.say); s.dataset.heard||(s.dataset.heard=1);}});
+document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches?.(".say")){e.preventDefault();say(e.target.dataset.say);}});
+
+/* ============ VOICE: speak (speech recognition, with fallback) ============ */
+let srBlocked=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const MIC_HELP="Le micro direct n'est pas disponible ici. Astuce : touche le bouton micro de ton clavier (téléphone) pour dicter en anglais, puis valide.";
+function micButton(target,onDone){
+  const b=document.createElement("button");
+  b.type="button"; b.className="icon-btn"; b.title="Parler (micro)"; b.setAttribute("aria-label","Parler");
+  b.innerHTML=ICON.mic;
+  let rec=null;
+  b.onclick=()=>{
+    if(rec){rec.stop();return;}
+    if(!SR||srBlocked){toast(MIC_HELP);target.focus();return;}
+    try{
+      rec=new SR(); rec.lang=S.settings.accent==="us"?"en-US":"en-GB"; rec.interimResults=true; rec.continuous=false;
+      let got="";
+      rec.onresult=e=>{got="";for(const r of e.results) got+=r[0].transcript; target.value=got; target.dispatchEvent(new Event("input"));};
+      rec.onerror=e=>{ if(["not-allowed","service-not-allowed","audio-capture","network"].includes(e.error)){srBlocked=true;toast(MIC_HELP);target.focus();} };
+      rec.onend=()=>{b.classList.remove("live");rec=null; if(got&&onDone) onDone(got);};
+      b.classList.add("live"); rec.start();
+    }catch(err){srBlocked=true;b.classList.remove("live");rec=null;toast(MIC_HELP);target.focus();}
+  };
+  return b;
+}
+
+/* ============ ICONS ============ */
+const I=(p)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON={
+  today:I('<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18M9 15l2 2 4-4"/>'),
+  lessons:I('<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 7h6"/>'),
+  verbs:I('<rect x="3" y="6" width="14" height="14" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/>'),
+  listen:I('<path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/><rect x="17" y="14" width="5" height="7" rx="2"/>'),
+  speak:I('<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>'),
+  write:I('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>'),
+  prof:I('<path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/>'),
+  mic:I('<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>'),
+  play:I('<path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>'),
+  send:I('<path d="M4 12 20 4l-6 16-3-7z"/>'),
+  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>'
+};
+
+/* ============ TABS ============ */
+const TABS=[["today","Jour"],["lessons","Leçons"],["verbs","Verbes"],["listen","Écouter"],["speak","Parler"],["write","Écrire"],["prof","Prof IA"]];
+let current="today";
+function renderTabs(){
+  $("#tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" id="tab-${k}" aria-selected="${k===current}" data-tab="${k}">${ICON[k]}<span>${l}</span></button>`).join("");
+}
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]"); if(b) go(b.dataset.tab);});
+function go(k,arg){
+  current=k; renderTabs();
+  try{speechSynthesis.cancel()}catch(e){}
+  VIEWS[k](arg); window.scrollTo({top:0});
+  try{localStorage.setItem("ptc-tab",k)}catch(e){}
+}
+
+/* ============ VIEW: TODAY ============ */
+const PLAN=[["Lun","Leçons 1–2 + exercices 1, 3, 4"],["Mar","Verbes réguliers 1–30"],["Mer","Verbes réguliers 31–60 + sons -ed"],["Jeu","Irréguliers : AAA, ABA, ABB"],["Ven","Irréguliers : ABC + exercices 2, 5"],["Sam","Leçon 3 + vocabulaire"],["Dim","Expressions + histoire de Sara"]];
+function vToday(){
+  const m=mission(); const dow=(new Date().getDay()+6)%7;
+  const tasks=[
+    ["cards",10,"10 cartes de verbes","Apprends 10 verbes du jour","verbs"],
+    ["listen",3,"3 dictées","Écoute et écris ce que tu entends","listen"],
+    ["speak",3,"3 phrases à voix haute","Répète comme un perroquet","speak"],
+    ["chat",3,"3 messages au prof IA","Raconte ta journée au passé","prof"]
+  ];
+  const week=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));const k=d.toLocaleDateString("en-CA");return {k,l:d.toLocaleDateString("fr-FR",{weekday:"short"}).slice(0,3),x:S.days[k]||0,t:i===6}});
+  $("#main").innerHTML=`<section class="view">
+    <div class="card hero">
+      <div>
+        <span class="eyebrow">Mission du jour · ${new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</span>
+        <h1 style="margin-top:6px">Yesterday, I <em>learned</em> English.</h1>
+        <p class="lead">Dix minutes par jour valent mieux que deux heures une fois par semaine. Fais les 4 missions et gagne ${GOAL} XP.</p>
+        <div class="timeline"><span>last year</span><i></i><span>last week</span><i></i><span>yesterday</span><i></i><span style="color:var(--coral)">NOW</span></div>
+      </div>
+    </div>
+    <div class="card mission">
+      ${tasks.map(([k,n,t,s,tab])=>{const c=Math.min(n,m[k]||0);return `<button class="task ${c>=n?"done":""}" data-go="${tab}"><span class="check">${ICON.check}</span><div><b>${t}</b><small>${s}</small></div><span class="count">${c}/${n}</span></button>`}).join("")}
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <span class="eyebrow">Ta semaine</span>
+        <div class="week" style="margin-top:10px">${week.map(d=>`<div class="day ${d.t?"today":""} ${d.x>=GOAL?"hit":""}"><span>${d.l}</span><b>${d.x}</b></div>`).join("")}</div>
+        <p class="note" style="margin:10px 0 0">XP gagnés par jour. Vert = objectif atteint.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Plan de révision (7 jours)</span>
+        <div class="plan">${PLAN.map(([d,t],i)=>`<div class="${i===dow?"now":""}"><span>${d}</span>${t}</div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="card settings">
+      <span class="eyebrow">Voix</span>
+      <div class="seg" role="group" aria-label="Accent"><button data-acc="gb" aria-pressed="${S.settings.accent==="gb"}">UK</button><button data-acc="us" aria-pressed="${S.settings.accent==="us"}">US</button></div>
+      <div class="seg" role="group" aria-label="Vitesse"><button data-slow="0" aria-pressed="${!S.settings.slow}">Normal</button><button data-slow="1" aria-pressed="${S.settings.slow}">Lent</button></div>
+      <button class="btn sm soft" data-say="Hello! Yesterday I went to the market and I bought some bread.">Tester la voix</button>
+    </div>
+  </section>`;
+  $("#main").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+  $("#main").querySelectorAll("[data-acc]").forEach(b=>b.onclick=()=>{S.settings.accent=b.dataset.acc;save();vToday();});
+  $("#main").querySelectorAll("[data-slow]").forEach(b=>b.onclick=()=>{S.settings.slow=b.dataset.slow==="1";save();vToday();});
+}
+
+/* ============ VIEW: LESSONS ============ */
+function vLessons(){
+  const L=(n,color,title,sub,body,open)=>`<details class="card lesson" ${open?"open":""}><summary><span class="num" style="background:${color}">${n}</span><div><h2>${title}</h2><small>${sub}</small></div></summary><div class="body">${body}</div></details>`;
+  $("#main").innerHTML=`<section class="view">
+  <div class="card"><span class="eyebrow">Leçons courtes</span><h1 style="font-size:1.6rem;margin-top:4px">Lis, écoute, répète.</h1><p class="lead">Touche une phrase soulignée pour l'entendre. Répète-la à voix haute juste après.</p></div>
+  ${L(0,"var(--ink)","Les 3 formes du verbe","Base form · Past simple · Past participle",`
+    <div class="forms"><div><small>1. Base form</small><b>go · play</b><small>${SAY("I play tennis.")}</small></div><div><small>2. Past simple</small><b>went · played</b><small>${SAY("I played tennis yesterday.")}</small></div><div><small>3. Past participle</small><b>gone · played</b><small>${SAY("I have played tennis.")}</small></div></div>
+    <div class="tip"><b>Régulier</b>On ajoute <b>-ed</b> : work → worked → worked. La plupart des verbes sont réguliers.</div>
+    <div class="tip" style="background:var(--coral-soft)"><b style="color:var(--coral)">Irrégulier</b>Pas de règle, on apprend par cœur : go → went → gone. Va dans l'onglet Verbes.</div>`,true)}
+  ${L(1,"var(--violet)","Past simple : verbes réguliers","Le prétérit — même forme pour tout le monde",`
+    <p style="margin:0">Pour une action <b>commencée et finie dans le passé</b>, souvent avec un mot de temps : ${SAY("I worked yesterday.")} · ${SAY("She visited Rabat last week.")}</p>
+    <div class="tip"><b>FR</b>En français, c'est souvent le passé composé (j'ai travaillé) ou l'imparfait.</div>
+    <h3>Pas de -s avec he / she / it</h3>
+    <p style="margin:0">I worked · You worked · <b>She worked</b> · We worked · They worked</p>
+    <h3>Orthographe du -ed</h3>
+    <div class="tbl"><table><tr><th>Règle</th><th>Exemples</th></tr>
+      <tr><td>La plupart : + ed</td><td>work → worked · play → played</td></tr>
+      <tr><td>Finit par -e : + d</td><td>live → lived · dance → danced</td></tr>
+      <tr><td>Consonne + y → ied</td><td>study → studied · cry → cried</td></tr>
+      <tr><td>Voyelle + y : + ed</td><td>play → played · enjoy → enjoyed</td></tr>
+      <tr><td>Court CVC : double</td><td>stop → stopped · plan → planned</td></tr>
+      <tr><td>Accent à la fin : double</td><td>prefer → preferred · travel → travelled (UK)</td></tr></table></div>
+    <h3>Prononcer -ed : 3 sons</h3>
+    <div class="forms">
+      <div><span class="sound s-t">/t/</span><small> après p, k, s, sh, ch, f</small><br>${SAY("walked")} · ${SAY("stopped")} · ${SAY("watched")}</div>
+      <div><span class="sound s-d">/d/</span><small> après sons voisés</small><br>${SAY("played")} · ${SAY("called")} · ${SAY("opened")}</div>
+      <div><span class="sound s-id">/ɪd/</span><small> après t ou d</small><br>${SAY("wanted")} · ${SAY("needed")} · ${SAY("visited")}</div>
+    </div>
+    <div class="tip" style="background:var(--coral-soft)"><b style="color:var(--coral)">Attention</b>Dis <b>worked</b> en UNE syllabe (« workt »), pas « work-ED ». Seulement après t ou d : want-ed, need-ed.</div>
+    <h3>Mots du passé</h3>
+    <div class="chips">${["yesterday","yesterday morning","last night","last week","last month","last year","two days ago","an hour ago","in 2019","this morning","when I was a child","on Monday"].map(w=>`<span class="chip" data-say="${w}">${w}</span>`).join("")}</div>`)}
+  ${L(2,"var(--coral)","Négations, questions, was / were","Le mot magique : DID",`
+    <p style="margin:0">Avec <b>did / didn't</b>, le verbe revient à sa <b>forme de base</b>.</p>
+    <div class="tbl"><table><tr><th>+ Affirmatif</th><th>– Négatif</th><th>? Question</th></tr>
+      <tr><td>${SAY("I played tennis.")}</td><td>${SAY("I didn't play tennis.")}</td><td>${SAY("Did you play tennis?")}</td></tr>
+      <tr><td>${SAY("She went home.")}</td><td>${SAY("She didn't go home.")}</td><td>${SAY("Did she go home?")}</td></tr>
+      <tr><td>${SAY("They ate pizza.")}</td><td>${SAY("They didn't eat pizza.")}</td><td>${SAY("Did they eat pizza?")}</td></tr></table></div>
+    <h3>Questions Wh-</h3>
+    <p style="margin:0;display:flex;flex-direction:column;gap:4px">${["What did you do last weekend?","Where did you go on holiday?","When did she arrive?","Who did you meet at the party?","Why did they leave early?","How did you get here?"].map(SAY).join("")}</p>
+    <h3>Le verbe être : was / were</h3>
+    <div class="tbl"><table><tr><th></th><th>+</th><th>–</th><th>?</th></tr><tr><td>I / He / She / It</td><td>was</td><td>wasn't</td><td>Was he…?</td></tr><tr><td>You / We / They</td><td>were</td><td>weren't</td><td>Were you…?</td></tr></table></div>
+    <p style="margin:0">${SAY("I was at home.")} · ${SAY("They weren't happy.")} · ${SAY("Was it cold?")} · ${SAY("There were two dogs.")}</p>
+    <div class="tip"><b>Règle</b>Jamais <b>did</b> avec was / were.</div>
+    <h3>Top 6 des erreurs</h3>
+    <div class="tbl"><table>
+      <tr><td class="bad-ex">I didn't went to school.</td><td class="good-ex">I didn't go to school.</td></tr>
+      <tr><td class="bad-ex">He goed home.</td><td class="good-ex">He went home.</td></tr>
+      <tr><td class="bad-ex">I have seen him yesterday.</td><td class="good-ex">I saw him yesterday.</td></tr>
+      <tr><td class="bad-ex">Did you saw the film?</td><td class="good-ex">Did you see the film?</td></tr>
+      <tr><td class="bad-ex">Did you were tired?</td><td class="good-ex">Were you tired?</td></tr>
+      <tr><td class="bad-ex">We was at the beach.</td><td class="good-ex">We were at the beach.</td></tr></table></div>
+    <div class="tip"><b>Francophones</b>« J'ai vu Tom hier » = ${SAY("I saw Tom yesterday.")} Avec un temps fini (yesterday, last week, ago), toujours le past simple.</div>`)}
+  ${L(3,"var(--teal)","Participe passé & present perfect","have / has + participe",`
+    <p style="margin:0">${SAY("I have visited Marrakech.")} · ${SAY("She has bought a car.")} · ${SAY("Have you eaten?")}</p>
+    <div class="forms">
+      <div><b style="font-size:.95rem">Expérience de vie</b>${SAY("Have you ever been to London?")}<br>${SAY("I've never eaten sushi.")}</div>
+      <div><b style="font-size:.95rem">Très récent</b>${SAY("I've just finished my homework.")}<br><small>= Je viens de finir…</small></div>
+      <div><b style="font-size:.95rem">Du passé à maintenant</b>${SAY("I've lived here for five years.")}<br>${SAY("She's worked here since 2020.")}</div>
+    </div>
+    <div class="tbl"><table><tr><th>Past simple</th><th>Present perfect</th></tr>
+      <tr><td>Temps fini, on sait <b>quand</b> : yesterday, last week, in 2019, ago</td><td>Pas de temps / pas fini : ever, never, just, already, yet, for, since</td></tr>
+      <tr><td>${SAY("I saw that film last Friday.")}</td><td>${SAY("I have seen that film.")}</td></tr></table></div>
+    <div class="tip"><b>FR → EN</b>« J'ai mangé » = I ate (à midi, temps fini) OU I have eaten (pas de temps). Demande-toi : y a-t-il un moment fini ?</div>`)}
+  ${L(4,"var(--amber)","Expressions & dialogue","Parler du passé dans la vie réelle",`
+    <div class="tbl"><table>${PHRASES.map(([e,f])=>`<tr><td>${SAY(e)}</td><td class="note">${f}</td></tr>`).join("")}</table></div>
+    <h3>Dialogue : « How was your weekend? »</h3>
+    <div style="display:flex;flex-direction:column;gap:6px">${DIALOGUE.map(([w,t])=>`<div class="bubble-line"><b style="color:${w==="Leila"?"var(--coral)":"var(--violet)"}">${w}</b><span>${SAY(t)}</span></div>`).join("")}</div>
+    <div class="row"><button class="btn sm" id="playDialog">${ICON.play} Écouter tout le dialogue</button></div>
+    <h3>Raconter une histoire</h3>
+    <p style="margin:0">${STORY.map(SAY).join(" ")}</p>
+    <div class="chips">${["First,","Then,","After that,","Next,","Suddenly,","Finally,"].map(w=>`<span class="chip">${w}</span>`).join("")}</div>
+    <h3>Faux amis</h3>
+    <div class="tbl"><table><tr><td><b>library</b> = bibliothèque</td><td class="note">librairie = bookshop</td></tr><tr><td><b>actually</b> = en fait</td><td class="note">actuellement = currently</td></tr><tr><td><b>eventually</b> = finalement</td><td class="note">éventuellement = possibly</td></tr><tr><td><b>to attend</b> = assister à</td><td class="note">attendre = to wait</td></tr><tr><td><b>journey</b> = voyage, trajet</td><td class="note">journée = day</td></tr><tr><td><b>sensible</b> = raisonnable</td><td class="note">sensible = sensitive</td></tr></table></div>`)}
+  </section>`;
+  $("#playDialog").onclick=()=>sayQueue(DIALOGUE.map(([w,t])=>[t,w==="Leila"]));
+}
+
+/* ============ VIEW: VERBS (flashcards, Leitner boxes) ============ */
+let fc={filter:"ALL",queue:[],i:0,shown:false,done:0};
+function dueQueue(){
+  const pool=VERBS.filter(v=>fc.filter==="ALL"||(fc.filter==="IRR"?v.g!=="REG":v.g===fc.filter));
+  return shuffle(pool).sort((a,b)=>(S.boxes[a.b]||0)-(S.boxes[b.b]||0)).slice(0,10);
+}
+function vVerbs(){
+  if(!fc.queue.length||fc.i>=fc.queue.length){fc.queue=dueQueue();fc.i=0;fc.done=0;}
+  const known=VERBS.filter(v=>(S.boxes[v.b]||0)>=3).length;
+  const F=[["ALL","Tous"],["REG","Réguliers"],["IRR","Irréguliers"],["AAA","A–A–A"],["ABA","A–B–A"],["ABB","A–B–B"],["ABC","A–B–C"]];
+  $("#main").innerHTML=`<section class="view">
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><div><span class="eyebrow">131 verbes du livre</span><h1 style="font-size:1.5rem;margin-top:4px">Cartes mémoire</h1></div><span class="pill xp">${known}/131 maîtrisés</span></div>
+      <div class="bar" style="margin-top:10px"><i style="width:${known/131*100}%"></i></div>
+      <div class="chips" style="margin-top:12px">${F.map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${fc.filter===k}">${l}</button>`).join("")}</div>
+    </div>
+    <div class="card flash" id="flash"></div>
+    <details class="card"><summary style="cursor:pointer;font-weight:700">Voir la liste complète des verbes</summary>
+      <input type="text" id="vsearch" placeholder="Chercher (anglais ou français)…" style="margin:12px 0">
+      <div class="tbl"><table><thead><tr><th>Base</th><th>Past</th><th>Participle</th><th>Français</th></tr></thead><tbody id="vlist"></tbody></table></div>
+    </details>
+    <div class="tip"><b>Astuce</b>Dis les 3 formes comme une chanson : go – went – gone ! Familles qui riment : bought · brought · thought · caught · taught.</div>
+  </section>`;
+  $("#main").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{fc.filter=b.dataset.f;fc.queue=[];vVerbs();});
+  const list=q=>{q=(q||"").toLowerCase();$("#vlist").innerHTML=VERBS.filter(v=>!q||(v.b+v.p+v.pp+v.fr).toLowerCase().includes(q)).map(v=>`<tr><td><b>${SAY(v.b)}</b></td><td style="color:${GROUP_COLOR[v.g]}">${esc(v.p)}</td><td>${esc(v.pp)}</td><td class="note">${esc(v.fr)}</td></tr>`).join("");};
+  list(); $("#vsearch").oninput=e=>list(e.target.value);
+  drawCard();
+}
+function drawCard(){
+  const el=$("#flash");
+  if(fc.i>=fc.queue.length){
+    el.innerHTML=`<span class="eyebrow">Série terminée</span><div class="base">Well done!</div><p class="lead">Tu as revu ${fc.queue.length} verbes. Une nouvelle série choisit d'abord ceux que tu connais le moins.</p><button class="btn" id="again">Nouvelle série</button>`;
+    $("#again").onclick=()=>{fc.queue=[];vVerbs();}; return;
+  }
+  const v=fc.queue[fc.i], box=S.boxes[v.b]||0, irr=v.g!=="REG";
+  el.innerHTML=`<div class="row" style="justify-content:space-between;width:100%"><span class="grp" style="color:${GROUP_COLOR[v.g]}">${GROUP_LABEL[v.g]}</span><span class="note">${fc.i+1} / ${fc.queue.length}</span></div>
+    <div class="base"><span class="say" data-say="${esc(v.b)}">${esc(v.b)}</span></div>
+    <div class="fr">${esc(v.fr)}</div>
+    <div class="boxes" title="Niveau de mémoire">${[0,1,2,3,4].map(n=>`<i class="${n<box?"on":""}"></i>`).join("")}</div>
+    <label for="fcIn" class="note">Écris le <b>past simple</b>${irr?" puis le <b>participe</b> (ex : went gone)":""} :</label>
+    <div class="answer-row"><input type="text" id="fcIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${irr?"went gone":"worked"}"><span id="fcMic"></span><button class="btn" id="fcGo">OK</button></div>
+    <div id="fcOut" style="width:100%;display:flex;flex-direction:column;gap:10px;align-items:center"></div>`;
+  $("#fcMic").replaceWith(micButton($("#fcIn")));
+  const inp=$("#fcIn"); inp.focus({preventScroll:true});
+  const check=()=>{
+    const ans=norm(inp.value).split(" ").filter(Boolean);
+    const pOK=v.p.split(" / ").some(x=>ans.includes(x));
+    const ppOK=!irr||ans.includes(v.pp)||(v.pp===v.p&&ans.length===1&&pOK);
+    const ok=pOK&&ppOK;
+    S.boxes[v.b]=ok?Math.min(5,box+1):Math.max(0,box-1);
+    addXP(ok?5:1,"cards");
+    $("#fcOut").innerHTML=`<div class="fb ${ok?"ok":"bad"}" style="width:100%;max-width:460px">${ok?"Correct !":"Presque… regarde bien :"}</div>
+      <div class="three"><div><small>Base</small><b>${esc(v.b)}</b></div><div><small>Past</small><b style="color:var(--coral)">${esc(v.p)}</b></div><div><small>Participle</small><b style="color:var(--violet)">${esc(v.pp)}</b></div></div>
+      <div>${SAY(`${v.b}, ${v.p.replace(" / ",", ")}, ${v.pp}`)}</div>
+      <div style="font-size:1.05rem">${SAY(v.ex)}</div>
+      <button class="btn" id="fcNext">Suivant</button>`;
+    say(`${v.b}. ${v.p.replace(" / "," or ")}. ${v.pp}. ${v.ex}`);
+    $("#fcGo").disabled=true; inp.disabled=true;
+    $("#fcNext").onclick=()=>{fc.i++;drawCard();}; $("#fcNext").focus({preventScroll:true});
+  };
+  $("#fcGo").onclick=check; inp.onkeydown=e=>{if(e.key==="Enter"&&!inp.disabled)check();};
+}
+
+/* ============ VIEW: LISTEN (dictation + Sara's story) ============ */
+let dict={mode:"short",cur:null,tries:0};
+function nextDict(){
+  dict.tries=0;
+  dict.cur = dict.mode==="short" ? pick(VERBS,1)[0].ex : dict.mode==="phr" ? pick(PHRASES,1)[0][0] : pick(SARA,1)[0];
+}
+function vListen(){
+  if(!dict.cur) nextDict();
+  $("#main").innerHTML=`<section class="view">
+    <div class="card"><span class="eyebrow">Dictée</span><h1 style="font-size:1.5rem;margin-top:4px">Écoute, puis écris.</h1>
+      <div class="chips" style="margin-top:10px">${[["short","Phrases courtes"],["phr","Expressions"],["sara","Histoire de Sara"]].map(([k,l])=>`<button class="chip" data-m="${k}" aria-pressed="${dict.mode===k}">${l}</button>`).join("")}</div></div>
+    <div class="card qcard">
+      <div class="row"><button class="btn" id="dPlay">${ICON.play} Écouter</button><button class="btn ghost" id="dSlow">Lentement</button><span class="note" id="dHint">${words(dict.cur).length} mots</span></div>
+      <input type="text" id="dIn" autocomplete="off" spellcheck="false" placeholder="Écris ce que tu entends…">
+      <div class="row"><button class="btn teal" id="dCheck">Vérifier</button><button class="btn ghost" id="dSkip">Autre phrase</button></div>
+      <div id="dOut"></div>
+    </div>
+    <div class="card">
+      <span class="eyebrow">Compréhension</span><h2 style="font-size:1.2rem;margin-top:4px">L'histoire de Sara</h2>
+      <p class="lead">Écoute l'histoire sans lire. Ensuite, réponds aux questions.</p>
+      <div class="row" style="margin-top:10px"><button class="btn" id="saraPlay">${ICON.play} Écouter l'histoire</button><button class="btn ghost" id="saraShow">Afficher le texte</button></div>
+      <p id="saraTxt" class="hidden" style="margin:12px 0 0">${SARA.map(SAY).join(" ")}</p>
+      <div id="saraQ" style="margin-top:14px"></div>
+    </div>
+  </section>`;
+  $("#main").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{dict.mode=b.dataset.m;nextDict();vListen();});
+  $("#dPlay").onclick=()=>say(dict.cur);
+  $("#dSlow").onclick=()=>say(dict.cur,{rate:.6});
+  $("#dSkip").onclick=()=>{nextDict();vListen();setTimeout(()=>say(dict.cur),150);};
+  const check=()=>{
+    const {html,score}=diffWords(dict.cur,$("#dIn").value); dict.tries++;
+    const perfect=score>=0.999;
+    if(perfect||dict.tries>=2){ addXP(perfect?15:5,"listen"); }
+    $("#dOut").innerHTML=`<div class="fb ${perfect?"ok":"bad"}">${perfect?"Parfait ! +15 XP":score>.7?"Très proche ! Les mots en rouge manquent.":"Réécoute et essaie encore."}</div>${html}
+      ${perfect||dict.tries>=2?`<p style="margin:10px 0 0">Phrase : ${SAY(dict.cur)}</p><button class="btn" id="dNext" style="margin-top:10px">Phrase suivante</button>`:""}`;
+    const n=$("#dNext"); if(n) n.onclick=()=>{nextDict();vListen();setTimeout(()=>say(dict.cur),150);};
+  };
+  $("#dCheck").onclick=check; $("#dIn").onkeydown=e=>{if(e.key==="Enter")check();};
+  $("#saraPlay").onclick=()=>say(SARA.join(" "),{rate:S.settings.slow?.72:.85});
+  $("#saraShow").onclick=()=>$("#saraTxt").classList.toggle("hidden");
+  runQuiz($("#saraQ"),SETS.find(s=>s.id==="sara"),{compact:true});
+}
+
+/* ============ VIEW: SPEAK (shadowing) ============ */
+let sp={src:"phr",cur:null};
+function nextSpeak(){
+  sp.cur = sp.src==="phr" ? pick(PHRASES,1)[0][0] : sp.src==="dlg" ? pick(DIALOGUE,1)[0][1] : sp.src==="ed" ? pick(VERBS.filter(v=>v.g==="REG"),1)[0].ex : pick(VERBS.filter(v=>v.g!=="REG"),1)[0].ex;
+}
+function vSpeak(){
+  if(!sp.cur) nextSpeak();
+  $("#main").innerHTML=`<section class="view">
+    <div class="card"><span class="eyebrow">Parler</span><h1 style="font-size:1.5rem;margin-top:4px">Écoute. Répète. Compare.</h1>
+      <p class="lead">Écoute la phrase, puis dis-la à voix haute. Ta phrase s'affiche et on compare mot par mot.</p>
+      <div class="chips" style="margin-top:10px">${[["phr","Expressions"],["dlg","Dialogue"],["ed","Sons -ed"],["irr","Irréguliers"]].map(([k,l])=>`<button class="chip" data-s="${k}" aria-pressed="${sp.src===k}">${l}</button>`).join("")}</div></div>
+    <div class="card qcard" style="text-align:center;align-items:center">
+      <div class="qtext" style="font-size:1.45rem;font-family:var(--display)">${esc(sp.cur)}</div>
+      <div class="row" style="justify-content:center"><button class="btn soft" id="sPlay">${ICON.play} Écouter</button><button class="btn ghost" id="sSlow">Lentement</button></div>
+      <div class="answer-row" style="max-width:560px"><input type="text" id="sIn" placeholder="Parle (micro) ou dicte avec ton clavier…"><span id="sMic"></span></div>
+      <div class="row" style="justify-content:center"><button class="btn coral" id="sCheck">Comparer</button><button class="btn ghost" id="sNext">Autre phrase</button></div>
+      <div id="sOut" style="width:100%"></div>
+      <p class="note" style="margin:0">Le micro ne marche pas ? Sur téléphone, touche le micro du clavier et parle en anglais.</p>
+    </div>
+    <div class="card"><span class="eyebrow">Défi oral</span><h2 style="font-size:1.15rem;margin-top:4px">Raconte ta journée d'hier au prof IA</h2>
+      <p class="lead">Utilise First, Then, After that, Finally et au moins 3 verbes irréguliers.</p>
+      <button class="btn" style="margin-top:10px" id="toProf">${ICON.prof} Parler au prof</button></div>
+  </section>`;
+  $("#main").querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{sp.src=b.dataset.s;nextSpeak();vSpeak();});
+  $("#sPlay").onclick=()=>say(sp.cur); $("#sSlow").onclick=()=>say(sp.cur,{rate:.6});
+  $("#sNext").onclick=()=>{nextSpeak();vSpeak();};
+  $("#toProf").onclick=()=>{S.scenario="yesterday";go("prof");};
+  const check=()=>{
+    const {html,score}=diffWords(sp.cur,$("#sIn").value); const pct=Math.round(score*100);
+    if(!$("#sIn").value.trim()) return;
+    addXP(pct>=80?20:5,"speak");
+    $("#sOut").innerHTML=`<div class="fb ${pct>=80?"ok":"bad"}">${pct>=80?`Excellent ! ${pct}% · +20 XP`:`${pct}% — réécoute et réessaie.`}</div>${html}`;
+  };
+  $("#sMic").replaceWith(micButton($("#sIn"),check));
+  $("#sCheck").onclick=check; $("#sIn").onkeydown=e=>{if(e.key==="Enter")check();};
+}
+
+/* ============ QUIZ ENGINE + SETS (exercises 1–10) ============ */
+const T=(q,a,say)=>({type:"text",q,a:[].concat(a),say});
+const SETS=[
+ {id:"ex1",t:"1 · Orthographe -ed",s:"Écris le past simple",items:[["play","played"],["study","studied"],["stop","stopped"],["live","lived"],["cry","cried"],["plan","planned"],["watch","watched"],["try","tried"],["arrive","arrived"],["enjoy","enjoyed"]].map(([b,a])=>T(`${b} → <span class="blank"></span>`,a,a))},
+ {id:"ex3",t:"3 · Mets au past simple",s:"Phrases à compléter",items:[
+   T("Yesterday I <span class='blank'></span> (go) to the market.","went","Yesterday I went to the market."),
+   T("She <span class='blank'></span> (buy) a new phone last week.","bought","She bought a new phone last week."),
+   T("We <span class='blank'></span> (watch) a film last night.","watched","We watched a film last night."),
+   T("They <span class='blank'></span> (not / come) to the party.",["didn't come","did not come"],"They didn't come to the party."),
+   T("<span class='blank'></span> Tom yesterday? (you / see)","did you see","Did you see Tom yesterday?"),
+   T("I <span class='blank'></span> (be) very tired after work.","was","I was very tired after work."),
+   T("The children <span class='blank'></span> (be) at school all day.","were","The children were at school all day."),
+   T("He <span class='blank'></span> (lose) his keys this morning.","lost","He lost his keys this morning.")]},
+ {id:"ex4",t:"4 · Négatif et question",s:"Transforme la phrase",items:[
+   T("She watched TV. → <b>négatif</b>","she didn't watch tv","She didn't watch TV."),
+   T("She watched TV. → <b>question</b>","did she watch tv","Did she watch TV?"),
+   T("They went to the beach. → <b>négatif</b>","they didn't go to the beach","They didn't go to the beach."),
+   T("They went to the beach. → <b>question</b>","did they go to the beach","Did they go to the beach?"),
+   T("He was at home. → <b>négatif</b>","he wasn't at home","He wasn't at home."),
+   T("He was at home. → <b>question</b>","was he at home","Was he at home?")]},
+ {id:"ex5",t:"5 · Trouve l'erreur",s:"Réécris la phrase correcte",items:[
+   ["I didn't went to school.","I didn't go to school."],["Did she saw the film?","Did she see the film?"],["He goed home early.","He went home early."],["We was at the beach.","We were at the beach."],["I have seen him yesterday.","I saw him yesterday."],["They stoped the car.","They stopped the car."]
+  ].map(([w,r])=>T(`<span class="bad-ex" style="text-decoration:none">${w}</span>`,r,r))},
+ {id:"ex6",t:"6 · Past simple ou present perfect ?",s:"Choisis le bon temps",items:[
+   T("I <span class='blank'></span> (visit) Paris in 2019.","visited","I visited Paris in 2019."),
+   T("<span class='blank'></span> sushi? (you / ever / eat)","have you ever eaten","Have you ever eaten sushi?"),
+   T("She <span class='blank'></span> (just / finish) her homework.","has just finished","She has just finished her homework."),
+   T("We <span class='blank'></span> (live) here since 2020.","have lived","We have lived here since 2020."),
+   T("He <span class='blank'></span> (call) me two days ago.","called","He called me two days ago."),
+   T("I <span class='blank'></span> (never / be) to Japan.","have never been","I have never been to Japan.")]},
+ {id:"irr",t:"2 · Verbes irréguliers",s:"10 verbes au hasard",gen:()=>pick(VERBS.filter(v=>v.g!=="REG"),10).map(v=>T(`<span class="say" data-say="${v.b}">${v.b}</span> <span class="note">(${esc(v.fr)})</span> → past simple ?`,v.p.split(" / "),v.ex))},
+ {id:"ed",t:"7 · Les sons -ed",s:"/t/, /d/ ou /ɪd/ ?",gen:()=>pick(VERBS.filter(v=>v.g==="REG"),10).map(v=>({type:"choice",q:`Comment se prononce <span class="say" data-say="${v.p}">${v.p}</span> ?`,opts:["/t/","/d/","/ɪd/"],a:{t:"/t/",d:"/d/",id:"/ɪd/"}[v.s],say:v.p}))},
+ {id:"voc",t:"8 · Vocabulaire",s:"Anglais → français",gen:()=>pick(VOC,10).map(w=>{const others=pick(VOC.filter(x=>x.fr!==w.fr),3).map(x=>x.fr);return {type:"choice",q:`<span class="say" data-say="${esc(w.en)}">${esc(w.en)}</span> <span class="note">· ${w.t}</span>`,opts:shuffle([w.fr,...others]),a:w.fr,say:w.en}})},
+ {id:"sara",t:"9 · L'histoire de Sara",s:"Compréhension",items:[
+   {type:"choice",q:"What time did Sara wake up?",opts:["At seven o'clock","At nine o'clock","At ten o'clock"],a:"At nine o'clock",say:"She woke up at nine o'clock."},
+   {type:"choice",q:"What did she buy at the market?",opts:["Fruit, bread and cheese","Pizza and tea","A book"],a:"Fruit, bread and cheese",say:"She bought some fruit, bread and cheese."},
+   {type:"choice",q:"Why did she stay at home in the afternoon?",opts:["Because she was tired","Because it rained","Because she was ill"],a:"Because it rained",say:"Because it rained."},
+   {type:"choice",q:"Who did she meet in the evening?",opts:["Her brother","Her friends","Her mother"],a:"Her friends",say:"She met her friends."},
+   {type:"choice",q:"Was she happy at the end of the day?",opts:["Yes, she was.","No, she wasn't.","Yes, she did."],a:"Yes, she was.",say:"Yes, she was."}]}
+];
+function runQuiz(host,set,opt={}){
+  const items=set.gen?set.gen():set.items; let i=0,score=0,answered=false;
+  const draw=()=>{
+    if(i>=items.length){
+      const pct=Math.round(score/items.length*100);
+      host.innerHTML=`<div class="qcard"><span class="eyebrow">${esc(set.t)}</span><div class="qtext">Score : ${score} / ${items.length}</div>
+        <div class="fb ${pct>=70?"ok":"bad"}">${pct>=90?"Excellent ! Tu es prête pour la suite.":pct>=70?"Très bien ! Revois les erreurs.":pct>=50?"Bon début. Relis la leçon et recommence.":"Ne lâche pas ! 10 verbes par jour, et réessaie."}</div>
+        <div class="row"><button class="btn" data-r>Recommencer</button>${opt.compact?"":`<button class="btn ghost" data-b>Autres exercices</button>`}</div></div>`;
+      host.querySelector("[data-r]").onclick=()=>runQuiz(host,set,opt);
+      const b=host.querySelector("[data-b]"); if(b) b.onclick=()=>vWrite();
+      return;
+    }
+    const it=items[i]; answered=false;
+    host.innerHTML=`<div class="qcard">
+      ${opt.compact?"":`<div class="row" style="justify-content:space-between"><span class="eyebrow">${esc(set.t)}</span><span class="note">${i+1} / ${items.length}</span></div><div class="bar"><i style="width:${i/items.length*100}%"></i></div>`}
+      <div class="qtext">${it.q}</div>
+      ${it.type==="choice"?`<div class="opts">${it.opts.map(o=>`<button class="opt" data-o="${esc(o)}">${esc(o)}</button>`).join("")}</div>`
+        :`<div class="answer-row" style="max-width:none"><input type="text" id="qIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ta réponse…" style="text-align:left"><button class="btn" id="qGo">OK</button></div>`}
+      <div id="qOut"></div></div>`;
+    const finish=(ok)=>{
+      answered=true; if(ok){score++;addXP(10,"write");} else addXP(2,"write");
+      host.querySelector("#qOut").innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"Correct !":`Réponse : ${esc(Array.isArray(it.a)?it.a[0]:it.a)}`}</div>
+        ${it.say?`<p style="margin:10px 0">${SAY(it.say)}</p>`:""}<button class="btn" id="qNext">Suivant</button>`;
+      if(it.say) say(it.say);
+      const n=host.querySelector("#qNext"); n.onclick=()=>{i++;draw();}; n.focus({preventScroll:true});
+    };
+    if(it.type==="choice"){
+      host.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{ if(answered) return;
+        const ok=b.dataset.o===it.a; b.classList.add(ok?"right":"wrong");
+        if(!ok) host.querySelector(`[data-o="${CSS.escape(it.a)}"]`)?.classList.add("right");
+        finish(ok);});
+    } else {
+      const inp=host.querySelector("#qIn"); if(!opt.compact) inp.focus({preventScroll:true});
+      const go=()=>{ if(answered||!inp.value.trim()) return; const ok=it.a.some(x=>norm(x)===norm(inp.value)); inp.disabled=true; finish(ok); };
+      host.querySelector("#qGo").onclick=go; inp.onkeydown=e=>{if(e.key==="Enter")go();};
+    }
+  };
+  draw();
+}
+
+/* ============ VIEW: WRITE (exercises + AI-corrected journal) ============ */
+function vWrite(setId){
+  $("#main").innerHTML=`<section class="view">
+    <div class="card"><span class="eyebrow">Écrire</span><h1 style="font-size:1.5rem;margin-top:4px">Exercices du livre</h1><p class="lead">Une question à la fois. La bonne réponse est lue à voix haute.</p></div>
+    <div class="card" id="quizHost"><div class="setlist">${SETS.filter(s=>s.id!=="sara").map(s=>`<button class="set" data-set="${s.id}"><b>${esc(s.t)}</b><small>${esc(s.s)}</small><em>${s.gen?"Nouveau à chaque fois":(s.items.length+" questions")}</em></button>`).join("")}</div></div>
+    <div class="card" id="journal">
+      <span class="eyebrow">10 · Mon journal</span><h2 style="font-size:1.2rem;margin-top:4px">Écris 5 phrases sur ta journée d'hier</h2>
+      <p class="lead">Utilise un mot de temps, un mot de liaison et au moins 3 verbes irréguliers. Le prof IA te corrige.</p>
+      <textarea id="jIn" style="margin-top:10px" placeholder="Yesterday I got up at seven. Then I took the bus…"></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn" id="jGo">Corriger mon texte</button><span id="jMic"></span><span class="note" id="jCount"></span></div>
+      <div id="jOut" style="margin-top:12px"></div>
+    </div>
+  </section>`;
+  $("#main").querySelectorAll("[data-set]").forEach(b=>b.onclick=()=>runQuiz($("#quizHost"),SETS.find(s=>s.id===b.dataset.set)));
+  if(setId) runQuiz($("#quizHost"),SETS.find(s=>s.id===setId));
+  const j=$("#jIn");
+  try{j.value=localStorage.getItem("ptc-journal")||"";}catch(e){}
+  const cnt=()=>{$("#jCount").textContent=j.value.split(/[.!?]+/).filter(x=>x.trim()).length+" phrase(s)";try{localStorage.setItem("ptc-journal",j.value)}catch(e){}};
+  j.oninput=cnt; cnt();
+  $("#jMic").replaceWith(micButton(j));
+  $("#jGo").onclick=correctJournal;
+}
+async function correctJournal(){
+  const text=$("#jIn").value.trim(), out=$("#jOut");
+  if(text.length<10){out.innerHTML=`<div class="fb bad">Écris au moins une phrase en anglais.</div>`;return;}
+  if(!sample){out.innerHTML=`<div class="tip"><b>Info</b>La correction IA fonctionne quand la page est ouverte dans Claude. Compare tes phrases avec la leçon 2 (Top 6 des erreurs).</div>`;return;}
+  $("#jGo").disabled=true; out.innerHTML=`<p class="note">Le prof lit ton texte…</p>`;
+  try{
+    const r=await sample.json(`You are a kind English teacher for a French-speaking beginner (CEFR A1-A2) who is learning the past simple, was/were, did/didn't and the present perfect.
+Correct the student's text below. Return ONLY JSON with this shape:
+{"score": number from 0 to 10, "corrections": [{"wrong": "the student's phrase", "right": "corrected phrase", "why": "very short explanation IN FRENCH"}], "good": ["one or two things the student did well, IN FRENCH"], "rewrite": "the full text corrected, simple natural English", "next": "one short encouraging tip IN FRENCH for next time"}
+Only list real mistakes (max 6). If the text has no mistakes, return an empty corrections array.
+
+Student text:
+"""${text}"""`,{modelTier:"default"});
+    addXP(25,"write");
+    out.innerHTML=`<div class="fb ok">Note : ${esc(r.score)} / 10 · +25 XP</div>
+      ${(r.corrections||[]).length?`<div class="tbl" style="margin-top:10px"><table><tr><th>Ton texte</th><th>Correction</th><th>Pourquoi</th></tr>${r.corrections.map(c=>`<tr><td class="bad-ex">${esc(c.wrong)}</td><td class="good-ex">${esc(c.right)}</td><td class="note">${esc(c.why)}</td></tr>`).join("")}</table></div>`:`<p>Aucune erreur. Bravo !</p>`}
+      ${(r.good||[]).length?`<p style="margin:10px 0 0"><b>Bien joué :</b> ${r.good.map(esc).join(" · ")}</p>`:""}
+      ${r.rewrite?`<p style="margin:10px 0 0"><b>Texte corrigé (touche pour écouter) :</b><br>${SAY(r.rewrite)}</p>`:""}
+      ${r.next?`<div class="tip" style="margin-top:10px"><b>Conseil</b>${esc(r.next)}</div>`:""}`;
+  }catch(e){
+    out.innerHTML=`<div class="fb bad">${e&&e.code==="not_granted"?"Le prof IA n'a pas l'autorisation. Autorise Claude pour cette page puis réessaie.":e&&e.code==="rate_limited"?"Trop de demandes. Attends une minute.":"La correction n'a pas marché. Réessaie dans un moment."}</div>`;
+  }finally{$("#jGo").disabled=false;}
+}
+
+/* ============ VIEW: PROF IA (AI teacher chat) ============ */
+let sample=null, chatCtl=null;
+const SCEN={
+  weekend:["Mon week-end","Hello! I'm Teacher Nora. Let's talk about the past.\nHow was your weekend? What did you do?"],
+  yesterday:["Ma journée d'hier","Hi! Tell me about yesterday.\nWhat time did you wake up? What did you have for breakfast?"],
+  trip:["Un voyage","Hello! Let's talk about travel.\nWhere did you go on your last holiday? How did you travel there?"],
+  child:["Mon enfance","Hi! Let's talk about when you were a child.\nWhere did you live? What games did you play?"],
+  restaurant:["Au restaurant","Hello! Imagine you went to a restaurant last night.\nWhat did you eat? Was the food good?"],
+  free:["Conversation libre","Hello! I'm Teacher Nora, your English teacher.\nYou can write in English or in French. What would you like to talk about today?"]
+};
+function rules(){
+  return `You are "Teacher Nora", a warm, patient and fun English teacher. Your student is a French-speaking adult beginner (CEFR level A1-A2). The student is studying the past tense: past simple (regular -ed verbs and irregular verbs like went, saw, ate, bought), was/were, did/didn't for negatives and questions, and basic present perfect (have you ever…, I've just…). Today's topic: ${SCEN[S.scenario][0]}.
+Rules:
+- Use only very simple A1-A2 English and short sentences. Maximum 4 short sentences per reply.
+- If a word may be difficult, add the French translation in parentheses, like: delicious (délicieux).
+- If the student's last message contains mistakes, START your reply with exactly one line "Correction: <the student's sentence, corrected>" then one line "Astuce: <one very short explanation in French>". Correct only the 1 or 2 most important mistakes. Then continue the conversation.
+- If there is no mistake, start with a short praise like "Great sentence!".
+- If the student writes in French, give the English sentence after "Correction:" and ask them to try writing it.
+- Always end with ONE simple question that makes the student answer using the past tense.
+- If the student asks for an exercise, give 3 short fill-in-the-blank sentences with the base verb in brackets, and correct them in your next reply.
+- Plain text only. No markdown, no lists with symbols, no headings.`;
+}
+function vProf(){
+  if(!S.chat.length) S.chat=[{role:"assistant",content:SCEN[S.scenario][1]}];
+  $("#main").innerHTML=`<section class="view">
+    <div class="card teacher"><div class="avatar">N</div><div style="min-width:0"><span class="eyebrow">Ton prof d'anglais IA</span><h1 style="font-size:1.35rem">Teacher Nora</h1><p class="note" style="margin:2px 0 0">Elle parle simple, corrige tes erreurs avec une astuce en français et te pose toujours une question.</p></div></div>
+    <div class="card">
+      <div class="chips">${Object.entries(SCEN).map(([k,[l]])=>`<button class="chip" data-sc="${k}" aria-pressed="${S.scenario===k}">${l}</button>`).join("")}</div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="chips" id="quick">${["Can you repeat, please?","Explique en français, s'il te plaît","Give me an exercise, please","How do I say « j'ai mangé » ?"].map(q=>`<button class="chip" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+      <div class="composer"><textarea id="cIn" placeholder="Write in English… (ou en français)"></textarea><span id="cMic"></span><button class="icon-btn" id="cSend" style="background:var(--violet);color:#fff;border-color:var(--violet)" aria-label="Envoyer">${ICON.send}</button></div>
+      <div class="row" style="justify-content:space-between"><label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="autoRead" ${S.settings.autoRead?"checked":""}> Lire les réponses à voix haute</label><button class="btn sm ghost" id="cReset">Nouvelle conversation</button></div>
+      <div id="cWarn"></div>
+    </div>
+  </section>`;
+  drawChat();
+  $("#main").querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{S.scenario=b.dataset.sc;S.chat=[];save();vProf();});
+  $("#main").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{$("#cIn").value=b.dataset.q;send();});
+  $("#cReset").onclick=()=>{chatCtl?.abort();S.chat=[];save();vProf();};
+  $("#autoRead").onchange=e=>{S.settings.autoRead=e.target.checked;save();};
+  const c=$("#cIn");
+  $("#cMic").replaceWith(micButton(c,()=>send()));
+  $("#cSend").onclick=send;
+  c.onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
+  if(!sample) $("#cWarn").innerHTML=`<div class="tip"><b>Info</b>Le prof IA répond quand la page est ouverte dans Claude (connectée). Les autres onglets marchent partout.</div>`;
+}
+function fmtTeacher(t){
+  const lines=t.split("\n"); let head="", rest=[];
+  for(const l of lines){
+    if(/^\s*Correction\s*:/i.test(l)) head+=`<span class="corr"><b>Correction :</b> ${esc(l.replace(/^\s*Correction\s*:\s*/i,""))}</span>`;
+    else if(/^\s*Astuce\s*:/i.test(l)) head+=`<span class="astuce">${esc(l.replace(/^\s*Astuce\s*:\s*/i,"Astuce : "))}</span>`;
+    else rest.push(l);
+  }
+  return head+esc(rest.join("\n").trim());
+}
+const spoken=t=>t.split("\n").filter(l=>!/^\s*Astuce\s*:/i.test(l)).join(" ").replace(/^\s*Correction\s*:/i,"").replace(/\([^)]*\)/g,"");
+function drawChat(){
+  const el=$("#chat"); if(!el) return;
+  el.innerHTML=S.chat.map((m,k)=>m.role==="assistant"
+    ?`<div class="msg t">${fmtTeacher(m.content)}<div class="tools"><button data-read="${k}">${"Écouter"}</button><button data-slowr="${k}">Lentement</button></div></div>`
+    :`<div class="msg u">${esc(m.content)}</div>`).join("");
+  el.querySelectorAll("[data-read]").forEach(b=>b.onclick=()=>say(spoken(S.chat[b.dataset.read].content)));
+  el.querySelectorAll("[data-slowr]").forEach(b=>b.onclick=()=>say(spoken(S.chat[b.dataset.slowr].content),{rate:.65}));
+  el.scrollTop=el.scrollHeight;
+}
+async function send(){
+  const c=$("#cIn"); const text=c.value.trim(); if(!text||chatCtl) return;
+  if(!sample){toast("Le prof IA n'est pas disponible ici.");return;}
+  c.value=""; S.chat.push({role:"user",content:text}); drawChat();
+  const el=$("#chat"); const bubble=document.createElement("div"); bubble.className="msg t"; bubble.textContent="Teacher Nora réfléchit…"; el.appendChild(bubble); el.scrollTop=el.scrollHeight;
+  const hist=S.chat.slice(-14);
+  while(hist.length&&hist[0].role!=="user") hist.shift();
+  const opening=S.chat[0]?.role==="assistant"?`\n\nYou opened the lesson with: "${S.chat[0].content}"`:"";
+  const input=[{role:"user",content:rules()+opening+"\n\nThe conversation starts now. Reply to the student's next message."},{role:"assistant",content:"OK."},...hist];
+  chatCtl=new AbortController(); $("#cSend").disabled=true;
+  try{
+    const {text:ans}=await sample(input,{cache:false,signal:chatCtl.signal,modelTier:"quick",onText:({text})=>{bubble.innerHTML=fmtTeacher(text);el.scrollTop=el.scrollHeight;}});
+    S.chat.push({role:"assistant",content:ans}); addXP(10,"chat"); drawChat();
+    if(S.settings.autoRead) say(spoken(ans));
+  }catch(e){
+    bubble.remove();
+    S.chat.pop(); c.value=text;
+    $("#cWarn").innerHTML=`<div class="fb bad">${e&&e.code==="not_granted"?"Autorise Claude pour cette page, puis renvoie ton message.":e&&e.code==="rate_limited"?"Trop de messages d'un coup. Attends une minute.":e&&e.code==="cancelled"?"Message annulé.":"Le prof n'a pas pu répondre. Réessaie."}</div>`;
+    drawChat();
+  }finally{chatCtl=null; const b=$("#cSend"); if(b) b.disabled=false; save();}
+}
+
+/* ============ BOOT ============ */
+const VIEWS={today:vToday,lessons:vLessons,verbs:vVerbs,listen:vListen,speak:vSpeak,write:vWrite,prof:vProf};
+let start="today"; try{const t=localStorage.getItem("ptc-tab"); if(t&&VIEWS[t]) start=t;}catch(e){}
+if(VIEWS[location.hash.slice(1)]) start=location.hash.slice(1);
+renderStats(); go(start);
+
+(async()=>{
+  if(!window.claude?.use) return;
+  try{ sample=await claude.use("sample"); if(sample&&current==="prof") vProf(); }catch(e){}
+  try{
+    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+    if(db&&user){
+      const id=await user.id();
+      if(id){
+        dbDoc=db.collection("data/users/"+id).doc("progress");
+        const snap=await dbDoc.get();
+        if(snap.exists){const r=snap.data(); if((r.updatedAt||0)>(S.updatedAt||0)){S=Object.assign(S,r);try{localStorage.setItem("ptc-state",JSON.stringify(S))}catch(e){} renderStats(); VIEWS[current]();}}
+        else if(S.updatedAt) dbDoc.set(JSON.parse(JSON.stringify(S))).catch(()=>{});
+      }
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
