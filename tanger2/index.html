@@ -524,6 +524,66 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
 .reading p{margin:0;line-height:1.65}.reading ul{margin:0;padding-left:20px}
 .exo{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--panel)}
 .quiz .expl{display:block;font-size:.84rem;color:var(--muted);margin-top:2px}
+/* ---------- guide de l'investisseur ---------- */
+.stepper.syl{grid-template-columns:repeat(8,minmax(0,1fr))}
+.stepper.syl li{cursor:pointer}
+.stepper.syl li small{color:var(--muted);font-size:.72rem}
+@media (max-width:760px){.stepper.syl{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:14px}.stepper.syl li:nth-child(5)::before{display:none}}
+.phase{display:grid;gap:14px}
+.phase .phd{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+.phase .phd h3{margin:0}
+.phase .bar{height:6px;border-radius:3px;background:var(--chip);overflow:hidden}
+.phase .bar i{display:block;height:100%;background:var(--orange);transition:width .3s}
+.step{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.step:first-of-type{border-top:0}
+.step input{width:18px;height:18px;margin-top:2px;accent-color:var(--orange)}
+.step .t{font-weight:700}
+.step.done .t{text-decoration:line-through;text-decoration-color:var(--muted)}
+.step .meta{grid-column:2;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:4px 16px;font-size:.84rem}
+.step .meta b{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.step .why{grid-column:2;font-size:.86rem;color:var(--muted);margin:0}
+.step a{color:var(--steel)}
+.page[data-page=syllabus] td:not(.n),.page[data-page=terrain] td:not(.n),.page[data-page=bp5] td:not(.n),.page[data-page=financer] td:not(.n),
+.page[data-page=syllabus] th,.page[data-page=terrain] th,.page[data-page=bp5] th,.page[data-page=financer] th{text-align:left}
+table.dl{width:100%;font-size:.88rem;table-layout:fixed}
+table.dl td{padding:6px 8px;vertical-align:top;white-space:normal;overflow-wrap:anywhere}
+.stepper.syl li{min-width:0;overflow-wrap:anywhere}
+.stepper.syl{overflow:hidden}
+table.dl td:first-child{color:var(--muted);width:45%}
+table.dl td:last-child{font-weight:600}
+.map4d{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:stretch}
+@media (max-width:900px){.map4d{grid-template-columns:1fr}}
+.m4stage{position:relative;height:560px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(180deg,#bcd6e6,#e9eef2);touch-action:none}
+@media (max-width:600px){.m4stage{height:400px}}
+:root[data-theme="dark"] .m4stage{background:linear-gradient(180deg,#0f1d2a,#1a2632)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .m4stage{background:linear-gradient(180deg,#0f1d2a,#1a2632)}}
+.m4stage canvas{display:block;width:100%!important;height:100%!important}
+.m4load{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:600}
+.m4info{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px;align-content:start;box-shadow:var(--shadow)}
+.m4info h3{margin:0}
+.m4info .big{font:600 1.25rem var(--f-mono);color:var(--orange)}
+.m4time{gap:14px}
+.m4ctl{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.m4ctl input[type=range]{width:100%;accent-color:var(--orange)}
+.m4chk{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;font-weight:600}
+.m4phases{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}
+.m4phases li{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:.8rem;cursor:pointer;background:var(--panel)}
+.m4phases li b{display:block;font-size:.84rem}
+.m4phases li.on{border-color:var(--orange);box-shadow:0 0 0 3px var(--glow)}
+.m4phases li.past{opacity:.6}
+.finsteps{margin:0;padding-left:22px;display:grid;gap:10px}
+.finsteps li{padding-left:4px}
+.finsteps li b{display:block}
+.trnhead{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;align-items:start}
+.trnhead h3{margin:0 0 6px}
+.src{font-size:.8rem;color:var(--muted)}
+.src a{color:var(--steel)}
+#trnMap svg{width:100%;height:auto;display:block}
+#trnMap .land{fill:var(--chip);stroke:var(--line)}
+#trnMap .sea{fill:color-mix(in srgb,var(--steel) 14%,transparent)}
+#trnMap .road{stroke:var(--muted);stroke-width:2;fill:none;stroke-dasharray:6 4}
+#trnMap text{font:600 11px Manrope,system-ui,sans-serif;fill:var(--ink)}
+#trnMap .lbl{font-weight:500;fill:var(--muted);font-size:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head><body>
@@ -1587,6 +1647,118 @@ td input[type=number]{width:140px;padding:7px 9px;text-align:right;font-family:v
       </div>
     </section>
 
+    <!-- ===================== GUIDE INVESTISSEUR : SYLLABUS ===================== -->
+    <section class="page" data-page="syllabus" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Syllabus de l'investisseur, <em class="g">de A à Z</em></h2>
+        <p>Toutes les démarches pour réaliser l'usine Tanger II au Maroc : qui contacter, quels papiers préparer et légaliser, combien de temps et combien cela coûte, et sur quel texte chaque étape repose. Cochez les étapes au fur et à mesure : votre avancement reste enregistré dans ce navigateur.</p></div>
+        <div class="toolbar"><a class="btn primary" id="sylPdf" href="rapport/Dossier_investisseur_Tanger_II.pdf" target="_blank" rel="noopener" download>📄 Télécharger le dossier investisseur (PDF)</a><button class="btn" id="sylReset" type="button">Remettre à zéro</button></div></div>
+      <div class="tiles" id="sylTiles"></div>
+      <div class="panel"><h3>Le parcours en 8 phases</h3><ol class="stepper syl" id="sylStepper"></ol></div>
+      <div id="sylPhases" style="display:grid;gap:24px"></div>
+      <div class="panel"><h3>Calendrier indicatif des démarches</h3><div class="chart" id="sylGantt" style="height:400px"></div></div>
+      <div class="panel"><h3>Papiers à préparer et à légaliser</h3><div class="tablewrap"><table id="sylDocs"></table></div></div>
+      <div class="panel gilt"><h3>Où obtenir chaque papier et chaque autorisation, et combien cela coûte</h3><div class="tablewrap"><table id="sylWhere"></table></div><div id="sylWhereTot"></div></div>
+      <div class="panel"><h3>Où s'adresser</h3><div class="tablewrap"><table id="sylOrg"></table></div>
+        <p class="muted" style="font-size:.84rem;margin:0">Maroc PME (marocpme.gov.ma) accompagne les TPME : chiffre d'affaires inférieur à 200 MDH. Avec plus de 1 Md DH de chiffre d'affaires dès 2030, DPA relève du dispositif principal de la Charte de l'investissement, instruit par le CRI, et non des programmes de Maroc PME. Ce point est à dire au jury.</p></div>
+    </section>
+
+    <!-- ===================== GUIDE INVESTISSEUR : TERRAIN ===================== -->
+    <section class="page" data-page="terrain" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Terrain réel et <em class="g">implantation</em></h2>
+        <p>Choix d'un vrai terrain dans la région de Tanger, à partir de la grille tarifaire officielle de Tanger Med Zones et des annonces du marché privé. Le calculateur ajoute les frais d'acquisition (enregistrement, conservation foncière, notaire) et vérifie l'exposition à la taxe sur les terrains non bâtis.</p></div></div>
+      <div class="panel gilt" id="trnCard"></div>
+      <div class="grid2">
+        <div class="panel"><h3>Plan de situation (schéma)</h3><div id="trnMap"></div>
+          <p class="muted" style="font-size:.82rem;margin:0">Schéma sans échelle exacte, établi à partir des pages officielles des zones. Les positions sont indicatives, à vérifier sur une carte.</p></div>
+        <div class="panel"><h3>Taxe sur les terrains urbains non bâtis (TNB)</h3><div id="trnTnb"></div></div>
+      </div>
+      <div class="panel"><h3>Calculateur du coût du terrain</h3>
+          <div class="frow" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px">
+            <label class="f" for="trnZone">Zone<select id="trnZone"></select></label>
+            <label class="f" for="trnSurf">Surface (m²)<input id="trnSurf" type="number" min="1000" step="1000" value="80000"></label>
+            <label class="f" for="trnPrix">Prix (DH/m²)<input id="trnPrix" type="number" min="1" step="10" value="700"></label>
+            <label class="f" for="trnDe">Droits d'enregistrement<select id="trnDe"><option value="0.05">5 % (terrain nu, CGI art. 133-G)</option><option value="0.04">4 % (si l'acte relève du taux réduit, à confirmer)</option><option value="0">0 % (exonération conventionnelle, à confirmer)</option></select></label>
+          </div>
+          <div class="tablewrap"><table id="trnCalc"></table></div>
+          <div id="trnGap"></div></div>
+      <div class="panel"><h3>Comparaison des options d'implantation</h3><div class="tablewrap"><table id="trnZones"></table></div></div>
+      <div class="panel"><h3>Usines comparables dans la région (benchmarks réels)</h3><div class="tablewrap"><table id="trnBench"></table></div></div>
+    </section>
+
+    <!-- ===================== GUIDE INVESTISSEUR : CARTE 4D ===================== -->
+    <section class="page" data-page="carte" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Carte 4D du site de <em class="g">Gzenaya</em></h2>
+        <p>Vue en trois dimensions de l'implantation de DPA à Gzenaya (Tanger), avec une quatrième dimension : le temps. Faites tourner la vue à la souris ou au doigt, zoomez, puis faites défiler les mois pour voir le chantier, la mise en service du 1er juillet 2028 et la montée en cadence jusqu'en 2032.</p></div>
+        <div class="toolbar"><div class="seg" id="c4View"></div></div></div>
+      <div class="map4d">
+        <div class="m4stage" id="c4Stage" aria-label="Vue 3D interactive du site"><div class="m4load" id="c4Load">Chargement de la vue 3D…</div></div>
+        <aside class="m4info" id="c4Info"></aside>
+      </div>
+      <div class="panel m4time">
+        <div class="m4ctl"><button class="btn primary" id="c4Play" type="button">▶ Lecture</button>
+          <label class="f" for="c4T" style="flex:1;min-width:200px">Date<input id="c4T" type="range" min="0" max="71" step="1" value="0"></label>
+          <span class="pill gold" id="c4Date">janvier 2027</span>
+          <label class="m4chk"><input type="checkbox" id="c4Spin" checked> Rotation 360°</label>
+          <button class="btn" id="c4Top" type="button">Vue de dessus</button><button class="btn" id="c4Iso" type="button">Vue maquette</button>
+          <label class="m4chk"><input type="checkbox" id="c4Roof"> Toits transparents</label>
+          <label class="m4chk"><input type="checkbox" id="c4Lbl" checked> Étiquettes</label></div>
+        <ol class="m4phases" id="c4Phases"></ol>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h3>Distances depuis le site DPA (à vol d'oiseau)</h3><div class="tablewrap"><table id="c4Dist"></table></div>
+          <p class="src" style="margin:0">Coordonnées approximatives (± 1 km), relevées sur une carte publique ; distances calculées à vol d'oiseau. Les trajets routiers sont plus longs.</p></div>
+        <div class="panel"><h3>Plan de masse du lot (8 ha)</h3><div class="tablewrap"><table id="c4Plan"></table></div></div>
+      </div>
+      <div class="panel gilt"><h3>Prix du terrain à Gzenaya : fourchette réaliste</h3><div class="tablewrap"><table id="c4Prix"></table></div><div id="c4PrixNote"></div></div>
+    </section>
+
+    <!-- ===================== GUIDE INVESTISSEUR : BUSINESS PLAN 5 ANS ===================== -->
+    <section class="page" data-page="bp5" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Business plan sur <em class="g">5 ans</em></h2>
+        <p>Les cinq premiers exercices d'exploitation (2028 à 2032) : chiffre d'affaires année par année, coûts, résultat, bâtiments, équipements, besoin en fonds de roulement, effectifs et salaires par département. Les chiffres viennent du moteur calé sur le modèle Excel.</p></div>
+        <div class="toolbar">
+          <label class="f" for="bpScen" style="min-width:220px">Montage<select id="bpScen"></select></label>
+          <label class="f" for="bpCase" style="min-width:220px">Cas<select id="bpCase"></select></label></div></div>
+      <div class="tiles" id="bpTiles"></div>
+      <div class="panel"><h3>Compte de résultat prévisionnel sur 5 ans (MDH)</h3><div class="tablewrap"><table id="bpTable"></table></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Chiffre d'affaires et EBITDA par année</h3><div class="chart" id="bpChart"></div></div>
+        <div class="panel"><h3>Cas prudent, central et favorable : chiffre d'affaires et résultat net (MDH)</h3><div class="chart" id="bpScenChart"></div></div>
+      </div>
+      <div class="panel"><h3>Bâtiments : estimation (180 MDH au budget)</h3><div class="tablewrap"><table id="bpBat"></table></div></div>
+      <div class="panel"><h3>Équipements et installations (419 MDH au budget)</h3><div class="tablewrap"><table id="bpEq"></table></div></div>
+      <div class="panel"><h3>Besoin en fonds de roulement</h3><div class="grid2"><div id="bpBfrTxt"></div><div class="chart" id="bpBfr" style="height:300px"></div></div></div>
+      <div class="panel"><h3>Organigramme, recrutements et salaires par département (régime de croisière)</h3>
+        <div class="tablewrap"><table id="bpRh"></table></div><div id="bpRhNote"></div></div>
+    </section>
+
+    <!-- ===================== GUIDE INVESTISSEUR : BANQUES ET FINANCEMENT ===================== -->
+    <section class="page" data-page="financer" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Banques, financement et <em class="g">trésorerie</em></h2>
+        <p>Comment financer le projet : conditions de marché d'octobre 2026, banques et sociétés de crédit-bail marocaines, bailleurs internationaux, aides de l'État, garanties demandées, et organisation du département trésorerie.</p></div></div>
+      <div class="tiles" id="finTiles"></div>
+      <div class="panel"><h3>Comment le projet est financé, étape par étape</h3><ol class="finsteps" id="finSteps"></ol></div>
+      <div class="panel"><h3>Banques et organismes à solliciter</h3><div class="tablewrap"><table id="finBanks"></table></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Structure de financement par scénario (MDH)</h3><div class="chart" id="finChart"></div></div>
+        <div class="panel"><h3>Garanties et conditions demandées par les banques</h3><div class="tablewrap"><table id="finGar"></table></div></div>
+      </div>
+      <div class="panel"><h3>Département trésorerie</h3><div id="finTreso"></div></div>
+      <div class="panel gilt"><h3>Subventions : Maroc PME ou Charte de l'investissement ?</h3>
+        <p style="margin:0">Maroc PME (marocpme.gov.ma) gère, avec les CRI, le dispositif de soutien aux TPME de la Charte de l'investissement (décret n° 2-25-342, opérationnel depuis novembre 2025). Le test ci-dessous vérifie si un projet y a droit. Changez les valeurs pour tester DPA ou un de ses sous-traitants locaux.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px">
+          <label class="f" for="pmeInv">Investissement (MDH)<input id="pmeInv" type="number" min="0" step="0.5" value="791"></label>
+          <label class="f" for="pmeCa">Chiffre d'affaires HT (MDH)<input id="pmeCa" type="number" min="0" step="1" value="0"></label>
+          <label class="f" for="pmeNew">Entreprise nouvelle<select id="pmeNew"><option value="1">Oui</option><option value="0">Non</option></select></label>
+          <label class="f" for="pmeGrp">Détenue par un grand groupe<select id="pmeGrp"><option value="1">Oui (filiale)</option><option value="0">Non</option></select></label>
+          <label class="f" for="pmeJobs">Emplois stables créés<input id="pmeJobs" type="number" min="0" step="1" value="725"></label>
+          <label class="f" for="pmeFp">Fonds propres apportés (%)<input id="pmeFp" type="number" min="0" max="100" step="1" value="36"></label>
+        </div>
+        <div class="toolbar" style="justify-content:flex-start"><button class="btn" type="button" id="pmeDpa">Cas DPA (projet Tanger II)</button><button class="btn" type="button" id="pmeSub">Exemple : sous-traitant moulier à Tanger</button></div>
+        <div class="grid2"><div class="tablewrap"><table id="pmeTest"></table></div><div id="pmeOut"></div></div>
+      </div>
+    </section>
+
     <!-- ===================== POWER BI ===================== -->
     <section class="page" data-page="data" hidden>
       <div class="lead"><div><span class="eyebrow">Annexe</span><h2>Données pour <em class="g">Power BI</em></h2><p>Table de faits annuelle au format long (scénario, cas, année, indicateur, valeur), prête à coller dans Power BI Desktop (Accueil → Entrer des données) ou dans Excel.</p></div>
@@ -2079,6 +2251,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
 const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["formations", "Formations", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
+  ["syllabus", "Syllabus A → Z", false, "Guide de l'investisseur"], ["terrain", "Terrain et implantation", false, "Guide de l'investisseur"], ["carte", "Carte 4D du site", false, "Guide de l'investisseur"], ["bp5", "Business plan 5 ans", false, "Guide de l'investisseur"], ["financer", "Banques et financement", false, "Guide de l'investisseur"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["treso", "Trésorerie", false, "Pilotage & contrôle"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -2104,7 +2277,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData, syllabus: initSyllabus, terrain: initTerrain, carte: initCarte, bp5: initBp5, financer: initFinancer })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -5012,6 +5185,584 @@ async function proposeFormation() {
   if (st.db) { try { await st.db.collection("form_reco").add(r); $("foPropMsg").textContent = "Parcours proposé : il apparaît dans le catalogue des personnes concernées."; } catch (e) { $("foPropMsg").textContent = "Envoi refusé : droits insuffisants sur cette page."; } }
   else { foRecos = [r].concat(foRecos); lsSet("t2formreco", foRecos); $("foPropMsg").textContent = "Parcours proposé (dans ce navigateur)."; }
   $("foPropN").value = ""; logAudit("Parcours de formation proposé", (parc(r.fid) || {}).t);
+}
+
+// ---------- Guide de l'investisseur ----------
+const L_ = (u, t) => `<a href="${u}" target="_blank" rel="noopener">${t}</a>`;
+const SRC = {
+  cri: ["https://www.cri-invest.ma", "CRI-Invest (plateforme nationale des CRI)"],
+  ompic: ["http://www.ompic.ma/fr/content/creation-et-vie-de-lentreprise", "OMPIC, création et vie de l'entreprise"],
+  amdie: ["https://www.amdie.gov.ma", "AMDIE (Morocco Now)"],
+  tac: ["https://www.tangermedzones.com/en/zones/tanger-automotive-city/", "Tanger Med Zones, Tanger Automotive City"],
+  tmz: ["https://www.tangermedzones.com/wp-content/uploads/2024/06/cahier-tarifaire_TMZ-2024.pdf", "Cahier tarifaire Tanger Med Zones 2024 (PDF)"],
+  onudi: ["https://onudi.kavaa.fr/fiche-zone.php?lang=fr&id=226", "Fiche zone TAC (ONUDI)"],
+  avito: ["https://www.avito.ma/fr/tanger/terrain_industriel--%C3%A0_vendre", "Avito, terrains industriels à Tanger"],
+  mbi: ["https://mbi-maroc.com/area/zone-industrielle-gzenaya/", "MBI Maroc, zone industrielle de Gzenaya"],
+  cgi: ["https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf", "Code général des impôts 2026 (DGI)"],
+  art133: ["https://www.fiscamaroc.com/autres-taxes-183/article-133-droits-proportionnels-195.htm", "CGI art. 133, droits proportionnels"],
+  notaire: ["https://reaconsult.ma/frais-notaire-achat-immobilier-maroc", "Frais de notaire au Maroc 2026"],
+  tnb: ["https://inmo.ma/en/taxe-sur-les-terrains-urbains-non-batis-au-maroc/", "TNB au Maroc, guide 2026"],
+  tnb2: ["https://ataarealty.com/blog/2/", "TNB : réforme 2026 (loi 14-25)"],
+  l4917: ["https://www.amdie.gov.ma/wp-content/uploads/2024/01/Loi-49-17.pdf", "Loi n° 49-17 (BO n° 7140)"],
+  envs: ["https://e-services.environnement.gov.ma", "E-services du ministère de l'Environnement"],
+  rokhas: ["https://bati.ma/guide/permis-rokhas-etapes-maroc", "Permis via Rokhas : étapes"],
+  crui: ["https://fr.le360.ma/economie/investissement-territorial-le-maroc-accelere-la-refonte-de-ses-guichets-uniques-regionaux_FEFU4E2BMND5XOR6U3DF56NSQA/", "Le360 : loi 22-24, délais des CRI"],
+  charte: ["https://www.casainvest.ma/sites/default/files/D%C3%A9cret%20charte%2020%2025.pdf", "Décret n° 2-23-1 (Charte de l'investissement)"],
+  charte2: ["https://fr.hespress.com/299417-charte-de-linvestissement-voici-les-details-du-decret-relatif-au-soutien-a-linvestissement.html", "Hespress : détail des primes de la Charte"],
+  douane: ["https://www.lavieeco.com/wp-content/uploads/2022/12/circulaire_91289.pdf", "Circulaire des douanes n° 6398/210"],
+  oc: ["https://www.oc.gov.ma/fr/actualites/publication-de-l-instruction-generale-des-operations-de-change-2026", "Office des changes, instruction 2026"],
+  anapec: ["https://www.anapec.org", "ANAPEC"], cnss: ["https://www.cnss.ma", "CNSS"], tamwil: ["https://www.tamwilcom.ma", "Tamwilcom"],
+  smig: ["https://wafir.ma/fr/guide/smig-smag-maroc-2026-revalorisation-secteurs", "SMIG 2026 (décret n° 2.25.983)"],
+  cnssr: ["https://sahlcompta.ma/blog/cnss-amo-maroc-2026", "Taux CNSS et AMO 2026"],
+  bam: ["https://telquel.ma/instant-t/2026/09/22/bank-al-maghrib-maintient-son-taux-directeur-a-225_2008947/", "TelQuel, 22/09/2026 : taux directeur 2,25 %"],
+  bamtd: ["https://www.bkam.ma/Statistiques/Enquetes/Resultats-de-l-enquete-trimestrielle-sur-les-taux-debiteurs", "BAM, enquête sur les taux débiteurs (T2 2026)"],
+  cdm6: ["https://www.creditdumaroc.ma/sites/default/files/notices/Notice_N6_Les_financements_dinvestissements.pdf", "Crédit du Maroc, notice N6 : financements d'investissement"],
+  cdm3: ["https://www.creditdumaroc.ma/sites/default/files/notices/Notice_N3_Les_financements_a_linternational.pdf", "Crédit du Maroc, notice N3 : international"],
+  cdm2: ["https://www.creditdumaroc.ma/sites/default/files/notices/Notice_N2_Les_credits_de_mobilisation_des_creances.pdf", "Crédit du Maroc, notice N2 : mobilisation des créances"],
+  awb: ["https://attijarientreprises.com/sites/default/files/2020-09/17-00269-Plaquette%20sous-traitance%20automobile%20(20x20)%E2%80%A2%2010.pdf", "Attijariwafa bank, offre sous-traitance automobile"],
+  mgb: ["https://www.ammc.ma/sites/default/files/DR_Maghrebail_004_2026_0.pdf", "AMMC, document de référence Maghrebail 2026"],
+  wfb: ["https://www.ammc.ma/sites/default/files/DR_WAFABAIL_019_2026.pdf", "AMMC, document de référence Wafabail 2026"],
+  apsf: ["https://apsf.ma/membres/annuaire/", "APSF, annuaire des sociétés de financement"],
+  ebrd: ["https://www.ebrd.com/home/news-and-events/news/2024/ebrd-strengthens-moroccan-automotive-sector.html", "BERD : prêt de 15 M€ à Tuyauto (2024)"],
+  bad: ["https://www.financialafrik.com/2026/07/27/maroc-la-bad-approuve-un-pret-de-100-millions-deuros-a-gotion-power-pour-une-usine-de-batteries-lfp/", "BAD : 100 M€ à Gotion Power Morocco (2026)"],
+  build: ["https://fadilgroup.ma/prix-construction-m%C2%B2-maroc-2025/", "Prix de construction au m² au Maroc 2025"],
+  build2: ["https://geniecivil.ma/apercu-des-couts-actuels-de-construction-au-maroc-en-2025/", "Coûts de construction au Maroc en 2025"],
+  elec: ["https://www.challenge.ma/le-vrai-cout-de-lelectricite-au-maroc-321054/", "Challenge : tarifs électricité moyenne tension"],
+  sal1: ["https://www.jobsquare.ma/blog/salaires-industrie-automobile-tanger/", "Jobsquare : salaires de l'automobile à Tanger"],
+  sal2: ["https://fr.scribd.com/document/814527444/Salaires-Maroc-by-Michael-Page", "Michael Page Maroc : étude de rémunération"],
+  sal3: ["https://jawb.ma/blog/ingenieur-industriel-maroc-salaire-secteurs-regions", "Salaires des ingénieurs industriels au Maroc"],
+  sal4: ["https://avisine.com/blog/salaire-comptable-maroc-2026", "Salaire d'un comptable au Maroc 2026"],
+  mp: ["https://medias24.com/2024/11/22/mp-industry-group-inaugure-sa-premiere-usine-a-tanger/", "Médias24 : MP Industry à Tanger (2024)"],
+  pme: ["https://wafir.ma/fr/entreprises/maroc-pme-forsa", "Programmes Maroc PME 2026"],
+  mpme: ["https://marocpme.gov.ma/", "Maroc PME (site officiel)"],
+  zitfz: ["http://zonesindustrielles.ma/fiche-zone/tanger-free-zone/9", "Fiche Tanger Free Zone (zonesindustrielles.ma)"],
+  avgz: ["https://www.avito.ma/fr/tanger/terrain_gzenaya--%C3%A0_vendre", "Avito : terrains à vendre à Gzenaya"],
+  mbiu: ["https://mbi-maroc.com/listings/usines-a-vendre-et-a-louer-a-tanger/", "MBI Maroc : usines à vendre à Tanger"],
+  tpme1: ["https://medias24.com/2025/07/10/eligibilite-montants-des-subventions-et-conditions-de-versement-ce-que-prevoit-le-nouveau-regime-de-soutien-aux-tpme/", "Médias24 : régime de soutien aux TPME (décret 2-25-342)"],
+  tpme2: ["https://fr.le360.ma/economie/charte-de-linvestissement-le-dispositif-de-soutien-aux-tpme-desormais-operationnel_GDNGOTXTA5E5RLGHRYQJD3XFUI/", "Le360 : dispositif TPME opérationnel (nov. 2025)"],
+  tpme3: ["https://fesmeknesinvest.ma/wp-content/uploads/2025/07/Presentation_du_dispositif_de_soutien_au_TPME_V170411.pdf", "CRI Fès-Meknès : présentation du dispositif TPME"]
+};
+const S_ = (k) => L_(SRC[k][0], SRC[k][1]);
+const dl = (rows) => `<table class="dl"><tbody>${rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("")}</tbody></table>`;
+const srcList = (keys) => `<p class="src" style="margin:0">Sources : ${[...new Set(keys)].map(S_).join(" · ")}.</p>`;
+
+const SYL = [
+  { t: "Étude et décision", s: "Étude", steps: [
+    { t: "Étude de marché et lettres d'intention des constructeurs", org: "Direction · clients OEM (Renault Tanger, Stellantis Kénitra)", docs: "Étude de marché, volumes visés, lettres d'intention", delai: "2 à 3 mois", cout: "Interne", ref: "Business plan, onglet 05 du modèle", src: "amdie", why: "Sans engagement de volumes, ni les banques ni l'État ne suivront." },
+    { t: "Business plan, modèle financier et scénarios de financement", org: "Département financier", docs: "Modèle Excel, scénarios A, B, C, stress tests", delai: "1 à 2 mois", cout: "Interne", ref: "Plateforme : Simulateur, Sensibilités", src: "amdie", why: "C'est la pièce centrale du dossier bancaire et de la convention avec l'État." },
+    { t: "Premier rendez-vous avec l'AMDIE et le CRI de Tanger-Tétouan-Al Hoceima", org: "AMDIE (Morocco Now) · CRI", docs: "Présentation du projet (10 pages), besoins en foncier et en emplois", delai: "2 à 4 semaines", cout: "Gratuit", ref: "Loi n° 47-18 modifiée par la loi n° 22-24", src: "cri", why: "Le CRI est le guichet unique : il oriente vers le foncier, les autorisations et les primes." },
+    { t: "Décision d'investissement du conseil d'administration de la maison mère", org: "Conseil d'administration", docs: "Procès-verbal, plan de financement validé", delai: "1 mois", cout: "—", ref: "Loi n° 17-95 sur les SA", src: "ompic", why: "Engage l'apport en fonds propres de 350 MDH (scénario B)." }] },
+  { t: "Création de la société de projet (SA)", s: "Société", steps: [
+    { t: "Certificat négatif (réservation du nom)", org: "OMPIC, en ligne ou au CRI", docs: "Trois propositions de dénomination, pièce d'identité du demandeur", delai: "24 à 72 heures", cout: "≈ 230 DH", ref: "OMPIC", src: "ompic", why: "Garantit que le nom « Détroit Plasturgie Automobile » n'est pas déjà pris." },
+    { t: "Rédaction et signature des statuts de la SA", org: "Avocat ou notaire", docs: "Statuts, liste des actionnaires (5 au moins), déclaration de souscription", delai: "1 semaine", cout: "Honoraires libres", ref: "Loi n° 17-95 : capital minimum 300 000 DH, libéré d'au moins un quart", src: "ompic", why: "La SA est imposée par la taille du projet, l'arrivée possible d'un co-investisseur et le commissaire aux comptes." },
+    { t: "Légalisation des signatures", org: "Bureau de légalisation de la commune (moqataa)", docs: "Statuts, procurations, PV de nomination du conseil", delai: "1 jour", cout: "Quelques dirhams par signature", ref: "Formalité administrative", src: "cri", why: "Sans signature légalisée, l'enregistrement et le registre du commerce refusent le dossier." },
+    { t: "Dépôt du capital et attestation de blocage", org: "Banque marocaine (compte de la société en formation)", docs: "Statuts signés, bulletins de souscription, pièces d'identité", delai: "2 à 5 jours", cout: "Frais bancaires", ref: "Loi n° 17-95", src: "ompic", why: "L'attestation de blocage prouve le versement du capital." },
+    { t: "Enregistrement, identifiant fiscal, taxe professionnelle et ICE", org: "DGI, via le CRI", docs: "Statuts enregistrés, attestation de blocage, bail ou domiciliation", delai: "3 à 7 jours", cout: "Droits d'enregistrement selon le capital", ref: "CGI ; loi n° 47-06 (taxe professionnelle exonérée 5 ans)", src: "cgi", why: "L'identifiant commun de l'entreprise (ICE, 15 chiffres) est exigé par la douane, la CNSS et l'Office des changes." },
+    { t: "Immatriculation au registre du commerce de Tanger", org: "Tribunal de commerce de Tanger, via le CRI", docs: "Dossier complet, certificat négatif, statuts, IF", delai: "2 à 5 jours", cout: "≈ 350 DH de greffe", ref: "Code de commerce", src: "cri", why: "La société existe juridiquement à partir de l'immatriculation." },
+    { t: "Publications légales et affiliation à la CNSS", org: "Journal d'annonces légales, Bulletin officiel, CNSS", docs: "Extrait du RC, avis de constitution", delai: "1 à 2 semaines", cout: "≈ 1 500 à 3 000 DH", ref: "Loi n° 17-95 ; dahir sur la sécurité sociale", src: "cnss", why: "L'affiliation à la CNSS est obligatoire avant la première embauche." },
+    { t: "Actionnaire étranger : apostille et traduction", org: "Pays d'origine, traducteur assermenté au Maroc", docs: "Extrait K-bis de la maison mère, PV, passeports, apostille de La Haye", delai: "2 à 4 semaines", cout: "Variable", ref: "Convention de La Haye (Maroc partie depuis 2016)", src: "oc", why: "Prévoir ce délai si un co-investisseur étranger entre au capital (scénario A)." }] },
+  { t: "Terrain", s: "Terrain", steps: [
+    { t: "Demande d'attribution d'un lot à Gzenaya (Tanger Free Zone)", org: "Tanger Med Zones (aménageur de la zone)", docs: "Fiche projet, plan d'implantation, besoins en énergie et en eau", delai: "1 à 2 mois", cout: "Grille 2024 : 700 DH/m² au-delà de 9 000 m²", ref: "Cahier tarifaire TMZ 2024", src: "tmz", why: "Zone d'accélération industrielle à côté de l'aéroport : exonération d'IS de 5 ans et procédures douanières simplifiées." },
+    { t: "Note de renseignements urbanistiques et vérification du titre foncier", org: "Agence urbaine · Conservation foncière (ANCFCC)", docs: "Numéro du titre foncier, plan cadastral, certificat de propriété", delai: "1 à 2 semaines", cout: "≈ 100 DH par certificat", ref: "Dahir du 12 août 1913 sur l'immatriculation", src: "notaire", why: "Vérifier les servitudes, les hypothèques et la constructibilité industrielle avant de signer." },
+    { t: "Acte de vente chez le notaire", org: "Notaire", docs: "Compromis, titre foncier, statuts et RC de l'acquéreur, quitus fiscal du vendeur", delai: "2 à 4 semaines", cout: "Honoraires ≈ 1 % + TVA 10 %", ref: "Loi n° 32-09 (notariat)", src: "notaire", why: "Seul l'acte notarié permet l'inscription à la conservation foncière." },
+    { t: "Enregistrement et inscription à la conservation foncière", org: "DGI · ANCFCC", docs: "Acte de vente", delai: "1 à 3 semaines", cout: "Enregistrement 5 % (terrain nu) + conservation 1,5 %", ref: "CGI art. 133-G ; tarif de l'ANCFCC", src: "art133", why: "L'inscription rend l'acquisition opposable aux tiers et permet l'hypothèque bancaire." }] },
+  { t: "Autorisations et construction", s: "Permis", steps: [
+    { t: "Dépôt du dossier d'investissement au CRI", org: "CRI Tanger-Tétouan-Al Hoceima (commission régionale unifiée d'investissement)", docs: "Dossier projet, plan de masse, étude d'impact, business plan", delai: "20 jours d'examen + 10 jours pour les actes", cout: "Gratuit", ref: "Loi n° 47-18 modifiée par la loi n° 22-24 (2025)", src: "crui", why: "La commission délivre ou coordonne les autorisations et les éventuelles dérogations." },
+    { t: "Étude d'impact sur l'environnement et décision d'acceptabilité", org: "Bureau d'études agréé · comité régional d'évaluation environnementale", docs: "Étude d'impact (rejets, bruit, déchets plastiques, énergie), enquête publique", delai: "3 à 4 mois", cout: "≈ 300 000 à 600 000 DH d'étude (estimation)", ref: "Loi n° 49-17 du 8 août 2020", src: "l4917", why: "Sans décision d'acceptabilité environnementale, le permis de construire ne peut pas être délivré." },
+    { t: "Permis de construire via la plateforme Rokhas", org: "Commune · agence urbaine · protection civile", docs: "Plans d'architecte, études du bureau d'études techniques, titre foncier", delai: "≈ 2 mois d'instruction", cout: "Honoraires d'architecte et de BET ≈ 4 à 6 % des travaux", ref: "Loi n° 12-90 sur l'urbanisme ; loi n° 66-12", src: "rokhas", why: "Dépôt 100 % en ligne par l'architecte mandataire." },
+    { t: "Raccordements électricité, eau et assainissement", org: "Amendis ou ONEE selon la commune · aménageur de la zone", docs: "Demande de puissance (poste moyenne tension), plans", delai: "3 à 6 mois", cout: "Selon puissance ; électricité MT ≈ 0,74 à 1,42 DH/kWh TTC", ref: "Contrat d'abonnement", src: "elec", why: "Les presses à injection demandent une forte puissance : à lancer dès l'obtention du permis." },
+    { t: "Chantier, bureau de contrôle et réception", org: "Entreprise générale · bureau de contrôle", docs: "Marché de travaux, PV de réception", delai: "12 mois (2027)", cout: "180 MDH de bâtiments au budget", ref: "Planning de mise en œuvre", src: "build", why: "Le planning suppose une mise en service le 1er juillet 2028." },
+    { t: "Permis d'habiter (certificat de conformité) et autorisation d'exploitation", org: "Commune · protection civile · autorités locales", docs: "PV de réception, certificat de conformité, rapport incendie", delai: "1 à 2 mois", cout: "Faible", ref: "Dahir de 1914 sur les établissements classés", src: "cri", why: "Obligatoire avant d'ouvrir l'usine au personnel." }] },
+  { t: "Financement et incitations", s: "Financement", steps: [
+    { t: "Demande de convention d'investissement et de primes (Charte)", org: "CRI puis commission nationale ou régionale", docs: "Dossier projet, programme d'investissement, emplois, calendrier", delai: "2 à 4 mois", cout: "Gratuit", ref: "Loi-cadre n° 03-22 ; décret n° 2-23-1", src: "charte", why: "Seuil : 50 MDH et 50 emplois stables. Primes cumulées plafonnées à 30 %." },
+    { t: "Mandat aux banques et term sheet", org: "Pool bancaire (chef de file + 2 à 3 banques)", docs: "Business plan, modèle, statuts, garanties proposées", delai: "2 à 3 mois", cout: "Commission d'arrangement ≈ 1 %", ref: "Notice N6 Crédit du Maroc : 10 ans au plus, franchise 24 mois", src: "cdm6", why: "Voir la page Banques et financement." },
+    { t: "Contrat de crédit-bail pour le matériel (180 MDH)", org: "Wafabail, Maghrebail, Maroc Leasing…", docs: "Factures pro forma, contrat cadre", delai: "1 à 2 mois", cout: "Taux implicite ≈ 5,5 à 6,5 %", ref: "Code de commerce, art. 431 et suivants", src: "apsf", why: "Réduit l'apport en fonds propres sans diluer la maison mère (scénario B)." },
+    { t: "Signature des crédits et prise des garanties", org: "Notaire · banques", docs: "Hypothèque du terrain, nantissement du matériel, cession de créances", delai: "1 mois", cout: "Frais d'hypothèque ≈ 1,5 % (conservation) + notaire", ref: "Covenants : DSCR ≥ 1,20x ; dette nette / EBITDA ≤ 3,5x", src: "cdm6", why: "Le premier tirage n'a lieu qu'après la levée des conditions suspensives." }] },
+  { t: "Équipements et douane", s: "Douane", steps: [
+    { t: "Appel d'offres et commande des presses, moules et robots", org: "Achats · ingénierie", docs: "Cahier des charges, comparatif de 3 offres, contrats (Incoterms)", delai: "3 à 6 mois de fabrication", cout: "≈ 355 MDH de machines", ref: "Politique achats", src: "awb", why: "Les presses de gros tonnage ont des délais longs : commander dès la signature des crédits." },
+    { t: "Crédit documentaire à l'import", org: "Banque · Office des changes", docs: "Facture pro forma, engagement d'importation, ICE", delai: "1 semaine", cout: "2,5 ‰ le 1er mois (min. 250 DH) puis 1,25 ‰ par mois", ref: "Instruction générale des opérations de change 2026", src: "cdm3", why: "Protège l'acheteur et le fournisseur : paiement contre documents conformes." },
+    { t: "Exonérations à l'importation (TVA et droits de douane)", org: "DGI · ADII (douane)", docs: "Convention avec l'État, liste des biens, demandes d'achat en exonération", delai: "Avant chaque importation", cout: "Économie ≈ 150 MDH de TVA à préfinancer", ref: "CGI art. 92-I-6° et 123-22° (36 mois) ; circulaire n° 6398/210", src: "douane", why: "Sans attestation, la TVA à 20 % est payée à la frontière puis remboursée des mois plus tard." },
+    { t: "Dédouanement, installation et essais", org: "Transitaire · ADII (système BADR) · fournisseurs", docs: "DUM, factures, certificats d'origine", delai: "Janvier à juin 2028", cout: "Ingénierie et mise en service : 30 MDH", ref: "Code des douanes", src: "douane", why: "Essais de moules et premières pièces types avant la production en série." }] },
+  { t: "Recrutement et ressources humaines", s: "RH", steps: [
+    { t: "Organigramme, grille des salaires et plan de recrutement", org: "Direction des ressources humaines", docs: "Fiches de poste, grille, budget de masse salariale", delai: "1 mois", cout: "Voir le business plan 5 ans", ref: "Code du travail (loi n° 65-99)", src: "sal1", why: "256 personnes en 2028, 575 en 2029, environ 725 en régime de croisière." },
+    { t: "Recrutement des opérateurs avec l'ANAPEC (Idmaj, Tahfiz)", org: "ANAPEC · OFPPT · IFMIA de Tanger", docs: "Offres d'emploi, conventions de stage et de formation", delai: "3 à 6 mois avant le démarrage", cout: "Exonérations de charges sur les contrats Idmaj", ref: "Programmes ANAPEC", src: "anapec", why: "Former les opérateurs à l'injection avant les essais de juin 2028." },
+    { t: "Immatriculation des salariés, règlement intérieur, médecine du travail", org: "CNSS · inspection du travail", docs: "Déclarations d'embauche, règlement intérieur visé", delai: "Dès l'embauche", cout: "Charges patronales ≈ 22,7 % (CNSS, AMO, formation professionnelle)", ref: "Code du travail, art. 138 et 304", src: "cnssr", why: "Au-delà de 50 salariés : service médical du travail et comité de sécurité et d'hygiène." }] },
+  { t: "Démarrage et exploitation", s: "Démarrage", steps: [
+    { t: "Homologation par les clients (PPAP) et certification IATF 16949", org: "Clients OEM · organisme certificateur", docs: "Dossiers PPAP, audits qualité", delai: "3 à 6 mois", cout: "≈ 0,5 à 1 MDH d'audits (estimation)", ref: "Norme IATF 16949", src: "tac", why: "Aucun constructeur ne commande en série sans pièces homologuées." },
+    { t: "Obligations fiscales et comptables courantes", org: "DGI · commissaire aux comptes", docs: "Déclarations de TVA, acomptes d'IS, états de synthèse CGNC", delai: "Mensuel, trimestriel, annuel", cout: "Honoraires du commissaire aux comptes", ref: "CGI ; loi n° 9-88 (comptabilité)", src: "cgi", why: "La SA doit nommer un commissaire aux comptes et tenir une assemblée annuelle." },
+    { t: "Reporting aux banques et suivi des covenants", org: "Département financier", docs: "Comptes certifiés, calcul du DSCR et du levier", delai: "Semestriel", cout: "Interne", ref: "Contrats de crédit", src: "cdm6", why: "Un covenant franchi peut rendre la dette exigible : voir les stress tests." }] }
+];
+const SYL_DOCS = [
+  ["Statuts de la SA", "Signatures légalisées à la commune", "Création"], ["Procès-verbal de nomination du conseil et du DG", "Signatures légalisées", "Création"],
+  ["Procurations (avocat, notaire, transitaire)", "Signatures légalisées", "Création"], ["Pièces d'identité des actionnaires et dirigeants", "Copies certifiées conformes", "Création"],
+  ["Documents de la maison mère étrangère (K-bis, PV)", "Apostille + traduction assermentée", "Création"], ["Bulletins de souscription et attestation de blocage", "Délivrée par la banque", "Création"],
+  ["Compromis et acte de vente du terrain", "Acte notarié", "Terrain"], ["Certificat de propriété et plan cadastral", "Délivrés par l'ANCFCC", "Terrain"],
+  ["Plans d'architecte et études techniques", "Signés par l'architecte et le BET", "Permis"], ["Étude d'impact sur l'environnement", "Bureau d'études agréé", "Permis"],
+  ["Convention d'investissement avec l'État", "Signée par les ministères concernés", "Financement"], ["Contrats de crédit et actes d'hypothèque", "Actes notariés", "Financement"],
+  ["Engagements d'importation, factures pro forma", "Domiciliés en banque", "Douane"], ["Contrats de travail et règlement intérieur", "Contrats légalisés ; règlement visé par l'inspection", "RH"]];
+const SYL_GANTT = [["Étude et décision", "2026-06-01", "2026-10-15"], ["Création de la société", "2026-10-15", "2026-11-30"], ["Terrain", "2026-11-01", "2027-02-28"],
+  ["Autorisations (CRI, étude d'impact, permis)", "2026-11-01", "2027-03-31"], ["Financement et convention", "2026-10-01", "2027-03-31"], ["Construction", "2027-03-01", "2028-03-31"],
+  ["Équipements et douane", "2027-04-01", "2028-06-30"], ["Recrutement et formation", "2027-09-01", "2028-12-31"], ["Démarrage et homologation", "2028-07-01", "2028-12-31"]];
+const SYL_ORG = [["CRI Tanger-Tétouan-Al Hoceima", "Guichet unique : création, autorisations, convention", "cri"], ["AMDIE (Morocco Now)", "Promotion, accueil des investisseurs étrangers", "amdie"],
+  ["Tanger Med Zones", "Aménageur de Tanger Free Zone (Gzenaya) et de TAC : terrain, location", "tac"], ["OMPIC", "Certificat négatif, registre du commerce central", "ompic"],
+  ["DGI", "Identifiant fiscal, enregistrement, exonérations de TVA", "cgi"], ["ANCFCC", "Titre foncier, inscription de la vente et des hypothèques", "notaire"],
+  ["Ministère de la Transition énergétique (Environnement)", "Étude d'impact, acceptabilité environnementale", "envs"], ["Commune, agence urbaine (Rokhas)", "Permis de construire, permis d'habiter", "rokhas"],
+  ["ADII (douane)", "Dédouanement, exonérations des droits", "douane"], ["Office des changes", "Règlement des importations, rapatriement des dividendes", "oc"],
+  ["CNSS · ANAPEC", "Affiliation, recrutement, contrats aidés", "anapec"], ["Banques · Tamwilcom", "Crédits, crédit-bail, garanties", "tamwil"]];
+const WEB = { de: ["https://www.directentreprise.ma", "directentreprise.ma"], dgi: ["https://www.tax.gov.ma", "tax.gov.ma"], anc: ["https://www.ancfcc.gov.ma", "ancfcc.gov.ma"],
+  rok: ["https://www.rokhas.ma", "rokhas.ma"], cri: ["https://www.cri-invest.ma", "cri-invest.ma"], env: ["https://e-services.environnement.gov.ma", "e-services.environnement.gov.ma"],
+  dam: ["https://www.damancom.ma", "damancom.ma (CNSS)"], ame: ["https://www.amendis.ma", "amendis.ma"], dou: ["https://www.douane.gov.ma", "douane.gov.ma (BADR)"], pn: ["https://www.portnet.ma", "portnet.ma"],
+  ana: ["https://www.anapec.org", "anapec.org"], omp: ["http://www.ompic.ma", "ompic.ma"] };
+const W_ = (k) => k ? L_(WEB[k][0], WEB[k][1]) : "—";
+// [papier, guichet à Tanger, en ligne, frais, montant pour le total (DH, valeur centrale), délai, certitude]
+const SYL_WHERE = [
+  ["Certificat négatif (nom de la société)", "OMPIC, guichet du CRI à Tanger", "de", "175 à 230 DH", 230, "24 à 72 h", "Sources concordantes"],
+  ["Légalisation des signatures (statuts, PV, procurations)", "Bureau de légalisation de l'arrondissement ou de la commune", "", "≈ 20 DH par signature (timbre)", 400, "Immédiat", "Estimation"],
+  ["Attestation de blocage du capital", "Agence de la banque choisie, à Tanger", "", "Frais de dossier bancaires", 500, "1 à 3 jours", "Selon la banque"],
+  ["Enregistrement des statuts", "Direction régionale des impôts de Tanger (DGI)", "dgi", "Droit fixe ≈ 1 000 DH", 1000, "1 à 3 jours", "À confirmer (CGI art. 135)"],
+  ["Identifiant fiscal, taxe professionnelle, ICE", "DGI, via le CRI", "dgi", "Gratuit ; TP exonérée 5 ans", 0, "1 à 3 jours", "CGI ; loi 47-06"],
+  ["Immatriculation au registre du commerce", "Greffe du tribunal de commerce de Tanger, via le CRI", "de", "≈ 350 DH", 350, "2 à 5 jours", "Estimation"],
+  ["Annonce légale et Bulletin officiel", "Journal d'annonces légales ; Imprimerie officielle", "", "≈ 1 500 à 3 000 DH", 2500, "1 à 2 semaines", "Estimation"],
+  ["Affiliation de la société et des salariés à la CNSS", "Agence CNSS de Tanger", "dam", "Gratuit", 0, "1 semaine", "—"],
+  ["Certificat de propriété et plan cadastral du lot", "Conservation foncière de Tanger (ANCFCC)", "anc", "≈ 100 DH par certificat", 300, "1 à 3 jours", "Guides de frais"],
+  ["Note de renseignements urbanistiques", "Agence urbaine de Tanger", "", "Faible", 0, "1 à 2 semaines", "—"],
+  ["Acte de vente, enregistrement et inscription du terrain", "Notaire ; DGI ; Conservation foncière", "anc", "7,6 % du prix : 4,26 MDH", 4260000, "2 à 6 semaines", "Voir la page Terrain"],
+  ["Dossier d'investissement et autorisations (CRUI)", "CRI Tanger-Tétouan-Al Hoceima (Tanger, quartier de la Wilaya)", "cri", "Gratuit", 0, "20 jours + 10 jours", "Loi 22-24"],
+  ["Décision d'acceptabilité environnementale", "Comité régional d'évaluation environnementale, via le CRI", "env", "Étude d'impact : 300 000 à 600 000 DH", 450000, "3 à 4 mois", "Estimation (bureau d'études)"],
+  ["Permis de construire", "Commune de Gzenaya (urbanisme) et Agence urbaine", "rok", "Taxe sur les opérations de construction ≈ 10 à 20 DH/m² couvert : 0,4 à 0,9 MDH", 650000, "≈ 2 mois", "À confirmer (loi 47-06)"],
+  ["Honoraires d'architecte, bureau d'études et bureau de contrôle", "Cabinets privés", "", "≈ 4,7 % des travaux : 8,2 MDH (inclus dans les 180 MDH)", 0, "Pendant le projet", "Estimation"],
+  ["Raccordement électricité, eau, assainissement", "Amendis (ou ONEE selon la zone) ; aménageur Tanger Med Zones", "ame", "Sur devis selon la puissance", 0, "3 à 6 mois", "Devis"],
+  ["Permis d'habiter et certificat de conformité", "Commune de Gzenaya ; protection civile", "rok", "Faible", 0, "1 à 2 mois", "—"],
+  ["Convention d'investissement et primes", "CRI, puis commission d'investissement", "cri", "Gratuit", 0, "2 à 4 mois", "Décret 2-23-1"],
+  ["Attestation d'exonération de TVA à l'import", "Direction régionale des impôts de Tanger", "dgi", "Gratuit (économie ≈ 150 MDH de préfinancement)", 0, "Avant chaque import", "CGI art. 123"],
+  ["Dédouanement des équipements", "Douane (ADII), bureaux de Tanger Med et de Tanger Free Zone", "dou", "Transitaire ≈ 0,1 à 0,3 % de la valeur", 700000, "Quelques jours", "Estimation"],
+  ["Recrutement aidé (Idmaj, Tahfiz)", "Agence ANAPEC de Tanger", "ana", "Gratuit", 0, "Continu", "—"],
+  ["Certification qualité IATF 16949", "Organisme certificateur accrédité", "", "≈ 0,5 à 1 MDH", 750000, "3 à 6 mois", "Estimation"]];
+let sylDone = {};
+function initSyllabus() {
+  sylDone = lsGet("t2syl", {});
+  if (!rendered.syllabus) $("sylReset").addEventListener("click", () => { if (!confirm("Effacer votre avancement ?")) return; sylDone = {}; lsSet("t2syl", sylDone); drawSyllabus(); });
+  drawSyllabus();
+  $("sylDocs").innerHTML = "<thead><tr><th>Document</th><th class='wrap'>Forme exigée</th><th>Phase</th></tr></thead><tbody>" + SYL_DOCS.map((d) => `<tr><td class="wrap">${d[0]}</td><td class="wrap">${d[1]}</td><td>${d[2]}</td></tr>`).join("") + "</tbody>";
+  $("sylWhere").innerHTML = "<thead><tr><th class='wrap'>Papier ou autorisation</th><th class='wrap'>Où l'obtenir à Tanger</th><th>En ligne</th><th class='wrap'>Frais</th><th>Délai</th><th class='wrap'>Fiabilité du chiffre</th></tr></thead><tbody>"
+    + SYL_WHERE.map((w) => `<tr><td class="wrap"><b>${w[0]}</b></td><td class="wrap">${w[1]}</td><td class="wrap">${W_(w[2])}</td><td class="wrap">${w[3]}</td><td>${w[5]}</td><td class="wrap">${w[6]}</td></tr>`).join("") + "</tbody>";
+  const totW = SYL_WHERE.reduce((a, w) => a + w[4], 0);
+  $("sylWhereTot").innerHTML = `<p style="margin:0"><span class="pill gold">≈ ${fmt(totW / 1e6, 2)} MDH</span> de frais administratifs, d'études et de démarches (valeurs centrales, hors honoraires d'architecte déjà dans les bâtiments), dont 4,26 MDH pour l'acquisition du terrain. Ces frais sont couverts par les « frais préopérationnels » (22 MDH) et la provision pour aléas du budget.</p>
+    <p class="src" style="margin:0">Les guichets sont ceux de Tanger ; le CRI centralise la plupart des démarches. Les adresses exactes sont à vérifier sur les sites officiels ci-dessus avant de se déplacer.</p>`;
+  $("sylOrg").innerHTML = "<thead><tr><th>Organisme</th><th class='wrap'>Rôle pour le projet</th><th>Lien</th></tr></thead><tbody>" + SYL_ORG.map((o) => `<tr><td>${o[0]}</td><td class="wrap">${o[1]}</td><td class="wrap">${S_(o[2])}</td></tr>`).join("") + "</tbody>";
+  const c = COLS(), g = SYL_GANTT.slice().reverse();
+  plot("sylGantt", [{ type: "bar", orientation: "h", y: g.map((x) => x[0]), base: g.map((x) => x[1]), x: g.map((x) => new Date(x[2]) - new Date(x[1]) + 864e5),
+    marker: { color: g.map((x) => x[0] === "Construction" ? c.gold : c.A) }, hovertemplate: "%{y}<extra></extra>" }],
+    { hovermode: "closest", showlegend: false, margin: { l: 250, r: 16, t: 10, b: 40 }, xaxis: { type: "date", gridcolor: c.line, color: c.muted }, yaxis: { automargin: true, color: c.ink }, shapes: [vline("2028-07-01", c.ko)] });
+}
+function drawSyllabus() {
+  const tot = SYL.reduce((a, p) => a + p.steps.length, 0), done = Object.values(sylDone).filter(Boolean).length;
+  $("sylTiles").innerHTML = tile("Étapes", tot, "de l'étude au démarrage") + tile("Réalisées", done, pct(done / tot, 0)) + tile("Organismes", SYL_ORG.length, "à contacter")
+    + tile("Durée totale", "≈ 24 mois", "juin 2026 → mise en service 07/2028") + tile("Papiers à légaliser", SYL_DOCS.length, "voir la liste");
+  $("sylStepper").innerHTML = SYL.map((p, i) => { const n = p.steps.filter((_, j) => sylDone[i + "." + j]).length;
+    const cls = n === p.steps.length ? "ok" : n > 0 ? "now" : ""; return `<li class="${cls}" data-i="${i}"><span class="dot2"></span><b>${i}. ${p.s}</b><small>${n}/${p.steps.length}</small></li>`; }).join("");
+  $("sylStepper").querySelectorAll("li").forEach((li) => li.addEventListener("click", () => { const el = $("sylPh" + li.dataset.i); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }));
+  $("sylPhases").innerHTML = SYL.map((p, i) => { const n = p.steps.filter((_, j) => sylDone[i + "." + j]).length;
+    return `<div class="panel phase" id="sylPh${i}"><div class="phd"><h3>Phase ${i} · ${p.t}</h3><span class="pill ${n === p.steps.length ? "ok" : "gold"}">${n}/${p.steps.length} étapes</span></div>
+      <div class="bar"><i style="width:${100 * n / p.steps.length}%"></i></div>`
+      + p.steps.map((s, j) => { const k = i + "." + j, d = !!sylDone[k];
+        return `<div class="step${d ? " done" : ""}"><input type="checkbox" id="syl_${i}_${j}" data-k="${k}"${d ? " checked" : ""} aria-label="Étape réalisée"><label class="t" for="syl_${i}_${j}">${s.t}</label>
+          <div class="meta"><span><b>Organisme</b>${s.org}</span><span><b>Documents</b>${s.docs}</span><span><b>Délai</b>${s.delai}</span><span><b>Coût</b>${s.cout}</span><span><b>Texte de référence</b>${s.ref}</span><span><b>Source</b>${S_(s.src)}</span></div>
+          <p class="why">${s.why}</p></div>`; }).join("") + "</div>"; }).join("");
+  $("sylPhases").querySelectorAll("input[type=checkbox]").forEach((cb) => cb.addEventListener("change", () => { sylDone[cb.dataset.k] = cb.checked; lsSet("t2syl", sylDone); const y = window.scrollY; drawSyllabus(); window.scrollTo({ top: y }); }));
+}
+
+// terrain
+const TRN_ZONES = [
+  { id: "tfz", n: "Gzenaya : Tanger Free Zone, près de l'aéroport", st: "Zone d'accélération industrielle", am: "Tanger Med Zones", prix: 700, pr: "700 DH/m² retenus (grille TMZ 2024, lots ≥ 9 000 m²) ; fiche de la zone : 600 DH/m² ; offre écrite à obtenir", av: "Exonération d'IS 5 ans en ZAI (CGI art. 6-II-B-8°) ; ≈ 2 km de l'aéroport, 7 km du centre de Tanger et 40 km du port Tanger Med à vol d'oiseau", src: "tmz", rec: true },
+  { id: "prv", n: "Gzenaya : zone industrielle, marché privé (hors ZAI)", st: "Terrain privé titré", am: "Particuliers, agences (MBI Maroc, Avito)", prix: 1100, pr: "≈ 1 100 à 5 000 DH/m² selon les annonces ; un lot de 30 000 m² annoncé sans prix", av: "Même localisation, mais sans les avantages ZAI et à un prix plus élevé", src: "mbi" },
+  { id: "tac", n: "Tanger Automotive City (TAC), Jouamaa", st: "Zone d'accélération industrielle", am: "Tanger Med Zones", prix: 700, pr: "900 DH/m² (< 2 000 m²) → 700 DH/m² (≥ 9 000 m²), grille 2024", av: "Alternative : écosystème Renault, location clé en main possible, plus loin de la ville", src: "tmz" },
+  { id: "tet", n: "Tétouan Park", st: "Zone d'accélération industrielle", am: "Tanger Med Zones", prix: 0, pr: "Sur demande", av: "Plus éloigné des clients et du port Tanger Med", src: "tac" }];
+const TRN_BENCH = [["MP Industry (injection plastique, Renault)", "TAC, 2024", "437,6 MDH", "150", "35 000 m²", "mp"], ["Aptiv (8e usine)", "Tanger Tech, 2024", "450 MDH", "3 000 (objectif)", "6 ha", "sal1"],
+  ["Hands (jantes aluminium)", "TAC", "4,3 Md DH", "1 600", "n.d.", "tac"], ["Lear", "Meknès, 2022", "200 MDH", "> 2 000", "54 000 m²", "sal1"], ["DPA Tanger II (projet)", "Gzenaya, 2028", "791 MDH", "≈ 725", "8 ha · 43 500 m² couverts", "tmz"]];
+function initTerrain() {
+  if (!rendered.terrain) {
+    const z = $("trnZone"); TRN_ZONES.filter((x) => x.prix).forEach((x) => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.n; z.appendChild(o); });
+    z.addEventListener("change", () => { $("trnPrix").value = TRN_ZONES.find((x) => x.id === z.value).prix; calcTerrain(); });
+    ["trnSurf", "trnPrix", "trnDe"].forEach((id) => $(id).addEventListener("input", calcTerrain));
+  }
+  $("trnCard").innerHTML = `<div class="trnhead"><div><span class="eyebrow">Terrain retenu</span><h3>Lot industriel de 8 ha à Gzenaya (Tanger Free Zone)</h3>
+    <p style="margin:0">Zone d'accélération industrielle de Gzenaya, aménagée par Tanger Med Zones, à côté de l'aéroport Ibn Battouta. Lot visé : 80 000 m². Prix retenu : 700 DH/m², tarif de la grille officielle 2024 pour les lots de plus de 9 000 m², en attendant l'offre écrite propre à la zone. Voir aussi la page Carte 4D du site.</p></div>
+    <div class="kv"><span>Surface</span><span>80 000 m²</span><span>Prix grille 2024</span><span>700 DH/m²</span><span>Prix du terrain</span><span>56,0 MDH</span><span>Surface couverte prévue</span><span>43 500 m²</span><span>Statut</span><span>ZAI</span><span>Commune</span><span>Gzenaya (Tanger-Assilah)</span></div>
+    <div class="src">Sources : ${S_("tmz")} · ${S_("tac")} · ${S_("onudi")}. Lecture du tableau tarifaire à faire confirmer par une offre écrite de Tanger Med Zones avant signature.</div></div>`;
+  $("trnZones").innerHTML = "<thead><tr><th>Option</th><th>Statut</th><th>Aménageur / vendeur</th><th class='wrap'>Prix observé</th><th class='wrap'>Avantages et limites</th><th>Source</th></tr></thead><tbody>"
+    + TRN_ZONES.map((x) => `<tr${x.rec ? ' style="font-weight:600"' : ""}><td class="wrap">${x.n}${x.rec ? ' <span class="pill ok">retenu</span>' : ""}</td><td>${x.st}</td><td class="wrap">${x.am}</td><td class="wrap">${x.pr}</td><td class="wrap">${x.av}</td><td class="wrap">${S_(x.src)}</td></tr>`).join("")
+    + `<tr><td class="wrap">Location d'un bâtiment clé en main (TAC)</td><td>ZAI</td><td>Tanger Med Zones</td><td class="wrap">Loyer sur devis</td><td class="wrap">Moins de CAPEX, mais pas de garantie hypothécaire pour les banques et moins de flexibilité pour 43 500 m²</td><td>${S_("onudi")}</td></tr></tbody>`;
+  $("trnMap").innerHTML = `<svg viewBox="0 0 520 300" role="img" aria-label="Schéma de situation : Tanger, Tanger Med, Tanger Automotive City, Tétouan">
+    <rect class="sea" x="0" y="0" width="520" height="300"/>
+    <path class="land" d="M0 95 C60 80 110 70 150 78 C190 86 230 70 280 60 C330 52 380 64 420 58 C455 54 490 62 520 70 L520 300 L0 300 Z"/>
+    <text x="210" y="32">Détroit de Gibraltar</text><text class="lbl" x="18" y="40">Océan Atlantique</text><text class="lbl" x="440" y="40">Méditerranée</text>
+    <path class="road" d="M130 105 C200 120 260 125 330 118 C380 112 420 100 455 88"/><path class="road" d="M260 125 C265 170 280 205 300 230"/><path class="road" d="M330 118 C360 170 400 220 430 255"/>
+    <circle cx="130" cy="100" r="7" fill="var(--steel)"/><text x="80" y="128">Tanger</text>
+    <circle cx="105" cy="140" r="10" fill="var(--orange)"/><text x="20" y="168">Gzenaya · terrain DPA</text><text class="lbl" x="30" y="182">Tanger Free Zone, aéroport</text>
+    <rect x="448" y="80" width="14" height="14" fill="var(--steel)"/><text x="400" y="118">Port Tanger Med</text>
+    <circle cx="300" cy="230" r="6" fill="var(--muted)"/><text class="lbl" x="255" y="255">Melloussa (Renault)</text>
+    <circle cx="262" cy="190" r="5" fill="var(--muted)"/><text class="lbl" x="200" y="185">Tanger Automotive City</text>
+    <circle cx="430" cy="255" r="6" fill="var(--muted)"/><text class="lbl" x="400" y="285">Tétouan Park</text></svg>`;
+  $("trnTnb").innerHTML = dl([["Texte", "Loi 47-06, modifiée par les lois 07-20 et 14-25"], ["Tarif 2026, zones bien équipées", "15 à 30 DH/m²"],
+    ["Zones moyennement équipées", "5 à 15 DH/m²"], ["Zones peu équipées", "0,5 à 2 DH/m²"]]) + `
+    <p style="margin:0">Application au projet : pendant le chantier, le permis de construire exonère le terrain (3 ans selon les guides consultés). En exploitation, les terrains nus affectés à une activité professionnelle sont exonérés dans la limite de 5 fois la surface exploitée : les 36 500 m² non bâtis restent sous cette limite. <b>TNB retenue : 0 DH.</b> Exposition théorique si l'exonération était refusée : 80 000 m² × 5 à 15 DH = 0,4 à 1,2 MDH par an.</p>
+    <p class="src" style="margin:0">La TNB ne s'applique qu'à l'intérieur des périmètres urbains : vérifier le classement de la commune de Gzenaya auprès de ses services. Sources : ${S_("tnb")} · ${S_("tnb2")}.</p>`;
+  $("trnBench").innerHTML = "<thead><tr><th>Usine</th><th>Lieu, année</th><th>Investissement</th><th>Emplois</th><th>Surface</th></tr></thead><tbody>"
+    + TRN_BENCH.map((b) => `<tr${b[0].startsWith("DPA") ? ' style="font-weight:700"' : ""}><td class="wrap">${b[0]}</td><td>${b[1]}</td><td class="n">${b[2]}</td><td class="n">${b[3]}</td><td>${b[4]}</td></tr>`).join("") + "</tbody>"
+    + `<caption class="src" style="caption-side:bottom;text-align:left">Sources : ${S_("mp")} · ${L_("https://leseco.ma/maroc/investissements-automobiles-aptiv-inaugure-sa-huitieme-usine-a-tanger-avec-3-000-emplois-a-la-cle.html", "LesEco : Aptiv à Tanger")} · ${L_("https://www.mcinet.gov.ma/fr/content/industrie-automobile-coup-d%E2%80%99envoi-de-l%E2%80%99usine-du-groupe-hands-%C3%A0-tanger", "Ministère de l'Industrie : Hands à Tanger")} · ${L_("https://medias24.com/2022/10/26/lear-inaugure-une-nouvelle-usine-a-meknes/", "Médias24 : Lear à Meknès")}. Ratio de DPA : 1,1 MDH par emploi, contre 2,9 MDH pour MP Industry, plus automatisée.</caption>`;
+  calcTerrain();
+}
+function calcTerrain() {
+  const s = +$("trnSurf").value || 0, p = +$("trnPrix").value || 0, de = +$("trnDe").value, prix = s * p / 1e6;
+  const r = [["Prix du terrain", prix, `${fmt(s, 0)} m² × ${fmt(p, 0)} DH`, "tmz"], ["Droits d'enregistrement", prix * de, pct(de, 0) + " du prix", "art133"],
+    ["Conservation foncière (inscription)", prix * 0.015 + 0.0001, "1,5 % + 100 DH de certificat", "notaire"], ["Honoraires du notaire", prix * 0.01, "≈ 1 % du prix", "notaire"],
+    ["TVA sur honoraires", prix * 0.001, "10 % des honoraires", "notaire"]];
+  const tot = r.reduce((a, x) => a + x[1], 0), fees = tot - prix;
+  $("trnCalc").innerHTML = "<thead><tr><th>Poste</th><th>MDH</th><th class='wrap'>Calcul</th></tr></thead><tbody>" + r.map((x) => `<tr><td>${x[0]}</td><td class="n">${fmt(x[1], 2)}</td><td class="wrap">${x[2]}</td></tr>`).join("")
+    + `<tr style="font-weight:700"><td>Coût total d'acquisition</td><td class="n">${fmt(tot, 2)}</td><td class="wrap">dont frais : ${fmt(fees, 2)} MDH (${pct(prix ? fees / prix : 0, 1)} du prix)</td></tr></tbody>`
+    + `<caption class="src" style="caption-side:bottom;text-align:left">Sources : ${S_("tmz")} · ${S_("art133")} · ${S_("notaire")}. Les guides divergent sur le taux d'enregistrement d'un terrain nu (4 à 6 %) : faire confirmer par le notaire sur le CGI 2026 (${S_("cgi")}).</caption>`;
+  const gap = tot - 46;
+  $("trnGap").innerHTML = `<p style="margin:8px 0 0">${gap > 0 ? `<span class="pill warn">+${fmt(gap, 1)} MDH par rapport aux 46 MDH du budget</span> L'écart est absorbé par la provision pour aléas de 30 MDH (il en reste ${fmt(30 - gap, 1)} MDH). À mettre à jour dans le modèle si l'offre écrite de Tanger Med Zones confirme ce prix.` : `<span class="pill ok">Dans le budget de 46 MDH</span>`}</p>`;
+}
+
+// business plan 5 ans
+const BP_Y = [2028, 2029, 2030, 2031, 2032];
+const BAT = [["Hall de production (presses, finition)", 28000, 3200], ["Magasins matières et produits finis", 10000, 2800], ["Bureaux, vestiaires, restaurant", 3500, 5500],
+  ["Locaux techniques (utilités, poste électrique)", 2000, 3500]];
+const BAT_X = [["Dallage industriel renforcé sous les presses lourdes", 18.0], ["Ponts roulants, sprinklers, ventilation", 10.0]];
+const EQ = [["Presses à injection (42 unités, 300 à 2 700 t)", 165, "Machines"], ["Moules d'injection (premières séries)", 95, "Machines"], ["Robots et périphériques (dessiccateurs, convoyeurs)", 40, "Machines"],
+  ["Lignes de peinture et de finition", 35, "Machines"], ["Postes d'assemblage et de contrôle", 20, "Machines"], ["Poste MT et distribution électrique", 18, "Installations"],
+  ["Groupes de froid et tours de refroidissement", 12, "Installations"], ["Transport et séchage de matière", 10, "Installations"], ["Climatisation et ventilation", 10, "Installations"],
+  ["Protection incendie", 8, "Installations"], ["Air comprimé", 6, "Installations"]];
+const RH = [
+  ["Direction", "Directeur d'usine", 1, 60000, "40 000 – 80 000", "sal1"], ["Direction", "Responsable commercial grands comptes", 2, 18000, "12 000 – 25 000", "sal2"],
+  ["Production", "Opérateurs de production", 520, 4000, "3 400 – 4 500 + primes", "sal1"], ["Production", "Régleurs et techniciens injection", 40, 7500, "5 500 – 9 500", "sal1"],
+  ["Production", "Chefs d'équipe", 24, 9000, "7 000 – 13 000", "sal1"], ["Production", "Responsables de production", 3, 35000, "28 000 – 45 000", "sal1"],
+  ["Maintenance", "Techniciens de maintenance", 22, 7500, "5 500 – 10 000", "sal1"], ["Maintenance", "Responsable maintenance", 1, 27000, "20 000 – 35 000", "sal1"],
+  ["Qualité", "Contrôleurs et techniciens qualité", 30, 6000, "5 000 – 8 000", "sal1"], ["Qualité", "Ingénieurs qualité", 6, 16000, "11 000 – 22 000", "sal3"], ["Qualité", "Responsable qualité", 1, 30000, "22 000 – 32 000", "sal3"],
+  ["Méthodes et process", "Ingénieurs process et méthodes", 10, 18000, "15 000 – 22 000", "sal3"],
+  ["Logistique et achats", "Magasiniers et caristes", 25, 5500, "4 500 – 7 000", "sal1"], ["Logistique et achats", "Acheteurs", 4, 13000, "8 000 – 18 000", "sal2"], ["Logistique et achats", "Responsable supply chain", 1, 30000, "20 000 – 35 000", "sal2"],
+  ["Finance", "Directrice administrative et financière", 1, 70000, "45 000 – 120 000", "sal2"], ["Finance", "Chef comptable", 1, 15000, "12 000 – 18 000", "sal4"], ["Finance", "Comptables", 4, 8000, "4 500 – 11 000", "sal4"],
+  ["Finance", "Contrôleurs de gestion", 2, 17000, "8 000 – 32 000", "sal2"], ["Finance", "Analyste financière", 1, 15000, "8 000 – 30 000", "sal2"],
+  ["Trésorerie", "Trésorier", 1, 25000, "15 000 – 35 000", "sal2"], ["Trésorerie", "Chargés de trésorerie (banques, change)", 2, 12000, "8 000 – 15 000", "sal2"], ["Trésorerie", "Assistant commerce international", 1, 8000, "6 000 – 10 000", "sal2"],
+  ["Contrôle et audit", "Contrôleur interne", 1, 18000, "12 000 – 25 000", "sal2"], ["Contrôle et audit", "Auditeur interne", 1, 20000, "8 000 – 35 000", "sal2"],
+  ["Ressources humaines", "Responsable RH", 1, 20000, "12 000 – 25 000", "sal2"], ["Ressources humaines", "Chargés RH et paie", 3, 8000, "6 000 – 10 000", "sal2"],
+  ["Support", "Informatique et systèmes", 4, 12000, "8 000 – 18 000", "sal2"], ["Support", "Hygiène, sécurité, environnement", 3, 12000, "8 000 – 16 000", "sal2"]];
+// charges patronales 2026 : AF 6,40 %, AMO 4,11 %, TFP 1,60 % sur le brut ; prestations court et long terme 8,98 % plafonnées à 6 000 DH
+const empCost = (g) => g * (1 + 0.064 + 0.0411 + 0.016) + Math.min(g, 6000) * 0.0898;
+function initBp5() {
+  fillScen("bpScen"); fillSelect("bpCase", caseNames, "1. Central");
+  if (!rendered.bp5) ["bpScen", "bpCase"].forEach((id) => $(id).addEventListener("change", initBp5));
+  const c = COLS(), sc = $("bpScen").value, R = run(S[sc], CASES[$("bpCase").value]), t = R.table, ix = BP_Y.map((y) => Y.indexOf(y));
+  const v = (f) => ix.map((i) => t[f][i]);
+  const rows = [["Volumes vendus (milliers de kits)", ix.map((i) => t.vol[i] / 1000), 0], ["Taux d'utilisation moyen", ix.map((i) => t.vol[i] / 500000), "p"],
+    ["Chiffre d'affaires", v("ca"), 1, 1], ["Charges variables", v("varc").map((x) => -x), 1], ["Charges fixes décaissables", v("fixed").map((x) => -x), 1], ["EBITDA économique", v("ebitda"), 1, 1],
+    ["Marge d'EBITDA", v("margin"), "p"], ["Redevances de crédit-bail", v("rents").map((x) => -x), 1], ["Charges d'intérêts", v("interest").map((x) => -x), 1], ["Impôt sur les sociétés", v("tax").map((x) => -x), 1],
+    ["Résultat net", v("net"), 1, 1], ["Besoin en fonds de roulement (fin d'année)", v("bfr"), 1], ["Trésorerie de clôture", v("cash"), 1], ["DSCR", v("dscr"), "x"], ["Effectif moyen", ix.map((i) => HEADCOUNT[i]), 0]];
+  $("bpTable").innerHTML = `<thead><tr><th>MDH sauf mention</th>${BP_Y.map((y) => `<th>${y}</th>`).join("")}<th>Cumul 5 ans</th></tr></thead><tbody>`
+    + rows.map(([l, a, d, b]) => `<tr${b ? ' style="font-weight:700"' : ""}><td>${l}</td>${a.map((x) => `<td class="n">${d === "p" ? pct(x, 1) : d === "x" ? (x > 0 && isFinite(x) ? xx(x) : "—") : fmt(x, d)}</td>`).join("")}<td class="n">${d === 1 ? fmt(a.reduce((p, q) => p + q, 0), 1) : ""}</td></tr>`).join("") + "</tbody>";
+  const k = R.kpi, ca = v("ca");
+  $("bpTiles").innerHTML = tile("CA 2028 (6 mois)", fmt(ca[0], 0) + " MDH", "démarrage au 1er juillet") + tile("CA 2032", fmt(ca[4], 0) + " MDH", "croissance 2029-2032 : " + pct(Math.pow(ca[4] / ca[1], 1 / 3) - 1, 1) + " par an")
+    + tile("EBITDA cumulé 5 ans", fmt(v("ebitda").reduce((a, b) => a + b, 0), 0) + " MDH", "") + tile("Résultat net cumulé", fmt(v("net").reduce((a, b) => a + b, 0), 0) + " MDH", "")
+    + tile("VAN du projet", fmt(k.npv, 0) + " MDH", "TRI " + pct(k.tri, 1)) + tile("Effectif 2032", HEADCOUNT[Y.indexOf(2032)], "salariés");
+  plot("bpChart", [{ type: "bar", x: BP_Y, y: ca, name: "Chiffre d'affaires", marker: { color: c.A }, text: ca.map((x) => fmt(x, 0)), textposition: "outside" },
+    { type: "bar", x: BP_Y, y: v("ebitda"), name: "EBITDA", marker: { color: c.gold } }], { barmode: "group", yaxis: { gridcolor: c.line, color: c.muted, ticksuffix: " " } });
+  const cs = [["2. Prudent", c.ko], ["1. Central", c.A], ["3. Favorable", c.ok]];
+  plot("bpScenChart", cs.flatMap(([n, col]) => { const tt = run(S[sc], CASES[n]).table;
+    return [{ type: "bar", x: BP_Y, y: ix.map((i) => tt.ca[i]), name: "CA · " + n.slice(3), marker: { color: col }, opacity: 0.85 },
+      { type: "scatter", mode: "lines+markers", x: BP_Y, y: ix.map((i) => tt.net[i]), name: "Résultat net · " + n.slice(3), line: { color: col, dash: "dot", width: 2 }, yaxis: "y" }]; }),
+    { barmode: "group", yaxis: { gridcolor: c.line, color: c.muted } });
+  const bt = BAT.map(([n, m2, p]) => [n, m2, p, m2 * p / 1e6]), sub = bt.reduce((a, x) => a + x[3], 0) + BAT_X.reduce((a, x) => a + x[1], 0), hon = 180 - sub;
+  $("bpBat").innerHTML = "<thead><tr><th>Ouvrage</th><th>m²</th><th>DH/m²</th><th>MDH</th></tr></thead><tbody>" + bt.map((x) => `<tr><td class="wrap">${x[0]}</td><td class="n">${fmt(x[1], 0)}</td><td class="n">${fmt(x[2], 0)}</td><td class="n">${fmt(x[3], 1)}</td></tr>`).join("")
+    + BAT_X.map((x) => `<tr><td class="wrap">${x[0]}</td><td></td><td></td><td class="n">${fmt(x[1], 1)}</td></tr>`).join("")
+    + `<tr><td class="wrap">Architecte, bureau d'études et bureau de contrôle</td><td></td><td class="n">${pct(hon / sub, 1)}</td><td class="n">${fmt(hon, 1)}</td></tr>`
+    + `<tr style="font-weight:700"><td>Total bâtiments (43 500 m² couverts)</td><td class="n">43 500</td><td></td><td class="n">180,0</td></tr></tbody>`
+    + `<caption class="src" style="caption-side:bottom;text-align:left">Prix au m² dans la fourchette de 2 800 à 4 000 DH/m² observée pour les bâtiments industriels en 2025 (${S_("build")} · ${S_("build2")}). Repère réel : MP Industry, 35 000 m² à TAC (${S_("mp")}). Estimation à confirmer par trois devis d'entreprises générales.</caption>`;
+  const eqT = EQ.reduce((a, x) => a + x[1], 0);
+  $("bpEq").innerHTML = "<thead><tr><th>Poste</th><th>MDH</th></tr></thead><tbody>" + ["Machines", "Installations"].map((cat) => {
+      const it = EQ.filter((x) => x[2] === cat), s = it.reduce((a, x) => a + x[1], 0);
+      return `<tr style="background:var(--chip)"><td><b>${cat === "Machines" ? "Machines de production" : "Installations techniques"}</b></td><td class="n"><b>${fmt(s, 0)}</b></td></tr>` + it.map((x) => `<tr><td class="wrap">${x[0]}</td><td class="n">${fmt(x[1], 0)}</td></tr>`).join(""); }).join("")
+    + `<tr style="font-weight:700"><td>Total équipements et installations</td><td class="n">${fmt(eqT, 0)}</td></tr></tbody>`
+    + `<caption class="src" style="caption-side:bottom;text-align:left">Répartition indicative : à remplacer par les offres des fournisseurs (Engel, Haitian, KraussMaffei…) après l'appel d'offres. Les moules sont souvent cofinancés par les constructeurs : point à négocier dans les contrats clients.</caption>`;
+  $("bpBfrTxt").innerHTML = `<p style="margin:0">Le BFR finance le décalage entre l'achat des matières et l'encaissement des clients. Règles retenues dans le modèle :</p>`
+    + dl([["Créances clients", "60 jours de CA"], ["Stocks de matières", "30 jours de consommation"], ["En-cours et produits finis", "12 jours de production"],
+      ["Dettes fournisseurs", "− 60 jours d'achats"], ["Dettes sociales", "− 20 jours de salaires"], ["BFR initial financé au démarrage", "107,3 MDH"],
+      ["BFR 2032", `${fmt(t.bfr[Y.indexOf(2032)], 1)} MDH (${fmt(t.bfr[Y.indexOf(2032)] / t.ca[Y.indexOf(2032)] * 360, 0)} jours de CA)`]]) + `
+    <p class="src" style="margin:0">Délais de paiement plafonnés à 60 jours (120 jours au plus par accord) par la loi n° 69-21.</p>`;
+  plot("bpBfr", [{ type: "bar", x: BP_Y, y: v("bfr"), name: "BFR", marker: { color: c.A } }, { type: "scatter", mode: "lines+markers", x: BP_Y, y: v("dbfr"), name: "Variation du BFR", line: { color: c.gold, width: 2 } }],
+    { yaxis: { gridcolor: c.line, color: c.muted } });
+  let mas = 0, emp = 0, hc = 0; const dep = {};
+  RH.forEach(([d, , n, g]) => { const a = n * g * 12 / 1e6, e = n * empCost(g) * 12 / 1e6; mas += a; emp += e; hc += n; dep[d] = dep[d] || [0, 0, 0]; dep[d][0] += n; dep[d][1] += a; dep[d][2] += e; });
+  let last = "";
+  const RS = { sal1: "[1]", sal2: "[2]", sal3: "[3]", sal4: "[4]" };
+  $("bpRh").innerHTML = "<thead><tr><th class='wrap'>Poste</th><th>Effectif</th><th class='wrap'>Brut mensuel retenu (DH)</th><th class='wrap'>Fourchette du marché (DH)</th><th class='wrap'>Coût employeur annuel (MDH)</th></tr></thead><tbody>"
+    + RH.map(([d, p, n, g, f, s]) => { const head = d !== last ? `<tr style="background:var(--chip)"><td colspan="5"><b>${d}</b> · ${dep[d][0]} personnes · ${fmt(dep[d][2], 1)} MDH de coût employeur</td></tr>` : ""; last = d;
+      return head + `<tr><td class="wrap">${p}</td><td class="n">${n}</td><td class="n">${fmt(g, 0)}</td><td class="wrap">${f} <span class="src">${RS[s]}</span></td><td class="n">${fmt(n * empCost(g) * 12 / 1e6, 2)}</td></tr>`; }).join("")
+    + `<tr style="font-weight:700"><td>Total</td><td class="n">${hc}</td><td></td><td>masse brute ${fmt(mas, 1)} MDH</td><td class="n">${fmt(emp, 1)}</td></tr></tbody>`
+    + `<caption class="src" style="caption-side:bottom;text-align:left">[1] ${S_("sal1")} · [2] ${S_("sal2")} · [3] ${S_("sal3")} · [4] ${S_("sal4")}</caption>`;
+  const withP = emp * 1.25;
+  $("bpRhNote").innerHTML = dl([["Masse salariale brute annuelle", fmt(mas, 1) + " MDH"], ["Coût employeur (charges patronales 2026)", fmt(emp, 1) + " MDH"],
+    ["Avec primes (panier, transport, ancienneté, 13e mois), environ +25 %", fmt(withP, 1) + " MDH"], ["Personnel retenu dans le modèle Excel en 2031 (MOD + personnel indirect)", "115,9 MDH"]]) + `
+    <p style="margin:0">La grille du marché donne environ ${fmt(withP, 0)} MDH : le modèle garde donc une marge de prudence d'environ ${fmt(115.9 - withP, 0)} MDH (intérim, heures supplémentaires, formation, hausses de salaires). SMIG 2026 : 17,92 DH de l'heure, soit 3 422,72 DH par mois (${S_("smig")}). Charges patronales : allocations familiales 6,40 %, AMO 4,11 %, formation professionnelle 1,60 % sur tout le salaire ; prestations sociales 8,98 % jusqu'à 6 000 DH (${S_("cnssr")}).</p>
+    <p class="src" style="margin:0">Les fourchettes de salaires viennent de guides de recrutement et d'études de rémunération publiques (aucune enquête officielle détaillée n'existe pour 2026) : ce sont des ordres de grandeur.</p>`;
+}
+
+// banques et financement
+function initFinancer() {
+  const c = COLS();
+  $("finTiles").innerHTML = tile("Taux directeur BAM", "2,25 %", "maintenu le 22/09/2026") + tile("Crédits à l'équipement", "4,65 %", "taux moyen, T2 2026") + tile("Grandes entreprises", "4,56 %", "taux moyen, T2 2026")
+    + tile("Taux retenu (dette)", "5,25 %", "prudence : + 0,6 point") + tile("Taux retenu (crédit-bail)", "6,50 %", "repère marché ≈ 5,5 à 6,5 %") + tile("Covenants", "DSCR ≥ 1,20x", "dette nette / EBITDA ≤ 3,5x");
+  const steps = [["Apport de la maison mère (fonds propres)", "350 MDH dans le scénario B, versés au rythme du chantier (2027-2028). Un co-investisseur n'est nécessaire que dans le scénario A (440 MDH, dilution de 20 %)."],
+    ["Constitution du dossier bancaire", "Business plan, modèle financier, stress tests, études techniques, convention avec l'État, garanties proposées. C'est ce que la plateforme produit."],
+    ["Choix d'une banque chef de file et d'un pool", "Une banque arrange le crédit (Attijariwafa bank, BCP ou Bank of Africa) et le répartit entre 2 à 3 banques : 450 MDH sur 10 ans avec un différé de 3 ans (scénario B)."],
+    ["Crédit-bail du matériel", "180 MDH de presses et robots financés par une société de crédit-bail (Wafabail, Maghrebail, Maroc Leasing) : loyers sur 7 ans, option d'achat finale."],
+    ["Aides de l'État", "Convention d'investissement via le CRI : exonérations de TVA et de droits de douane sur les équipements ; primes de la Charte jusqu'à 30 % (la prime territoriale vise surtout les régions hors de l'axe Tanger–Kénitra–El Jadida)."],
+    ["Bailleurs internationaux (option)", "La BERD a déjà prêté 15 M€ à l'équipementier Tuyauto en 2024 ; la BAD finance de grands projets industriels. Utile pour allonger la durée ou ajouter une tranche verte."],
+    ["Garanties, signature et tirages", "Hypothèque sur le terrain, nantissement du matériel, cession des créances clients. Tirages semestriels au rythme des factures du chantier."],
+    ["Suivi après la mise en service", "Reporting semestriel aux banques, test des covenants à partir de 2030, premiers dividendes en 2030 si le DSCR reste au-dessus de 1,20x."]];
+  $("finSteps").innerHTML = steps.map(([a, b]) => `<li><b>${a}</b>${b}</li>`).join("");
+  const banks = [["Attijariwafa bank", "Banque", "1re banque du Maroc (27 % des crédits) ; offre dédiée à la sous-traitance automobile", "awb"],
+    ["Banque Populaire (BCP)", "Banque", "2e banque par les crédits ; forte présence régionale à Tanger", "bamtd"], ["Bank of Africa", "Banque", "3e banque ; filiale de crédit-bail Maghrebail", "mgb"],
+    ["Crédit du Maroc", "Banque", "Crédits d'investissement jusqu'à 10 ans, franchise de 24 mois, jusqu'à 80 % du projet", "cdm6"], ["Saham Bank, BMCI, CIH, Crédit Agricole du Maroc", "Banques", "Membres possibles du pool bancaire", "apsf"],
+    ["Wafabail", "Crédit-bail", "21 % du marché, 4,8 Md DH de production en 2025", "wfb"], ["Maghrebail", "Crédit-bail", "22 % du marché, 12,5 Md DH d'encours", "mgb"],
+    ["Maroc Leasing, BMCI Leasing, Sogelease", "Crédit-bail", "Autres sociétés de crédit-bail (annuaire APSF)", "apsf"], ["BERD", "Bailleur international", "Prêts aux équipementiers automobiles marocains (Tuyauto, 15 M€, 2024)", "ebrd"],
+    ["BAD", "Bailleur international", "100 M€ à Gotion Power Morocco en 2026", "bad"], ["Tamwilcom", "Garantie publique", "Garanties de crédit (offres Damane) : conditions à vérifier pour une grande entreprise", "tamwil"]];
+  $("finBanks").innerHTML = "<thead><tr><th>Organisme</th><th>Type</th><th class='wrap'>Ce qu'il apporte</th><th>Source</th></tr></thead><tbody>" + banks.map((b) => `<tr><td class="wrap">${b[0]}</td><td>${b[1]}</td><td class="wrap">${b[2]}</td><td class="wrap">${S_(b[3])}</td></tr>`).join("") + "</tbody>";
+  const cats = [["Fonds propres", "equity", c.A], ["Dette bancaire", "debt", c.gold], ["Crédit-bail", "lease", c.B]];
+  plot("finChart", cats.map(([n, f, col]) => ({ type: "bar", name: n, x: ["A", "B", "C"].map((k) => "Scénario " + k), y: ["A", "B", "C"].map((k) => S[k][f]), marker: { color: col }, text: ["A", "B", "C"].map((k) => fmt(S[k][f], 0)), textposition: "inside" })),
+    { barmode: "stack", yaxis: { gridcolor: c.line, color: c.muted } });
+  const gar = [["Hypothèque de 1er rang sur le terrain et les bâtiments", "Garantit la dette bancaire ; inscrite à la conservation foncière"], ["Nantissement du matériel et du fonds de commerce", "Sur les presses et équipements hors crédit-bail"],
+    ["Cession ou délégation des créances clients", "Les paiements des constructeurs transitent par un compte dédié"], ["Covenants financiers", "DSCR ≥ 1,20x ; dette nette / EBITDA ≤ 3,5x ; tests semestriels dès 2030"],
+    ["Réserve de trésorerie", "≈ 50 MDH constitués au démarrage (5 mois de charges fixes)"], ["Lettre de confort de la maison mère", "Engagement de soutien en cas de dépassement du budget"]];
+  $("finGar").innerHTML = "<thead><tr><th class='wrap'>Garantie ou condition</th><th class='wrap'>Contenu</th></tr></thead><tbody>" + gar.map((g) => `<tr><td class="wrap">${g[0]}</td><td class="wrap">${g[1]}</td></tr>`).join("") + "</tbody>";
+  $("finTreso").innerHTML = `<p style="margin:0">Rattaché à la directrice administrative et financière : 1 trésorier, 2 chargés de trésorerie, 1 assistant commerce international (coût employeur ≈ 0,8 MDH par an, voir le business plan).</p>`
+    + dl([["Prévisions de trésorerie", "13 semaines glissantes, mises à jour chaque lundi"], ["Position bancaire", "quotidienne, toutes banques"], ["Relations bancaires", "lignes de crédit, conditions, covenants"],
+      ["Couverture de change", "EUR (ventes aux constructeurs) et USD (résines)"], ["Importations", "crédit documentaire, remise documentaire"], ["Mobilisation des créances", "escompte, affacturage"]]) + `
+    <p style="margin:0">Exposition au change : les ventes aux constructeurs sont en euros et une partie des résines s'achète en dollars ; le dirham est rattaché à un panier euro-dollar dont Bank Al-Maghrib prépare l'assouplissement. Instruments : change à terme et options auprès des banques.</p>
+    <p class="src" style="margin:0">Sources : ${S_("cdm3")} · ${S_("cdm2")} · ${S_("bamtd")} · ${S_("bam")}. Voir aussi les pages Trésorerie et Taux de change.</p>`;
+  if (!rendered.financer) {
+    ["pmeInv", "pmeCa", "pmeNew", "pmeGrp", "pmeJobs", "pmeFp"].forEach((id) => $(id).addEventListener("input", calcPme));
+    const setP = (o) => { Object.entries(o).forEach(([k, v]) => { $(k).value = v; }); calcPme(); };
+    $("pmeDpa").addEventListener("click", () => setP({ pmeInv: 791, pmeCa: 0, pmeNew: 1, pmeGrp: 1, pmeJobs: 725, pmeFp: 36 }));
+    $("pmeSub").addEventListener("click", () => setP({ pmeInv: 8, pmeCa: 25, pmeNew: 0, pmeGrp: 0, pmeJobs: 30, pmeFp: 25 }));
+  }
+  calcPme();
+}
+function calcPme() {
+  const inv = +$("pmeInv").value || 0, ca = +$("pmeCa").value || 0, nouv = $("pmeNew").value === "1", grp = $("pmeGrp").value === "1", jobs = +$("pmeJobs").value || 0, fp = +$("pmeFp").value || 0;
+  const tp = [["Investissement entre 1 et 50 MDH", inv >= 1 && inv <= 50, fmt(inv, 1) + " MDH"],
+    ["Chiffre d'affaires entre 1 et 200 MDH HT (sauf entreprise nouvelle)", nouv || (ca >= 1 && ca <= 200), nouv ? "entreprise nouvelle : condition levée" : fmt(ca, 0) + " MDH"],
+    ["Pas filiale d'un grand groupe (seuil de détention 25 à 50 % selon les sources)", !grp, grp ? "filiale" : "indépendante"],
+    ["Apport en fonds propres d'au moins 10 %", fp >= 10, fmt(fp, 0) + " %"]];
+  const okT = tp.every((x) => x[1]), okP = inv >= 50 && jobs >= 50 || jobs >= 150;
+  const row = (x) => `<tr><td class="wrap">${x[0]}</td><td>${x[2]}</td><td>${x[1] ? '<span class="pill ok">✓</span>' : '<span class="pill ko">✗</span>'}</td></tr>`;
+  $("pmeTest").innerHTML = `<thead><tr><th class="wrap">Dispositif TPME (Maroc PME + CRI)</th><th>Projet</th><th></th></tr></thead><tbody>${tp.map(row).join("")}</tbody>
+    <thead><tr><th class="wrap">Dispositif principal de la Charte (CRI)</th><th></th><th></th></tr></thead><tbody>${row(["Au moins 50 MDH et 50 emplois stables, ou 150 emplois", okP, `${fmt(inv, 0)} MDH · ${fmt(jobs, 0)} emplois`])}</tbody>`;
+  let out;
+  if (okT) out = `<span class="pill ok">Éligible au dispositif TPME</span><p>Primes cumulables (emploi stable jusqu'à 10 %, territoriale, sectorielle) dans la limite de <b>30 %</b> de l'investissement éligible, soit au plus <b>${fmt(inv * 0.3, 2)} MDH</b>. Estimation prudente avec la seule prime à l'emploi (5 à 10 %) : ${fmt(inv * 0.05, 2)} à ${fmt(inv * 0.1, 2)} MDH. Dossier à déposer au CRI ; Maroc PME accompagne et verse la prime en tranches après réalisation.</p>`;
+  else if (okP) out = `<span class="pill warn">Pas de subvention Maroc PME : c'est le dispositif principal de la Charte qui s'applique</span><p>Le projet dépasse 50 MDH${grp ? " et la société est la filiale d'un groupe" : ""} : il sort du champ des TPME. Il relève du dispositif principal, instruit par le CRI puis la commission d'investissement : primes cumulées plafonnées à 30 % de l'assiette primable (emploi 5 à 10 %, sectorielle, critères de parité, de développement durable et d'intégration locale ; la prime territoriale vise surtout les régions hors de l'axe Tanger–Kénitra–El Jadida). Le modèle retient prudemment 11 % × 513 MDH = 56,4 MDH, dans le seul scénario C, sans jamais compter sur cette prime pour boucler le financement.</p>`;
+  else out = `<span class="pill ko">Aucun des deux dispositifs</span><p>Le projet ne remplit ni les conditions du dispositif TPME ni celles du dispositif principal. Vérifier les programmes d'accompagnement de Maroc PME (diagnostic, conseil) et les garanties de Tamwilcom.</p>`;
+  $("pmeOut").innerHTML = out + `<p class="src">Sources : ${S_("mpme")} · ${S_("tpme1")} · ${S_("tpme2")} · ${S_("tpme3")} · ${S_("charte2")}. Les seuils exacts (détention par un groupe, barème de la prime à l'emploi) sont à confirmer dans le décret publié au Bulletin officiel.</p>
+    <p style="margin:0"><b>À dire au jury :</b> DPA n'a pas droit aux subventions de Maroc PME, mais ses futurs sous-traitants locaux (moulistes, emballage, maintenance) peuvent y prétendre : c'est un argument d'intégration locale pour la convention avec l'État.</p>`;
+}
+
+// ---------- Carte 4D (three.js chargé à la demande) ----------
+const C4_PLACES = [
+  { n: "Site DPA · Gzenaya", lat: 35.722, lon: -5.895, main: true }, { n: "Tanger (centre)", lat: 35.7595, lon: -5.834 },
+  { n: "Aéroport Ibn Battouta", lat: 35.7269, lon: -5.9169 }, { n: "Port Tanger Med", lat: 35.885, lon: -5.505 },
+  { n: "Renault, Melloussa", lat: 35.735, lon: -5.64 }, { n: "Tanger Automotive City", lat: 35.665, lon: -5.62 },
+  { n: "Tétouan", lat: 35.5785, lon: -5.3684 }, { n: "Asilah", lat: 35.465, lon: -6.034 }];
+const C4_COAST = [[-6.12, 35.38], [-6.034, 35.465], [-5.99, 35.6], [-5.95, 35.72], [-5.924, 35.791], [-5.86, 35.79], [-5.81, 35.785], [-5.76, 35.8], [-5.745, 35.815],
+  [-5.65, 35.83], [-5.56, 35.845], [-5.505, 35.885], [-5.45, 35.905], [-5.4, 35.88], [-5.36, 35.85], [-5.33, 35.75], [-5.32, 35.68], [-5.27, 35.62], [-5.24, 35.38]];
+const C4_LON0 = -5.7, C4_LAT0 = 35.7;
+const c4xy = (lon, lat) => [(lon - C4_LON0) * 111.32 * Math.cos(C4_LAT0 * Math.PI / 180), (lat - C4_LAT0) * 110.57];
+const hav = (a, b) => { const R = 6371, r = Math.PI / 180, dl = (b.lat - a.lat) * r, dn = (b.lon - a.lon) * r;
+  const h = Math.sin(dl / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+const C4_MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const C4_PHASES = [[0, "Terrain nu et bornage", "Acte notarié, plan de bornage"], [2, "Terrassement et fondations", "Dallage renforcé sous les presses"],
+  [5, "Charpente métallique", "Hall, magasins, grue à tour"], [9, "Bardage et toitures", "Bâtiments hors d'eau"], [12, "Installation des presses", "Essais, recrutement des 256 premiers salariés"],
+  [18, "Mise en service", "1er juillet 2028"], [30, "Montée en cadence", "≈ 79 % d'utilisation en 2030"], [48, "Régime de croisière", "≈ 88 % en 2031"], [71, "Fin du business plan 5 ans", "5 exercices complets"]];
+const C4_BLD = [ // x, z, largeur, profondeur, hauteur, nom, m², début, fin du chantier (mois)
+  { x: -40, z: 0, w: 200, d: 140, h: 24, n: "Hall de production", m2: 28000, a: 2, b: 15, c: "#eef0f2" },
+  { x: 120, z: -20, w: 100, d: 100, h: 20, n: "Magasins", m2: 10000, a: 4, b: 14, c: "#e4e8ec" },
+  { x: 105, z: 55, w: 70, d: 25, h: 16, n: "Bureaux et social (2 niveaux)", m2: 3500, a: 7, b: 16, c: "#f3ead8" },
+  { x: -170, z: -50, w: 50, d: 40, h: 14, n: "Locaux techniques", m2: 2000, a: 5, b: 12, c: "#cfd5da" }];
+let c4 = null, c4Mode = "site", c4M = 0, c4Timer = null;
+function c4Load() {
+  if (window.THREE && THREE.OrbitControls) return Promise.resolve();
+  const add = (src) => new Promise((ok, ko) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+  return (window.THREE ? Promise.resolve() : add("https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"))
+    .then(() => add("https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"));
+}
+const c4Date = (m) => `${C4_MONTHS[m % 12]} ${2027 + Math.floor(m / 12)}`;
+function initCarte() {
+  const c = COLS(), base = C4_PLACES[0];
+  $("c4Dist").innerHTML = "<thead><tr><th>Destination</th><th>Distance</th><th>Rôle pour DPA</th></tr></thead><tbody>" + C4_PLACES.slice(1).map((p) => `<tr><td>${p.n}</td><td class="n">${fmt(hav(base, p), 0)} km</td><td class="wrap">${
+    { "Tanger (centre)": "Services, banques, recrutement", "Aéroport Ibn Battouta": "Déplacements des clients et des auditeurs", "Port Tanger Med": "Import des résines et des moules, export",
+      "Renault, Melloussa": "Client principal (livraisons en flux tendu)", "Tanger Automotive City": "Écosystème de fournisseurs automobiles", "Tétouan": "Bassin d'emploi, Tétouan Park", "Asilah": "Bassin d'emploi" }[p.n] || ""}</td></tr>`).join("") + "</tbody>";
+  $("c4Plan").innerHTML = "<thead><tr><th>Ouvrage</th><th>m²</th><th>Hauteur</th></tr></thead><tbody>" + C4_BLD.map((b) => `<tr><td class="wrap">${b.n}</td><td class="n">${fmt(b.m2, 0)}</td><td class="n">${b.h / 2} m</td></tr>`).join("")
+    + `<tr><td class="wrap">Voirie, quais, parkings, réserve d'extension</td><td class="n">36 500</td><td></td></tr><tr style="font-weight:700"><td>Lot total (400 m × 200 m)</td><td class="n">80 000</td><td></td></tr></tbody>`;
+  const fr = 0.05 + 0.015 + 0.011, prixRows = [["Basse", 600, "Prix affiché sur la fiche de la zone Tanger Free Zone", "zitfz"], ["Centrale (retenue)", 700, "Grille officielle Tanger Med Zones 2024, lots ≥ 9 000 m²", "tmz"],
+    ["Haute", 1100, "Marché privé de Gzenaya : plus bas prix observé dans les annonces (Bougdour)", "avgz"]];
+  $("c4Prix").innerHTML = "<thead><tr><th>Hypothèse</th><th>DH/m²</th><th>Terrain 8 ha (MDH)</th><th>Avec frais d'acquisition (MDH)</th><th>Écart vs budget de 46 MDH</th><th class='wrap'>Fondement</th></tr></thead><tbody>"
+    + prixRows.map(([h, p, why, s]) => { const v = p * 0.08, tot = v * (1 + fr) + 0.0001;
+      return `<tr${h.startsWith("Centrale") ? ' style="font-weight:700"' : ""}><td>${h}</td><td class="n">${fmt(p, 0)}</td><td class="n">${fmt(v, 1)}</td><td class="n">${fmt(tot, 1)}</td><td class="n">${tot > 46 ? "+" : ""}${fmt(tot - 46, 1)}</td><td class="wrap">${why} · ${S_(s)}</td></tr>`; }).join("") + "</tbody>";
+  $("c4PrixNote").innerHTML = `<p style="margin:0">Frais d'acquisition : enregistrement 5 %, conservation foncière 1,5 %, notaire 1 % + TVA, soit ${pct(fr, 1)} du prix. Repère de contrôle : un hangar industriel de 7 000 m² est annoncé à 8,5 MDH à Gzenaya, bâtiment compris, soit environ 1 200 DH/m² (${S_("mbiu")}). Le foncier nu y vaut donc nettement moins : la fourchette de 600 à 1 100 DH/m² est cohérente.</p>
+    <p class="src" style="margin:0">Les annonces privées ne sont ni datées ni vérifiées, et la grille de Tanger Med Zones date de 2024 : le prix définitif est celui de l'offre écrite de l'aménageur. En hypothèse haute, l'écart dépasse la provision pour aléas de 30 MDH : il faudrait alors réviser le budget ou louer un bâtiment clé en main.</p>`;
+  if (!rendered.carte) {
+    seg("c4View", [["site", "Site DPA (4D)"], ["region", "Région de Tanger"]], c4Mode, (v) => { c4Mode = v; c4SetMode(); });
+    $("c4T").addEventListener("input", () => { c4M = +$("c4T").value; c4Update(); });
+    $("c4Play").addEventListener("click", c4Toggle);
+    $("c4Roof").addEventListener("change", c4Update); $("c4Lbl").addEventListener("change", c4Update);
+    $("c4Spin").addEventListener("change", () => { if (c4) c4.ctl.autoRotate = $("c4Spin").checked; });
+    $("c4Top").addEventListener("click", () => c4View("top")); $("c4Iso").addEventListener("click", () => c4View("iso"));
+    $("c4Phases").innerHTML = C4_PHASES.map(([m, t, s]) => `<li data-m="${m}"><b>${t}</b>${c4Date(m)} · ${s}</li>`).join("");
+    $("c4Phases").querySelectorAll("li").forEach((li) => li.addEventListener("click", () => { c4M = +li.dataset.m; $("c4T").value = c4M; c4Update(); }));
+  }
+  c4Load().then(() => { if (!c4) c4Build(); else { c4Resize(); c4Loop(); } c4SetMode(); c4Update(); })
+    .catch(() => { $("c4Load").textContent = "La bibliothèque 3D (three.js) n'a pas pu se charger : vérifiez la connexion."; });
+}
+function c4Label(text, sub, scale, col) {
+  const cv = document.createElement("canvas"), g = cv.getContext("2d"), W = 512, H = sub ? 150 : 96; cv.width = W; cv.height = H;
+  g.fillStyle = "rgba(255,255,255,.9)"; g.strokeStyle = col || "#24566b"; g.lineWidth = 6;
+  const r = 22; g.beginPath(); g.moveTo(r, 3); g.arcTo(W - 3, 3, W - 3, H - 3, r); g.arcTo(W - 3, H - 3, 3, H - 3, r); g.arcTo(3, H - 3, 3, 3, r); g.arcTo(3, 3, W - 3, 3, r); g.fill(); g.stroke();
+  g.fillStyle = "#1b2430"; g.font = "700 44px Manrope, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, W / 2, sub ? 50 : H / 2, W - 30);
+  if (sub) { g.fillStyle = "#56606b"; g.font = "500 34px Manrope, system-ui, sans-serif"; g.fillText(sub, W / 2, 108, W - 30); }
+  const tx = new THREE.CanvasTexture(cv); tx.anisotropy = 4;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, depthTest: false, transparent: true })); sp.scale.set(scale, scale * H / W, 1); sp.renderOrder = 10; return sp;
+}
+function c4Build() {
+  const T = THREE, st = $("c4Stage"); $("c4Load").hidden = true;
+  const r = new T.WebGLRenderer({ antialias: true, alpha: true }); r.setPixelRatio(Math.min(2, devicePixelRatio || 1)); st.appendChild(r.domElement);
+  const scene = new T.Scene(), cam = new T.PerspectiveCamera(45, 1, 1, 5000), ctl = new T.OrbitControls(cam, r.domElement);
+  ctl.enableDamping = true; ctl.maxPolarAngle = 1.38;
+  scene.add(new T.HemisphereLight(0xffffff, 0x55604a, 0.55)); const sun = new T.DirectionalLight(0xfff4e2, 0.7); sun.position.set(300, 500, 200); scene.add(sun);
+  const M = (col, o = {}) => new T.MeshLambertMaterial(Object.assign({ color: col }, o));
+  // --- région (unités : km)
+  const reg = new T.Group(); scene.add(reg);
+  const sea = new T.Mesh(new T.PlaneGeometry(160, 130), M(0x4f86a8)); sea.rotation.x = -Math.PI / 2; sea.position.y = -0.4; reg.add(sea);
+  const sh = new T.Shape(); C4_COAST.forEach(([lo, la], i) => { const [x, y] = c4xy(lo, la); i ? sh.lineTo(x, y) : sh.moveTo(x, y); });
+  const land = new T.Mesh(new T.ExtrudeGeometry(sh, { depth: 0.4, bevelEnabled: false }), M(0xcfc8a6)); land.rotation.x = -Math.PI / 2; land.position.y = -0.4; reg.add(land);
+  [[-5.42, 35.86, 3, 1.6], [-5.47, 35.52, 5, 2.2], [-5.62, 35.5, 4.5, 1.8], [-5.84, 35.6, 3.5, 1], [-5.38, 35.7, 3, 1.5], [-5.74, 35.57, 3.5, 1.2]].forEach(([lo, la, rad, h]) => {
+    const [x, y] = c4xy(lo, la), m = new T.Mesh(new T.ConeGeometry(rad, h, 7), M(0x8fa26a, { flatShading: true })); m.position.set(x, h / 2, -y); reg.add(m); });
+  const route = (pts, col) => { const g = new T.BufferGeometry().setFromPoints(pts.map(([lo, la]) => { const [x, y] = c4xy(lo, la); return new T.Vector3(x, 0.15, -y); }));
+    const l = new T.Line(g, new T.LineDashedMaterial({ color: col, dashSize: 1.2, gapSize: 0.7 })); l.computeLineDistances(); reg.add(l); };
+  const dpa = C4_PLACES[0];
+  route([[dpa.lon, dpa.lat], [-5.834, 35.7595]], 0x56606b); route([[dpa.lon, dpa.lat], [-5.75, 35.725], [-5.64, 35.735], [-5.56, 35.8], [-5.505, 35.885]], 0xd9622b);
+  route([[dpa.lon, dpa.lat], [-5.62, 35.665], [-5.45, 35.6], [-5.3684, 35.5785]], 0x56606b); route([[dpa.lon, dpa.lat], [-5.97, 35.6], [-6.034, 35.465]], 0x56606b);
+  const regLbl = [], pulse = [];
+  C4_PLACES.forEach((p) => { const [x, y] = c4xy(p.lon, p.lat), col = p.main ? 0xd9622b : 0x24566b, hgt = p.main ? 4 : 2.2;
+    const pin = new T.Mesh(new T.CylinderGeometry(0.12, 0.12, hgt, 8), M(col)); pin.position.set(x, hgt / 2, -y); reg.add(pin);
+    const head = new T.Mesh(new T.SphereGeometry(p.main ? 0.75 : 0.45, 16, 12), M(col)); head.position.set(x, hgt, -y); reg.add(head);
+    if (p.main) { const ring = new T.Mesh(new T.RingGeometry(1, 1.4, 40), new T.MeshBasicMaterial({ color: 0xd9622b, transparent: true, side: T.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.set(x, 0.2, -y); reg.add(ring); pulse.push(ring); }
+    const lb = c4Label(p.n, p.main ? "usine Tanger II · 8 ha" : null, p.main ? 13 : 9, p.main ? "#d9622b" : "#24566b"); lb.position.set(x, hgt + (p.main ? 3 : 2), -y + (p.main ? 5 : p.n.startsWith("Tanger (") ? -4 : 0)); reg.add(lb); regLbl.push(lb); });
+  [["Détroit de Gibraltar", -5.6, 35.95], ["Océan Atlantique", -6.08, 35.75], ["Méditerranée", -5.3, 35.95]].forEach(([t, lo, la]) => { const [x, y] = c4xy(lo, la), s = c4Label(t, null, 12, "#7fb2cf"); s.position.set(x, 1.5, -y); reg.add(s); regLbl.push(s); });
+  // --- site (unités : m)
+  const site = new T.Group(); scene.add(site);
+  // socle de maquette arrondi, bordure en verre
+  const rr = (w, h, rad) => { const s = new T.Shape(), x = -w / 2, y = -h / 2; s.moveTo(x + rad, y); s.lineTo(x + w - rad, y); s.quadraticCurveTo(x + w, y, x + w, y + rad); s.lineTo(x + w, y + h - rad);
+    s.quadraticCurveTo(x + w, y + h, x + w - rad, y + h); s.lineTo(x + rad, y + h); s.quadraticCurveTo(x, y + h, x, y + h - rad); s.lineTo(x, y + rad); s.quadraticCurveTo(x, y, x + rad, y); return s; };
+  const plinth = new T.Mesh(new T.ExtrudeGeometry(rr(960, 700, 70), { depth: 40, bevelEnabled: true, bevelSize: 8, bevelThickness: 8, bevelSegments: 4 }), new T.MeshPhongMaterial({ color: 0xf3ede4, shininess: 60 }));
+  plinth.rotation.x = -Math.PI / 2; plinth.position.y = -51; site.add(plinth);
+  const gsh = rr(924, 664, 52); gsh.holes.push(rr(916, 656, 48));
+  const glass = new T.Mesh(new T.ExtrudeGeometry(gsh, { depth: 14, bevelEnabled: false }), new T.MeshPhongMaterial({ color: 0xcfe6ef, transparent: true, opacity: 0.18, shininess: 120, depthWrite: false }));
+  glass.rotation.x = -Math.PI / 2; glass.position.y = -3; site.add(glass);
+  const grd = new T.Mesh(new T.ShapeGeometry(rr(900, 640, 45)), M(0x7fa956)); grd.rotation.x = -Math.PI / 2; site.add(grd);
+  const treeG = new T.SphereGeometry(5, 10, 8), trunkG = new T.CylinderGeometry(0.6, 0.8, 4, 6), tm = M(0x3f6e32), km = M(0x6b4f35);
+  const nTree = 260, crowns = new T.InstancedMesh(treeG, tm, nTree), trunks = new T.InstancedMesh(trunkG, km, nTree); let ti = 0, seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  while (ti < nTree) { const x = -430 + rnd() * 860, z = -300 + rnd() * 600;
+    if (Math.abs(x) < 215 && Math.abs(z) < 108) continue; if (Math.abs(z - 118) < 12) continue; if (Math.hypot(x / 440, z / 310) > 1) continue;
+    const s = 0.8 + rnd() * 0.7; crowns.setMatrixAt(ti, new T.Matrix4().compose(new T.Vector3(x, 7 * s, z), new T.Quaternion(), new T.Vector3(s, s, s)));
+    trunks.setMatrixAt(ti, new T.Matrix4().makeTranslation(x, 2, z)); ti++; }
+  site.add(crowns, trunks);
+  const lot = new T.Mesh(new T.PlaneGeometry(400, 200), M(0xc9bc98)); lot.rotation.x = -Math.PI / 2; lot.position.y = 0.05; site.add(lot);
+  const fence = new T.LineLoop(new T.BufferGeometry().setFromPoints([[-200, -100], [200, -100], [200, 100], [-200, 100]].map(([x, z]) => new T.Vector3(x, 1, z))), new T.LineBasicMaterial({ color: 0x56606b })); site.add(fence);
+  const road = new T.Mesh(new T.PlaneGeometry(900, 14), M(0x5d636b)); road.rotation.x = -Math.PI / 2; road.position.set(0, 0.08, 118); site.add(road);
+  const acc = new T.Mesh(new T.PlaneGeometry(14, 30), M(0x6c727a)); acc.rotation.x = -Math.PI / 2; acc.position.set(175, 0.09, 100); site.add(acc);
+  const park = new T.Mesh(new T.PlaneGeometry(180, 18), M(0x8a9097)); park.rotation.x = -Math.PI / 2; park.position.set(-50, 0.09, 86); site.add(park);
+  const blds = C4_BLD.map((b) => { const g = new T.Group(); g.position.set(b.x, 0, b.z); site.add(g);
+    const slab = new T.Mesh(new T.BoxGeometry(b.w, 0.8, b.d), M(0x9da3a8)); slab.position.y = 0.4; g.add(slab);
+    const cols = new T.Group(); for (let x = -b.w / 2; x <= b.w / 2 + 0.1; x += b.w / Math.max(2, Math.round(b.w / 20))) for (const z of [-b.d / 2, b.d / 2]) { const cl = new T.Mesh(new T.BoxGeometry(0.8, b.h, 0.8), M(0x3d4752)); cl.position.set(x, b.h / 2, z); cols.add(cl); }
+    g.add(cols);
+    const wall = M(b.c, { transparent: true }), roof = M(0x52687c, { transparent: true });
+    const shell = new T.Mesh(new T.BoxGeometry(b.w, b.h, b.d), [wall, wall, roof, roof, wall, wall]); shell.position.y = b.h / 2; g.add(shell);
+    const lb = c4Label(b.n, fmt(b.m2, 0) + " m²", Math.max(40, b.w * 0.45), "#24566b"); lb.position.set(0, b.h + 14, 0); g.add(lb);
+    return { b, slab, cols, shell, wall, roof, lb }; });
+  const presses = []; for (let i = 0; i < 42; i++) { const p = new T.Mesh(new T.BoxGeometry(10, 4, 5), M(i % 7 === 0 ? 0xd9622b : 0x24566b)); p.position.set(-125 + (i % 7) * 27, 2.8, -55 + Math.floor(i / 7) * 22); site.add(p); presses.push(p); }
+  const crane = new T.Group(); const mast = new T.Mesh(new T.BoxGeometry(2.5, 48, 2.5), M(0xf2b632)); mast.position.y = 24; crane.add(mast);
+  const jib = new T.Group(); const arm = new T.Mesh(new T.BoxGeometry(70, 2, 2), M(0xf2b632)); arm.position.x = 22; jib.add(arm); jib.position.y = 48; crane.add(jib); crane.position.set(-40, 0, -80); site.add(crane);
+  const cars = new T.InstancedMesh(new T.BoxGeometry(4.4, 1.6, 2), M(0xffffff), 180), carCol = [0x3d4752, 0xe9e3d8, 0x9da3a8, 0x24566b, 0xb93a2a];
+  for (let i = 0; i < 180; i++) { const m = new T.Matrix4().makeTranslation(-135 + (i % 45) * 3.9, 0.9, 80 + Math.floor(i / 45) * 3.2); cars.setMatrixAt(i, m); cars.setColorAt(i, new T.Color(carCol[i % 5])); }
+  site.add(cars);
+  const trucks = []; for (let i = 0; i < 8; i++) { const tk = new T.Group(); const tr = new T.Mesh(new T.BoxGeometry(13, 4, 2.6), M(0xf4f4f2)); tr.position.set(-2, 2.5, 0); tk.add(tr);
+    const cab = new T.Mesh(new T.BoxGeometry(3.4, 3.2, 2.6), M(0xd9622b)); cab.position.set(6.6, 2.1, 0); tk.add(cab); tk.userData.off = i / 8; site.add(tk); trucks.push(tk); }
+  const excav = new T.Mesh(new T.BoxGeometry(7, 3, 3.5), M(0xf2b632)); excav.position.set(-60, 1.6, 30); site.add(excav);
+  c4 = { r, scene, cam, ctl, reg, site, regLbl, pulse, blds, presses, crane, jib, cars, trucks, excav, raf: 0, t0: performance.now() };
+  addEventListener("resize", c4Resize); c4Resize(); c4Loop();
+}
+function c4Resize() { if (!c4) return; const st = $("c4Stage"), w = st.clientWidth, h = st.clientHeight; if (!w || !h) return; c4.r.setSize(w, h, false); c4.cam.aspect = w / h; c4.cam.updateProjectionMatrix(); }
+function c4SetMode() {
+  if (!c4) return; const reg = c4Mode === "region"; c4.reg.visible = reg; c4.site.visible = !reg;
+  if (reg) { c4.cam.near = 0.5; c4.cam.far = 800; c4.cam.position.set(2, 78, 74); c4.ctl.target.set(2, 0, 2); c4.ctl.minDistance = 8; c4.ctl.maxDistance = 220; }
+  else { c4.cam.near = 1; c4.cam.far = 4000; c4.cam.position.set(560, 420, 600); c4.ctl.target.set(0, 0, 0); c4.ctl.minDistance = 60; c4.ctl.maxDistance = 1600; }
+  c4.ctl.autoRotate = $("c4Spin").checked; c4.ctl.autoRotateSpeed = reg ? 0.6 : 0.9;
+  c4.cam.updateProjectionMatrix(); c4.ctl.update(); c4Update();
+}
+function c4View(v) {
+  if (!c4) return; const reg = c4Mode === "region", d = reg ? 1 : 10;
+  if (v === "top") { c4.ctl.maxPolarAngle = 1.38; c4.cam.position.set(c4.ctl.target.x, reg ? 110 : 1050, c4.ctl.target.z + 0.01 * d); }
+  else c4.cam.position.set(reg ? 2 : 560, reg ? 78 : 420, reg ? 74 : 600);
+  c4.ctl.update();
+}
+const c4p = (m, a, b) => Math.max(0, Math.min(1, (m - a) / (b - a)));
+function c4Update() {
+  const m = c4M; $("c4Date").textContent = c4Date(m); $("c4T").value = m;
+  const ph = C4_PHASES.filter((p) => p[0] <= m).pop();
+  $("c4Phases").querySelectorAll("li").forEach((li) => { const v = +li.dataset.m; li.classList.toggle("on", v === ph[0]); li.classList.toggle("past", v < ph[0]); });
+  const yr = 2027 + Math.floor(m / 12), yi = Y.indexOf(yr), t = run(S.B, T2.SHOCKS()).table, op = m >= 18;
+  const capCum = (t.capexInit[0] * c4p(m, 0, 12) + t.capexInit[1] * c4p(m, 12, 24));
+  const hc = m < 12 ? Math.round(12 + m * 2) : m < 18 ? Math.round(40 + (m - 12) * 36) : HEADCOUNT[yi];
+  const vol = op ? t.vol[yi] * (yr === 2028 ? 2 : 1) : 0, trucksDay = vol ? Math.round(vol / 300 / 250 * 2) : 0;
+  const prog = Math.round(100 * Math.min(1, m / 18));
+  $("c4Info").innerHTML = `<span class="eyebrow">${c4Mode === "region" ? "Région de Tanger" : "Site DPA · Gzenaya"}</span><h3>${ph[1]}</h3><span class="big">${c4Date(m)}</span>`
+    + dl([["Terrain (8 ha à 700 DH/m²)", "56,0 MDH + 4,3 MDH de frais"], ["Avancement du chantier", prog + " %"], ["CAPEX engagé (scénario B)", fmt(capCum, 0) + " MDH"], ["Effectif", fmt(hc, 0) + " personnes"],
+      ["Chiffre d'affaires " + yr, op || yr > 2028 ? fmt(t.ca[yi], 0) + " MDH" : "—"], ["Rythme de production", op ? fmt(vol / 1000, 0) + " k kits/an" : "—"], ["Camions par jour (estimation)", op ? "≈ " + trucksDay : "—"]])
+    + `<p class="src" style="margin:0">Chiffres du moteur (scénario B, cas central). Camions : 300 kits par camion, 250 jours ouvrés, aller et retour.</p>`;
+  if (!c4) return;
+  const roofT = $("c4Roof").checked, lbl = $("c4Lbl").checked;
+  c4.regLbl.forEach((s) => { s.visible = lbl; });
+  c4.blds.forEach(({ b, slab, cols, shell, wall, roof, lb }) => {
+    const f = c4p(m, b.a, b.a + 3), s = c4p(m, b.a + 2, b.a + 7), w = c4p(m, b.a + 6, b.b);
+    slab.visible = f > 0; slab.scale.set(Math.max(f, 0.01), 1, 1);
+    cols.visible = s > 0 && w < 1; cols.scale.y = Math.max(s, 0.01); cols.position.y = 0; cols.children.forEach((cl) => { cl.position.y = b.h * cols.scale.y / 2 / Math.max(cols.scale.y, 0.01); });
+    shell.visible = w > 0; shell.scale.y = Math.max(w, 0.01); shell.position.y = b.h * shell.scale.y / 2;
+    const tr = roofT && w >= 1; wall.opacity = tr ? 0.18 : 1; roof.opacity = tr ? 0.12 : 1; wall.depthWrite = roof.depthWrite = !tr;
+    wall.emissive && wall.emissive.setHex(op ? 0x5a3c12 : 0x000000);
+    lb.visible = lbl && f > 0; });
+  c4.presses.forEach((p, i) => { p.visible = m >= 12 + Math.floor(i / 7) && (roofT || m < 15); });
+  c4.crane.visible = m >= 3 && m <= 15; c4.excav.visible = m >= 1 && m <= 6;
+  c4.cars.count = Math.min(180, Math.round(hc / 4.5));
+  c4.trucks.forEach((tk, i) => { tk.visible = op && i < Math.min(8, Math.max(1, Math.round(trucksDay / 10))); });
+}
+function c4Loop() {
+  if (!c4) return; cancelAnimationFrame(c4.raf);
+  const tick = (now) => {
+    if (current !== "carte" || !$("c4Stage").isConnected) return;
+    const s = (now - c4.t0) / 1000; c4.ctl.update();
+    c4.pulse.forEach((p) => { const k = 1 + (s % 2) * 1.2; p.scale.set(k, k, k); p.material.opacity = 1 - (s % 2) / 2; });
+    c4.jib.rotation.y = s * 0.15;
+    c4.trucks.forEach((tk) => { const u = (s * 0.03 + tk.userData.off) % 1;
+      if (u < 0.6) { tk.position.set(-450 + u / 0.6 * 625, 0, 114); tk.rotation.y = 0; } else if (u < 0.75) { const v = (u - 0.6) / 0.15; tk.position.set(175, 0, 114 - v * 70); tk.rotation.y = Math.PI / 2; }
+      else { const v = (u - 0.75) / 0.25; tk.position.set(175 + v * 275, 0, 122); tk.rotation.y = 0; } });
+    c4.r.render(c4.scene, c4.cam); c4.raf = requestAnimationFrame(tick); };
+  c4.raf = requestAnimationFrame(tick);
+}
+function c4Toggle() {
+  if (c4Timer) { clearInterval(c4Timer); c4Timer = null; $("c4Play").textContent = "▶ Lecture"; return; }
+  if (c4M >= 71) c4M = 0; $("c4Play").textContent = "⏸ Pause";
+  c4Timer = setInterval(() => { if (current !== "carte" || c4M >= 71) { clearInterval(c4Timer); c4Timer = null; $("c4Play").textContent = "▶ Lecture"; return; } c4M++; c4Update(); }, 450);
 }
 
 // thème : redessiner les graphiques quand le thème change
