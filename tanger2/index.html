@@ -1671,6 +1671,17 @@ table.dl td:last-child{font-weight:600}
         <p class="muted" style="font-size:.84rem;margin:0">Maroc PME (marocpme.gov.ma) accompagne les TPME : chiffre d'affaires inférieur à 200 MDH. Avec plus de 1 Md DH de chiffre d'affaires dès 2030, DPA relève du dispositif principal de la Charte de l'investissement, instruit par le CRI, et non des programmes de Maroc PME. Ce point est à dire au jury.</p></div>
     </section>
 
+    <!-- ===================== GUIDE INVESTISSEUR : FORME JURIDIQUE ET FINANCEMENT ===================== -->
+    <section class="page" data-page="juridique" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>SA ou SARL, taux de crédit et <em class="g">aides réelles</em></h2>
+        <p>Les quatre questions du jury : quelle forme juridique et pourquoi, à quel taux les banques prêtent aujourd'hui, si Maroc PME ou Tamwilcom peuvent financer le projet, et quels locaux réels louer ou acheter, avec leur prix. Données de marché d'octobre-novembre 2026, sources cliquables.</p></div></div>
+      <div class="panel gilt" id="jrVerdict"></div>
+      <div class="panel"><h3>1. Forme juridique : SA ou SARL ?</h3><div class="tablewrap"><table id="jrForm"></table></div><div id="jrFormWhy"></div></div>
+      <div class="panel"><h3>2. Taux de crédit réels et effet sur le projet</h3><div class="tiles" id="jrRateTiles"></div><div class="tablewrap"><table id="jrRate"></table></div><div id="jrRateNote"></div></div>
+      <div class="panel"><h3>3. Maroc PME, Tamwilcom et Charte de l'investissement : DPA y a-t-elle droit ?</h3><div class="tablewrap"><table id="jrAid"></table></div><div id="jrAidNote"></div></div>
+      <div class="panel"><h3>4. Locaux réels et prix réels</h3><div class="tablewrap"><table id="jrLoc"></table></div><div id="jrLocNote"></div></div>
+    </section>
+
     <!-- ===================== GUIDE INVESTISSEUR : TERRAIN ===================== -->
     <section class="page" data-page="terrain" hidden>
       <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Terrain réel et <em class="g">implantation</em></h2>
@@ -2285,7 +2296,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
 const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["formations", "Formations", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
-  ["syllabus", "Syllabus A → Z", false, "Guide de l'investisseur"], ["terrain", "Terrain et implantation", false, "Guide de l'investisseur"], ["carte", "Carte 4D du site", false, "Guide de l'investisseur"], ["usine", "Usine 4D (intérieur)", false, "Guide de l'investisseur"], ["bp5", "Business plan 5 ans", false, "Guide de l'investisseur"], ["financer", "Banques et financement", false, "Guide de l'investisseur"],
+  ["syllabus", "Syllabus A → Z", false, "Guide de l'investisseur"], ["juridique", "SA ou SARL, taux et aides", false, "Guide de l'investisseur"], ["terrain", "Terrain et implantation", false, "Guide de l'investisseur"], ["carte", "Carte 4D du site", false, "Guide de l'investisseur"], ["usine", "Usine 4D (intérieur)", false, "Guide de l'investisseur"], ["bp5", "Business plan 5 ans", false, "Guide de l'investisseur"], ["financer", "Banques et financement", false, "Guide de l'investisseur"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["treso", "Trésorerie", false, "Pilotage & contrôle"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -2311,7 +2322,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData, syllabus: initSyllabus, terrain: initTerrain, carte: initCarte, usine: initUsine, bp5: initBp5, financer: initFinancer })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData, syllabus: initSyllabus, juridique: initJuridique, terrain: initTerrain, carte: initCarte, usine: initUsine, bp5: initBp5, financer: initFinancer })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -5797,6 +5808,63 @@ function c4Toggle() {
   if (c4Timer) { clearInterval(c4Timer); c4Timer = null; $("c4Play").textContent = "▶ Lecture"; return; }
   if (c4M >= 71) c4M = 0; $("c4Play").textContent = "⏸ Pause";
   c4Timer = setInterval(() => { if (current !== "carte" || c4M >= 71) { clearInterval(c4Timer); c4Timer = null; $("c4Play").textContent = "▶ Lecture"; return; } c4M++; c4Update(); }, 450);
+}
+
+// ---------- Forme juridique, taux et aides ----------
+const JR = {
+  sarl1: ["https://legalplus.ma/sarl-au-maroc-guide-complet/", "SARL au Maroc, guide 2026"], sa1: ["https://nexora-expertise.ma/articles/sa-maroc-definition-capital-actions", "SA au Maroc : capital et actions"],
+  forms: ["https://www.creationentreprise-rabat.com/blog/formes-juridiques-maroc/", "SARL, SA, SAS : quelle forme choisir en 2026"],
+  td3: ["https://www.lavieeco.com/argent/banques/credit-bancaire-le-taux-debiteur-global-recule-a-457-au-troisieme-trimestre/", "La Vie éco : taux débiteurs T3 2026"],
+  td3b: ["https://fnh.ma/articles/liquidite-bancaire-le-besoin-des-banques-s-etablit-a-135-8-mmdh-en-octobre", "Finances News : crédits à l'équipement 4,52 %"],
+  tdbam: ["https://www.bkam.ma/Marches/Taux-d-interet/Taux-debiteurs", "Bank Al-Maghrib : taux débiteurs"],
+  ist: ["https://marocpme.gov.ma/istitmar/istitmar-pme/", "Maroc PME : Istitmar PME"], dam: ["https://www.tamwilcom.ma/fr/votre-projet/damane-istitmar", "Tamwilcom : Damane Istitmar"],
+  tam26: ["https://fnh.ma/articles/tamwilcom-financements-premier-semestre-2026", "Tamwilcom : bilan S1 2026"], cdm8: ["https://www.creditdumaroc.ma/sites/default/files/notices/Notice_N8_Les_produits_de_garantie_TAMWILCOM.pdf", "Crédit du Maroc : produits de garantie Tamwilcom"],
+  mbiu: ["https://mbi-maroc.com/listings/usines-a-vendre-et-a-louer-a-tanger/", "MBI Maroc : usines à vendre et à louer à Tanger"], avzi: ["https://www.avito.ma/fr/maroc/zone_industrielle_gzenaya--%C3%A0_vendre", "Avito : zone industrielle de Gzenaya"],
+  avbu: ["https://www.avito.ma/sp/immobilier/bureaux-a-centre-tanger", "Avito : bureaux à Tanger centre"], jsq: ["https://www.jobsquare.ma/blog/location-bureau-maroc-prix-bail-charges/", "Louer un bureau au Maroc en 2026"]
+};
+const J_ = (k) => L_(JR[k][0], JR[k][1]);
+function initJuridique() {
+  $("jrVerdict").innerHTML = `<div class="trnhead"><div><span class="eyebrow">Réponse au jury</span><h3>Société anonyme (SA), crédit à environ 4,5 à 5,25 %, sans Maroc PME</h3>
+    <p style="margin:0">DPA est créée en <b>SA</b> : le projet pèse 791 MDH, réunit plusieurs actionnaires et un pool de banques. Le marché prête aujourd'hui autour de <b>4,3 à 4,5 %</b> aux grandes entreprises ; le modèle retient prudemment <b>5,25 %</b>. Maroc PME ne s'applique pas à un projet de cette taille ; la Charte de l'investissement, via le CRI, oui. La garantie Tamwilcom est possible mais marginale (15 MDH au plus par opération).</p></div>
+    ${dl([["Forme juridique", "SA à conseil d'administration"], ["Capital", "350 MDH (minimum légal 300 000 DH)"], ["Taux du marché, T3 2026", "4,52 % (équipement)"], ["Taux du modèle", "5,25 % (prudence)"], ["Maroc PME", "non éligible"], ["Charte (CRI)", "éligible"], ["Tamwilcom", "possible, ≤ 15 MDH garantis"]])}</div>`;
+  const F = [["Capital minimum", "Libre (loi 24-10, 2011)", "300 000 DH, libéré d'au moins ¼", "Indifférent : 350 MDH d'apport"],
+    ["Nombre d'associés", "1 à 50", "5 au moins, pas de maximum", "SA : la maison mère, un co-investisseur et éventuellement des fonds d'investissement"],
+    ["Titres", "Parts sociales : cession à un tiers soumise à l'agrément des associés", "Actions librement négociables (clause d'agrément possible)", "SA : entrée ou sortie d'un investisseur sans bloquer la société"],
+    ["Direction", "Un ou plusieurs gérants", "Conseil d'administration et directeur général, ou directoire et conseil de surveillance", "SA : gouvernance attendue par les banques et la BERD"],
+    ["Commissaire aux comptes", "Obligatoire au-delà de 50 MDH de chiffre d'affaires", "Toujours obligatoire", "Indifférent : DPA dépassera 50 MDH dès 2028"],
+    ["Accès aux marchés de capitaux", "Pas d'emprunt obligataire ni d'introduction en bourse", "Emprunt obligataire et Bourse de Casablanca possibles", "SA : refinancement futur par obligations"],
+    ["Coût et formalisme", "Faible", "Plus élevé (conseil, assemblées, rapports)", "Coût négligeable à l'échelle de 791 MDH"],
+    ["Fiscalité (IS, TVA)", "Identique", "Identique", "Pas d'effet sur le choix"]];
+  $("jrForm").innerHTML = "<thead><tr><th>Critère</th><th class='wrap'>SARL (loi 5-96)</th><th class='wrap'>SA (loi 17-95)</th><th class='wrap'>Conséquence pour DPA</th></tr></thead><tbody>" + F.map((r) => `<tr><td><b>${r[0]}</b></td><td class="wrap">${r[1]}</td><td class="wrap">${r[2]}</td><td class="wrap">${r[3]}</td></tr>`).join("") + "</tbody>";
+  $("jrFormWhy").innerHTML = `<p style="margin:0"><b>Pourquoi la SA :</b> (1) le projet a besoin de plusieurs actionnaires et doit pouvoir accueillir un co-investisseur (scénario A, 90 MDH) sans renégocier les statuts ; (2) les banques et bailleurs (BERD, BAD) exigent la gouvernance et le contrôle d'une SA ; (3) le commissaire aux comptes serait de toute façon obligatoire en SARL au-delà de 50 MDH de chiffre d'affaires, ce qui supprime l'avantage de coût de la SARL ; (4) seule la SA peut émettre des obligations pour refinancer la dette plus tard. La SARL conviendrait à un sous-traitant de petite taille, pas à DPA.</p>
+    <p class="src" style="margin:0">Sources : ${J_("sarl1")} · ${J_("sa1")} · ${J_("forms")}. Les seuils (50 MDH pour le commissaire aux comptes en SARL, 5 actionnaires en SA) sont à vérifier dans les lois 5-96 et 17-95 consolidées.</p>`;
+  const sh = (d) => { const s = T2.SHOCKS(); s.rate = d; return s; };
+  const cases = [["Modèle (prudent)", 0.0525, 0], ["Crédits à l'équipement, T3 2026", 0.0452, -0.0073], ["Grandes entreprises, T3 2026", 0.0431, -0.0094], ["TPME, T3 2026", 0.051, -0.0015]];
+  const base = run(S.B, sh(0));
+  $("jrRateTiles").innerHTML = tile("Taux directeur BAM", "2,25 %", "maintenu le 22/09/2026") + tile("Crédits à l'équipement", "4,52 %", "T3 2026 (−13 pb)") + tile("Grandes entreprises", "4,31 %", "T3 2026") + tile("TPME", "5,10 %", "T3 2026") + tile("Retenu dans le modèle", "5,25 %", "dette à 10 ans, différé de 3 ans");
+  $("jrRate").innerHTML = "<thead><tr><th>Hypothèse de taux (scénario B)</th><th>Taux</th><th>Intérêts cumulés (MDH)</th><th>VAN (MDH)</th><th>TRI fonds propres</th><th>DSCR minimum</th></tr></thead><tbody>"
+    + cases.map(([n, t, d]) => { const r = run(S.B, sh(d)), it = r.table.interest.reduce((a, b) => a + b, 0); return `<tr${d === 0 ? ' style="font-weight:700"' : ""}><td>${n}</td><td class="n">${pct(t, 2)}</td><td class="n">${fmt(it, 1)}</td><td class="n">${fmt(r.kpi.npv, 1)}</td><td class="n">${pct(r.kpi.triEq, 2)}</td><td class="n">${xx(r.kpi.dscrMin)}</td></tr>`; }).join("") + "</tbody>";
+  $("jrRateNote").innerHTML = `<p style="margin:0">Les taux de l'enquête de Bank Al-Maghrib sont des moyennes, tirées vers le bas par les crédits courts. Un prêt de 10 ans avec 3 ans de différé, sur un projet en construction, se négocie plus haut : d'où les 5,25 % du modèle, environ 0,7 point au-dessus du marché. Au taux moyen du marché, le projet gagnerait environ ${fmt(run(S.B, sh(-0.0073)).kpi.npv - base.kpi.npv, 0)} MDH de VAN : c'est une marge de sécurité, pas une perte. Crédit-bail : 6,5 % retenus (repère du marché ≈ 5,5 à 6,5 %).</p>
+    <p class="src" style="margin:0">Sources : ${J_("td3")} · ${J_("td3b")} · ${J_("tdbam")} · ${S_("bam")}.</p>`;
+  const A = [["Maroc PME · Istitmar PME", "Prime de 20 % de l'investissement, plafond 10 MDH", "CA de 10 à 200 MDH, industrie, 20 % de fonds propres", "Non : CA de DPA > 1 Md DH dès 2029", "ko", "ist"],
+    ["Charte · dispositif TPME (Maroc PME + CRI)", "Primes jusqu'à 30 %", "Investissement de 1 à 50 MDH, CA ≤ 200 MDH, pas filiale d'un grand groupe", "Non : 791 MDH, filiale d'un groupe", "ko", "tpme2"],
+    ["Charte · dispositif principal (CRI)", "Primes cumulées ≤ 30 % (emploi, secteur, critères)", "≥ 50 MDH et 50 emplois stables, ou ≥ 150 emplois", "Oui : 791 MDH et ≈ 725 emplois", "ok", "charte2"],
+    ["Tamwilcom · Damane Istitmar", "Garantie de 60 à 70 % du crédit, commission ≈ 2 % HT", "Crédits ou crédit-bail d'investissement > 1 MDH, production de biens ; 15 MDH par opération, 30 MDH par entreprise", "Possible mais marginal : 15 MDH garantis sur 450 MDH de dette (3 %)", "warn", "dam"],
+    ["Exonérations fiscales et douanières (convention)", "TVA et droits de douane exonérés sur les équipements", "Convention d'investissement avec l'État", "Oui : ≈ 150 MDH de TVA non préfinancés", "ok", "douane"]];
+  $("jrAid").innerHTML = "<thead><tr><th>Dispositif</th><th class='wrap'>Ce qu'il apporte</th><th class='wrap'>Conditions</th><th class='wrap'>DPA</th><th>Source</th></tr></thead><tbody>"
+    + A.map((a) => `<tr><td class="wrap"><b>${a[0]}</b></td><td class="wrap">${a[1]}</td><td class="wrap">${a[2]}</td><td class="wrap"><span class="pill ${a[4]}">${a[3]}</span></td><td class="wrap">${JR[a[5]] ? J_(a[5]) : S_(a[5])}</td></tr>`).join("") + "</tbody>";
+  $("jrAidNote").innerHTML = `<p style="margin:0"><b>Conclusion :</b> DPA ne peut pas obtenir de subvention de Maroc PME (programmes réservés aux TPME). Le bon guichet est le CRI de Tanger-Tétouan-Al Hoceima pour la Charte de l'investissement. La garantie Tamwilcom peut être demandée par la banque pour une tranche de 15 MDH, au coût d'environ 2 %, mais elle ne change pas l'équilibre du financement. Les sous-traitants locaux de DPA, eux, peuvent prétendre à Istitmar PME et au dispositif TPME (voir le test de la page Banques et financement). Activité 2026 de Tamwilcom : 23,9 Md DH de financements mobilisés au premier semestre (${J_("tam26")}).</p>
+    <p class="src" style="margin:0">Les conditions de Damane Istitmar diffèrent selon les pages officielles (quotité de 60-70 % ou davantage) : à confirmer avec la banque (${J_("cdm8")}).</p>`;
+  const Lc = [["Terrain de l'usine : lot de 8 ha, Tanger Free Zone (Gzenaya)", "Achat", "700 DH/m² (grille officielle Tanger Med Zones 2024)", "56,0 MDH + 4,3 MDH de frais", "Retenu", "tmz"],
+    ["Usine existante à Gzenaya (annonce MBI Maroc)", "Achat", "23 MDH pour 1 550 m², soit ≈ 14 800 DH/m²", "Trop petite pour 43 500 m² couverts", "Comparaison", "mbiu"],
+    ["Unités industrielles de 1 000 m², Ighzinaya / Gzenaya (annonces Avito)", "Achat", "5 à 8,5 MDH, soit 5 000 à 8 500 DH/m² bâti", "Utile pour un magasin avancé", "Comparaison", "avzi"],
+    ["Hangar de 7 000 m², route principale de la zone de Gzenaya (annonce)", "Achat", "Prix sur demande", "Option de stockage pendant le chantier", "À visiter", "mbi"],
+    ["Bureau de la direction de projet : 134 m², Tanger centre (annonce Avito)", "Location", "19 000 DH/mois, soit ≈ 142 DH/m²/mois + syndic", "≈ 0,39 MDH sur 20 mois (oct. 2026 → juin 2028), caution de 2 mois", "Retenu", "avbu"],
+    ["Repère du marché des bureaux, Tanger centre et zones franches (guide 2026)", "Location", "1 800 à 3 000 DH/m²/an hors charges", "Charges : +30 à 50 % du loyer", "Repère", "jsq"]];
+  $("jrLoc").innerHTML = "<thead><tr><th class='wrap'>Local</th><th>Mode</th><th class='wrap'>Prix réel observé</th><th class='wrap'>Coût pour DPA</th><th>Statut</th><th>Source</th></tr></thead><tbody>"
+    + Lc.map((l) => `<tr${l[4] === "Retenu" ? ' style="font-weight:600"' : ""}><td class="wrap">${l[0]}</td><td>${l[1]}</td><td class="wrap">${l[2]}</td><td class="wrap">${l[3]}</td><td><span class="pill ${l[4] === "Retenu" ? "ok" : "gold"}">${l[4]}</span></td><td class="wrap">${JR[l[5]] ? J_(l[5]) : S_(l[5])}</td></tr>`).join("") + "</tbody>";
+  $("jrLocNote").innerHTML = `<p style="margin:0">Pendant le chantier, l'équipe de direction (8 à 10 personnes) loue un plateau de bureaux au centre de Tanger, près des banques, de la Wilaya et du CRI. L'usine définitive est construite sur le lot de 8 ha à Gzenaya (voir les pages Terrain et Carte 4D). Les bâtiments industriels existants à vendre à Gzenaya coûtent 5 000 à 14 800 DH/m² bâtis, contre ≈ 5 500 DH/m² couvert pour construire neuf (terrain, frais et bâtiments : 240 MDH pour 43 500 m²) : construire revient au bas de la fourchette et donne un bâtiment conçu pour les presses lourdes.</p>
+    <p class="src" style="margin:0">Les annonces privées ne sont ni datées ni vérifiées : prix à confirmer par une visite et une offre écrite avant de les citer comme définitifs.</p>`;
 }
 
 // ---------- Usine 4D (intérieur) ----------
