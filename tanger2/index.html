@@ -571,6 +571,15 @@ table.dl td:last-child{font-weight:600}
 .m4phases li b{display:block;font-size:.84rem}
 .m4phases li.on{border-color:var(--orange);box-shadow:0 0 0 3px var(--glow)}
 .m4phases li.past{opacity:.6}
+.u4stage{background:radial-gradient(ellipse at 50% 30%,#2a3440,#0e141b 70%)!important}
+.u4cap{position:absolute;left:16px;right:16px;bottom:44px;background:rgba(12,18,26,.82);color:#f3efe8;border-radius:12px;padding:12px 14px;font-size:.92rem;line-height:1.45;backdrop-filter:blur(4px)}
+.u4cap b{color:#f08a52;display:block;font-size:1rem;margin-bottom:2px}
+.u4hint{position:absolute;left:12px;bottom:10px;font-size:.74rem;color:#c9d2db;background:rgba(12,18,26,.6);padding:4px 8px;border-radius:8px;pointer-events:none}
+.u4cycle{display:grid;gap:8px}
+.u4cycle .bars{display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--line);position:relative}
+.u4cycle .bars span{display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;padding:0 4px}
+.u4cycle .cursor{position:absolute;top:-3px;bottom:-3px;width:3px;background:var(--ink);border-radius:2px;box-shadow:0 0 0 2px var(--panel)}
+.u4cycle .lg{font-size:.84rem;color:var(--muted)}
 .finsteps{margin:0;padding-left:22px;display:grid;gap:10px}
 .finsteps li{padding-left:4px}
 .finsteps li b{display:block}
@@ -1712,6 +1721,31 @@ table.dl td:last-child{font-weight:600}
       <div class="panel gilt"><h3>Prix du terrain à Gzenaya : fourchette réaliste</h3><div class="tablewrap"><table id="c4Prix"></table></div><div id="c4PrixNote"></div></div>
     </section>
 
+    <!-- ===================== GUIDE INVESTISSEUR : USINE 4D (INTÉRIEUR) ===================== -->
+    <section class="page" data-page="usine" hidden>
+      <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>L'usine en 4D, <em class="g">de l'intérieur</em></h2>
+        <p>Entrez dans le hall de production de Gzenaya : 42 presses à injection en fonctionnement, robots, convoyeurs, ligne de peinture et chariots autonomes. Cliquez sur une machine pour voir son prix, son amortissement, sa valeur nette comptable et son cycle de fabrication. La 4e dimension est le temps : faites défiler les exercices pour voir la valeur du parc diminuer et la production monter.</p></div>
+        <div class="toolbar"><button class="btn primary" id="u4Tour" type="button">▶ Visite guidée</button><button class="btn" id="u4All" type="button">Vue d'ensemble</button><button class="btn" id="u4Zoom" type="button">Gros plan : presse 2 700 t</button></div></div>
+      <div class="tiles" id="u4Tiles"></div>
+      <div class="map4d">
+        <div class="m4stage u4stage" id="u4Stage" aria-label="Vue 3D interactive de l'intérieur de l'usine"><div class="m4load" id="u4Load">Chargement de l'usine 3D…</div><div class="u4cap" id="u4Cap" hidden></div><div class="u4hint">Cliquez sur une machine · glissez pour tourner · molette pour zoomer · temps accéléré ×8</div></div>
+        <aside class="m4info" id="u4Info"></aside>
+      </div>
+      <div class="panel m4time">
+        <div class="m4ctl"><label class="f" for="u4Y" style="flex:1;min-width:200px">Exercice<input id="u4Y" type="range" min="2028" max="2038" step="1" value="2031"></label>
+          <span class="pill gold" id="u4YL">2031</span>
+          <label class="m4chk"><input type="checkbox" id="u4Spin"> Rotation 360°</label>
+          <label class="m4chk"><input type="checkbox" id="u4Lbl" checked> Étiquettes</label>
+          <label class="m4chk"><input type="checkbox" id="u4Pause"> Pause des machines</label></div>
+        <div class="u4cycle" id="u4Cycle"></div>
+      </div>
+      <div class="panel"><h3>Parc de machines : prix, amortissement et valeur nette comptable</h3><div class="tablewrap"><table id="u4Table"></table></div><div id="u4Note"></div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Valeur nette comptable du parc (MDH)</h3><div class="chart" id="u4Vnc"></div></div>
+        <div class="panel"><h3>Dotations aux amortissements par année (MDH)</h3><div class="chart" id="u4Dot"></div></div>
+      </div>
+    </section>
+
     <!-- ===================== GUIDE INVESTISSEUR : BUSINESS PLAN 5 ANS ===================== -->
     <section class="page" data-page="bp5" hidden>
       <div class="lead"><div><span class="eyebrow">Guide de l'investisseur</span><h2>Business plan sur <em class="g">5 ans</em></h2>
@@ -2251,7 +2285,7 @@ $("loginForm").addEventListener("submit", async (e) => {
 $("logout").addEventListener("click", () => { if (!$("rpOverlay").hidden) closeReport(); navOpen(false); signOutPresence(); loginAt = null; homeP = null; myFiche = null; $("whoAv").innerHTML = ""; user = null; $("app").hidden = true; $("login").hidden = false; $("lp").value = ""; $("lerr").textContent = ""; paintLogin(); });
 
 const PAGES = [["home", "Accueil", false, "Mon espace"], ["analyste", "Espace analyste", true, "Mon espace"], ["daily", "Au quotidien", false, "Équipe"], ["chat", "Messagerie", false, "Équipe"], ["rapports", "Rapports", false, "Équipe"], ["formations", "Formations", false, "Équipe"], ["rh", "Ressources humaines", false, "Équipe"], ["dash", "Synthèse", false, "Dossier"], ["projet", "Le projet", false, "Dossier"], ["montage", "Montage retenu", false, "Dossier"], ["plan", "Plan de financement", false, "Dossier"], ["legal", "Cadre juridique", false, "Dossier"], ["oeuvre", "Mise en œuvre", false, "Dossier"],
-  ["syllabus", "Syllabus A → Z", false, "Guide de l'investisseur"], ["terrain", "Terrain et implantation", false, "Guide de l'investisseur"], ["carte", "Carte 4D du site", false, "Guide de l'investisseur"], ["bp5", "Business plan 5 ans", false, "Guide de l'investisseur"], ["financer", "Banques et financement", false, "Guide de l'investisseur"],
+  ["syllabus", "Syllabus A → Z", false, "Guide de l'investisseur"], ["terrain", "Terrain et implantation", false, "Guide de l'investisseur"], ["carte", "Carte 4D du site", false, "Guide de l'investisseur"], ["usine", "Usine 4D (intérieur)", false, "Guide de l'investisseur"], ["bp5", "Business plan 5 ans", false, "Guide de l'investisseur"], ["financer", "Banques et financement", false, "Guide de l'investisseur"],
   ["sim", "Simulateur", false, "Analyse"], ["form", "Votre montage", false, "Analyse"], ["stress", "Sensibilités & stress", false, "Analyse"], ["levier", "Effet de levier", false, "Analyse"],
   ["mc", "Monte-Carlo", false, "Modèle avancé"], ["opt", "Optimiseur", true, "Modèle avancé"], ["live", "En direct", false, "Démonstration"],
   ["compta", "Saisie des factures", false, "Comptabilité"], ["treso", "Trésorerie", false, "Pilotage & contrôle"], ["fx", "Taux de change", false, "Pilotage & contrôle"], ["cdg", "Contrôle de gestion", false, "Pilotage & contrôle"], ["ci", "Contrôle interne", false, "Pilotage & contrôle"], ["audit", "Audit interne", false, "Pilotage & contrôle"], ["agent", "Agent IA", false, "Contrôle & formation"], ["stage", "Stagiaires", false, "Contrôle & formation"], ["methode", "Méthode & formules", false, "Annexes"], ["data", "Power BI", true, "Annexes"]];
@@ -2277,7 +2311,7 @@ function show(id) {
   document.querySelectorAll("section.page").forEach((s) => { s.hidden = s.dataset.page !== id; });
   document.querySelectorAll("#tabs button").forEach((b) => { b.setAttribute("aria-selected", b.dataset.page === id); });
   try { localStorage.setItem("t2tab", id); } catch (e) {}
-  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData, syllabus: initSyllabus, terrain: initTerrain, carte: initCarte, bp5: initBp5, financer: initFinancer })[id]();
+  ({ dash: renderDash, projet: renderProjet, montage: renderMontage, oeuvre: renderOeuvre, methode: renderMethode, legal: renderLegal, daily: renderDaily, compta: initCompta, home: initHome, analyste: initAnalyste, treso: initTreso, formations: initFormations, fx: initFx, plan: initPlan, cdg: initCdg, ci: initCi, audit: initAudit, rh: initRh, chat: initChat, rapports: initRapports, agent: initAgent, stage: initStage, levier: renderLevier, sim: renderSim, form: renderForm, stress: renderStress, mc: initMc, opt: initOpt, live: initLive, data: renderData, syllabus: initSyllabus, terrain: initTerrain, carte: initCarte, usine: initUsine, bp5: initBp5, financer: initFinancer })[id]();
   rendered[id] = true;
   afterShow(id);
 }
@@ -5763,6 +5797,205 @@ function c4Toggle() {
   if (c4Timer) { clearInterval(c4Timer); c4Timer = null; $("c4Play").textContent = "▶ Lecture"; return; }
   if (c4M >= 71) c4M = 0; $("c4Play").textContent = "⏸ Pause";
   c4Timer = setInterval(() => { if (current !== "carte" || c4M >= 71) { clearInterval(c4Timer); c4Timer = null; $("c4Play").textContent = "▶ Lecture"; return; } c4M++; c4Update(); }, 450);
+}
+
+// ---------- Usine 4D (intérieur) ----------
+// Parc de machines : répartition des 419 MDH du budget (machines 355 + installations 64), prix unitaires estimés à confirmer par devis
+const U4_PARK = [
+  { id: "p27", n: "Presse à injection 2 700 t", q: 6, u: 9.0, cat: "Presses", piece: "pare-chocs", cyc: 75, kw: 280, L: 18, W: 5, H: 5.2, col: 0x24566b },
+  { id: "p15", n: "Presse à injection 1 500 t", q: 10, u: 5.0, cat: "Presses", piece: "panneaux de porte", cyc: 55, kw: 160, L: 14, W: 4.2, H: 4.4, col: 0x2f6f88 },
+  { id: "p8", n: "Presse à injection 800 t", q: 14, u: 3.0, cat: "Presses", piece: "consoles et grilles", cyc: 40, kw: 90, L: 10.5, W: 3.3, H: 3.6, col: 0x3d7f6a },
+  { id: "p3", n: "Presse à injection 300 t", q: 12, u: 1.583, cat: "Presses", piece: "clips et petites pièces", cyc: 25, kw: 35, L: 6.5, W: 2.4, H: 2.7, col: 0x6a5a8c },
+  { id: "mou", n: "Moules d'injection (premières séries)", q: 60, u: 1.583, cat: "Moules" },
+  { id: "rob", n: "Robots de déchargement et périphériques", q: 42, u: 0.952, cat: "Robots" },
+  { id: "pei", n: "Ligne de peinture et de finition", q: 1, u: 35, cat: "Finition" },
+  { id: "ass", n: "Postes d'assemblage et de contrôle", q: 12, u: 1.667, cat: "Assemblage" },
+  { id: "mt", n: "Poste de transformation MT et distribution", q: 1, u: 18, cat: "Installations" },
+  { id: "fro", n: "Groupes de froid et tours de refroidissement", q: 4, u: 3, cat: "Installations" },
+  { id: "mat", n: "Centrale matière (séchage, transport des granulés)", q: 1, u: 10, cat: "Installations" },
+  { id: "cvc", n: "Climatisation et ventilation", q: 1, u: 10, cat: "Installations" },
+  { id: "inc", n: "Protection incendie (sprinklers)", q: 1, u: 8, cat: "Installations" },
+  { id: "air", n: "Compresseurs d'air", q: 3, u: 2, cat: "Installations" }];
+const U4_RATE = 0.10, U4_Y = Array.from({ length: 11 }, (_, i) => 2028 + i), U4_OEE = 0.85;
+// amortissement linéaire 10 % (note circulaire 717 : matériel industriel 10 à 15 %), mise en service au 1er juillet 2028 (prorata 50 %)
+function u4Plan(v) { let vnc = v; return U4_Y.map((y, i) => { const d = Math.min(vnc, v * U4_RATE * (i === 0 ? 0.5 : 1)); vnc -= d; return { y, d, vnc }; }); }
+const U4_PHASES = [["Fermeture du moule", 0.10, "#2f6f88"], ["Injection", 0.14, "#d9622b"], ["Maintien", 0.12, "#a36b07"], ["Refroidissement", 0.36, "#3d7f6a"],
+  ["Ouverture", 0.10, "#6a5a8c"], ["Éjection et robot", 0.18, "#56606b"]];
+let u4 = null, u4Sel = "p27", u4Tour = null;
+function initUsine() {
+  const c = COLS(), y = +$("u4Y").value, tot = U4_PARK.reduce((a, m) => a + m.q * m.u, 0);
+  const vncY = U4_PARK.reduce((a, m) => a + u4Plan(m.q * m.u).find((p) => p.y === y).vnc, 0);
+  const presses = U4_PARK.filter((m) => m.cat === "Presses"), pph = presses.reduce((a, m) => a + m.q * 3600 / m.cyc * U4_OEE, 0);
+  $("u4YL").textContent = y;
+  $("u4Tiles").innerHTML = tile("Parc de machines", fmt(tot, 0) + " MDH", "machines 355 + installations 64") + tile("Presses à injection", presses.reduce((a, m) => a + m.q, 0), "de 300 à 2 700 tonnes")
+    + tile("Dotation annuelle", fmt(tot * U4_RATE, 1) + " MDH", "linéaire 10 % sur 10 ans") + tile("Valeur nette fin " + y, fmt(vncY, 0) + " MDH", pct(vncY / tot, 0) + " du coût d'origine")
+    + tile("Capacité de moulage", fmt(pph * 16 / 1000, 0) + " k pièces/jour", "2 équipes de 8 h, TRS 85 %");
+  if (!rendered.usine) {
+    $("u4Y").addEventListener("input", initUsine);
+    $("u4Tour").addEventListener("click", u4StartTour); $("u4All").addEventListener("click", () => u4Fly([78, 20, 62], [-15, 2, -12], "Vue d'ensemble"));
+    $("u4Zoom").addEventListener("click", () => { u4Select("p27"); u4Fly([-44, 12, -30], [-61, 3, -50], "Presse 2 700 t : regardez le moule s'ouvrir et le robot sortir le pare-chocs"); });
+    $("u4Spin").addEventListener("change", () => { if (u4) u4.ctl.autoRotate = $("u4Spin").checked; });
+    $("u4Lbl").addEventListener("change", () => { if (u4) u4.labels.forEach((l) => { l.visible = $("u4Lbl").checked; }); });
+  }
+  // tableau du parc
+  const rows = U4_PARK.map((m) => { const v = m.q * m.u, p = u4Plan(v).find((x) => x.y === y);
+    return `<tr${m.id === u4Sel ? ' style="background:var(--chip)"' : ""}><td class="wrap"><b>${m.n}</b>${m.piece ? `<br><span class="src">${m.piece} · cycle ${m.cyc} s · ${m.kw} kW</span>` : ""}</td><td>${m.cat}</td><td class="n">${m.q}</td><td class="n">${fmt(m.u, 2)}</td><td class="n">${fmt(v, 1)}</td><td class="n">10 ans</td><td class="n">${fmt(v * U4_RATE, 2)}</td><td class="n">${fmt(v - p.vnc, 1)}</td><td class="n">${fmt(p.vnc, 1)}</td></tr>`; }).join("");
+  const am = U4_PARK.reduce((a, m) => { const v = m.q * m.u; return a + v - u4Plan(v).find((x) => x.y === y).vnc; }, 0);
+  $("u4Table").innerHTML = `<thead><tr><th>Machine</th><th>Famille</th><th>Qté</th><th>Prix unitaire (MDH)</th><th>Valeur d'origine (MDH)</th><th>Durée</th><th>Dotation annuelle (MDH)</th><th>Amortissements cumulés fin ${y}</th><th>VNC fin ${y}</th></tr></thead><tbody>${rows}`
+    + `<tr style="font-weight:700"><td>Total</td><td></td><td></td><td></td><td class="n">${fmt(tot, 1)}</td><td></td><td class="n">${fmt(tot * U4_RATE, 1)}</td><td class="n">${fmt(am, 1)}</td><td class="n">${fmt(vncY, 1)}</td></tr></tbody>`;
+  $("u4Note").innerHTML = `<p class="src" style="margin:0">Amortissement linéaire au taux de 10 % (matériel et outillage industriels : 10 à 15 % selon la note circulaire n° 717), mise en service le 1er juillet 2028 donc demi-dotation en 2028. Les moules peuvent être amortis plus vite (durée de vie des séries, souvent 5 ans) : option à valider avec l'expert-comptable. Prix unitaires : estimations pour des machines neuves de constructeurs européens et asiatiques (Engel, KraussMaffei, Haitian…), à remplacer par les offres de l'appel d'offres. Cadence = 3 600 / temps de cycle × TRS de 85 %.</p>`;
+  const famV = {}, famD = {}; U4_PARK.forEach((m) => { const pl = u4Plan(m.q * m.u); famV[m.cat] = (famV[m.cat] || U4_Y.map(() => 0)).map((v, i) => v + pl[i].vnc); famD[m.cat] = (famD[m.cat] || U4_Y.map(() => 0)).map((v, i) => v + pl[i].d); });
+  const fcol = { Presses: c.A, Moules: c.gold, Robots: c.B, Finition: c.C, Assemblage: c.X, Installations: c.muted };
+  plot("u4Vnc", Object.keys(famV).map((k) => ({ type: "scatter", mode: "lines", stackgroup: "v", name: k, x: U4_Y, y: famV[k], line: { width: 1, color: fcol[k] } })),
+    { yaxis: { gridcolor: c.line, color: c.muted }, shapes: [vline(y, c.ko)] });
+  plot("u4Dot", Object.keys(famD).map((k) => ({ type: "bar", name: k, x: U4_Y, y: famD[k], marker: { color: fcol[k] } })), { barmode: "stack", yaxis: { gridcolor: c.line, color: c.muted } });
+  u4Info(); u4CycleBar();
+  c4Load().then(() => { if (!u4) u4Build(); else { u4Resize(); u4Loop(); } })
+    .catch(() => { $("u4Load").textContent = "La bibliothèque 3D (three.js) n'a pas pu se charger : vérifiez la connexion."; });
+}
+function u4Info() {
+  const m = U4_PARK.find((x) => x.id === u4Sel), y = +$("u4Y").value, v = m.q * m.u, p = u4Plan(v).find((x) => x.y === y);
+  const rows = [["Quantité", m.q], ["Prix unitaire", fmt(m.u, 2) + " MDH"], ["Valeur d'origine", fmt(v, 1) + " MDH"], ["Amortissement", "linéaire 10 %, 10 ans"],
+    ["Dotation annuelle", fmt(v * U4_RATE, 2) + " MDH"], ["VNC fin " + y, fmt(p.vnc, 1) + " MDH (" + pct(p.vnc / v, 0) + ")"]];
+  if (m.cyc) { const ph = 3600 / m.cyc * U4_OEE; rows.push(["Pièce fabriquée", m.piece], ["Temps de cycle", m.cyc + " s"], ["Cadence par presse", fmt(ph, 0) + " pièces/h"],
+    ["Puissance installée", m.kw + " kW par presse"], ["Coût d'amortissement par pièce", fmt(m.u * 1e6 * U4_RATE / (ph * 16 * 250), 2) + " DH"]); }
+  $("u4Info").innerHTML = `<span class="eyebrow">${m.cat}</span><h3>${m.n}</h3>` + dl(rows) + `<p class="src" style="margin:0">Cliquez sur une autre machine dans la vue 3D ou utilisez les boutons de visite.</p>`;
+}
+function u4CycleBar() {
+  const m = U4_PARK.find((x) => x.id === u4Sel && x.cyc) || U4_PARK[0];
+  $("u4Cycle").innerHTML = `<div class="lg"><b>Cycle de la ${m.n.toLowerCase()}</b> · ${m.cyc} secondes · ${m.piece}</div><div class="bars" id="u4Bars">${U4_PHASES.map(([n, f, col]) => `<span style="width:${f * 100}%;background:${col}" title="${n} : ${fmt(f * m.cyc, 0)} s">${n} · ${fmt(f * m.cyc, 0)} s</span>`).join("")}<i class="cursor" id="u4Cur"></i></div>`;
+}
+function u4Select(id) { u4Sel = id; u4Info(); u4CycleBar(); if (u4) u4.presses.forEach((p) => p.hl.visible = p.m.id === id); initUsineTableOnly(); }
+function initUsineTableOnly() { const t = $("u4Table"); if (!t) return; const y = +$("u4Y").value; t.querySelectorAll("tbody tr").forEach((tr, i) => { tr.style.background = U4_PARK[i] && U4_PARK[i].id === u4Sel ? "var(--chip)" : ""; }); }
+function u4Build() {
+  const T = THREE, st = $("u4Stage"); $("u4Load").hidden = true;
+  const r = new T.WebGLRenderer({ antialias: true, alpha: true }); r.setPixelRatio(Math.min(2, devicePixelRatio || 1)); st.insertBefore(r.domElement, st.firstChild);
+  const scene = new T.Scene(); scene.fog = new T.Fog(0x0e141b, 160, 420);
+  const cam = new T.PerspectiveCamera(50, 1, 0.5, 1500), ctl = new T.OrbitControls(cam, r.domElement);
+  ctl.enableDamping = true; ctl.maxPolarAngle = 1.48; ctl.minDistance = 8; ctl.maxDistance = 320; ctl.autoRotateSpeed = 0.5;
+  cam.position.set(78, 20, 62); ctl.target.set(-15, 2, -12);
+  scene.add(new T.HemisphereLight(0xdfe8f2, 0x2a2a2a, 0.55)); const sun = new T.DirectionalLight(0xffffff, 0.55); sun.position.set(60, 120, 40); scene.add(sun);
+  const M = (col, o = {}) => new T.MeshLambertMaterial(Object.assign({ color: col }, o)), P = (col, o = {}) => new T.MeshPhongMaterial(Object.assign({ color: col, shininess: 60 }, o));
+  const box = (w, h, d, mat, x, y, z, g) => { const b = new T.Mesh(new T.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); (g || scene).add(b); return b; };
+  // hall : sol époxy, marquages, murs, charpente, éclairage
+  const floor = new T.Mesh(new T.PlaneGeometry(200, 140), P(0x5d6b66, { shininess: 90 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const yel = M(0xf2b632);
+  [-63, -33, -3, 25, 52].forEach((z) => { box(186, 0.05, 0.5, yel, -5, 0.03, z); });
+  box(0.5, 0.05, 125, yel, 62, 0.03, -5); box(0.5, 0.05, 125, yel, -98, 0.03, -5);
+  const wall = M(0xd9dde2, { side: T.BackSide }); const shell = box(200, 26, 140, wall, 0, 13, 0);
+  const roof = new T.Group(); scene.add(roof);
+  for (let x = -90; x <= 90; x += 30) { box(0.6, 0.8, 140, M(0x56606b), x, 25, 0, roof); for (let z = -60; z <= 60; z += 30) box(3, 0.3, 1.2, M(0xffffff, { emissive: 0xfff2d6, emissiveIntensity: 0.9 }), x, 24, z, roof); }
+  for (let x = -100; x <= 100; x += 20) for (const z of [-70, 70]) box(0.8, 26, 0.8, M(0x3d4752), x, 13, z);
+  const labels = [];
+  const lab = (t, s, x, y, z, w) => { const l = c4Label(t, s, w || 22, "#d9622b"); l.position.set(x, y, z); scene.add(l); labels.push(l); };
+  // presses
+  const presses = [], rowsDef = [["p27", -50, -88, 22], ["p15", -20, -90, 15], ["p8", 10, -92, 10], ["p3", 38, -93, 7.4]];
+  const metal = P(0x9aa4ad, { shininess: 100 }), dark = P(0x2b333b), moldA = P(0xc96a2f), moldB = P(0x8a929a, { shininess: 120 }), glass = new T.MeshPhongMaterial({ color: 0x9fd3ea, transparent: true, opacity: 0.16, depthWrite: false });
+  rowsDef.forEach(([id, z, x0, step]) => {
+    const m = U4_PARK.find((q) => q.id === id), n = m.q, L = m.L, W = m.W, H = m.H;
+    for (let i = 0; i < n; i++) {
+      const g = new T.Group(), x = x0 + i * step + L / 2; g.position.set(x, 0, z); scene.add(g);
+      const base = box(L, H * 0.32, W, P(m.col), 0, H * 0.16, 0, g); base.userData.id = id;
+      const inj = new T.Mesh(new T.CylinderGeometry(W * 0.16, W * 0.16, L * 0.42, 18), metal); inj.rotation.z = Math.PI / 2; inj.position.set(L * 0.25, H * 0.48, 0); g.add(inj);
+      const heat = new T.Mesh(new T.CylinderGeometry(W * 0.17, W * 0.17, L * 0.18, 18), P(0x3a1a0a, { emissive: 0x000000 })); heat.rotation.z = Math.PI / 2; heat.position.set(L * 0.12, H * 0.48, 0); g.add(heat);
+      const hop = new T.Mesh(new T.ConeGeometry(W * 0.28, H * 0.32, 14), P(0xf2b632)); hop.rotation.x = Math.PI; hop.position.set(L * 0.36, H * 0.78, 0); g.add(hop);
+      box(L * 0.06, H * 0.55, W * 0.95, dark, -L * 0.42, H * 0.6, 0, g); // plateau arrière
+      const fixed = box(L * 0.06, H * 0.62, W * 0.95, dark, -L * 0.02, H * 0.63, 0, g);
+      box(L * 0.05, H * 0.36, W * 0.62, moldB, -L * 0.075, H * 0.62, 0, g);
+      for (const dy of [0.42, 0.86]) for (const dz of [-0.36, 0.36]) { const tb = new T.Mesh(new T.CylinderGeometry(W * 0.035, W * 0.035, L * 0.42, 10), metal); tb.rotation.z = Math.PI / 2; tb.position.set(-L * 0.22, H * dy, W * dz); g.add(tb); }
+      const mov = new T.Group(); g.add(mov); box(L * 0.06, H * 0.58, W * 0.9, dark, 0, H * 0.62, 0, mov); box(L * 0.05, H * 0.36, W * 0.62, moldA, L * 0.055, H * 0.62, 0, mov);
+      const part = box(L * 0.015, H * 0.24, W * 0.5, P(0x1b2430, { shininess: 140 }), 0, H * 0.62, 0, g); part.visible = false;
+      box(L * 0.92, H * 0.55, W * 1.08, glass, -L * 0.04, H * 0.62, 0, g);
+      // robot cartésien au-dessus du moule
+      const rob = new T.Group(); rob.position.set(-L * 0.12, H * 1.02, 0); g.add(rob);
+      box(L * 0.04, H * 0.06, W * 2.2, P(0xf2b632), 0, 0.2, W * 0.55, rob); const arm = new T.Group(); rob.add(arm);
+      box(W * 0.07, H * 0.5, W * 0.07, P(0xf2b632), 0, -H * 0.22, 0, arm); const grip = box(W * 0.2, W * 0.08, W * 0.3, dark, 0, -H * 0.48, 0, arm);
+      const lamp = new T.Mesh(new T.CylinderGeometry(0.18, 0.18, 0.9, 10), M(0x2bd16b, { emissive: 0x2bd16b, emissiveIntensity: 0.9 })); lamp.position.set(L * 0.42, H * 1.05, W * 0.45); g.add(lamp);
+      const hl = new T.Mesh(new T.RingGeometry(Math.max(L, W) * 0.62, Math.max(L, W) * 0.66, 48), new T.MeshBasicMaterial({ color: 0xf08a52, side: T.DoubleSide })); hl.rotation.x = -Math.PI / 2; hl.position.y = 0.08; hl.visible = id === u4Sel; g.add(hl);
+      presses.push({ m, g, base, mov, part, heat, arm, grip, lamp, hl, L, W, H, off: (i * 0.137 + presses.length * 0.071) % 1, lastCycle: -1 });
+    }
+    // convoyeur devant la rangée
+    const conv = box(170, 0.9, 1.6, P(0x3d4752), -8, 0.9, z + m.W * 0.5 + 2.6); conv.userData.conv = true;
+    lab(m.n.replace("Presse à injection ", "Presses ") + " × " + n, m.piece, -95 + 6, m.H * 1.6 + 4, z, 26);
+  });
+  // pièces sur les convoyeurs (instances)
+  const ip = new T.InstancedMesh(new T.BoxGeometry(2.2, 0.7, 1.1), P(0x1b2430, { shininess: 140 }), 120); scene.add(ip);
+  // ligne de peinture, assemblage, utilités
+  const zone = (id, x, z, w, d, h, col, t, s) => { const b = box(w, h, d, P(col), x, h / 2, z); b.userData.id = id; lab(t, s, x, h + 5, z, 22); return b; };
+  const paint = zone("pei", 80, -30, 26, 50, 9, 0xe9e3d8, "Ligne de peinture", "35 MDH · cabines et étuve");
+  for (let i = 0; i < 6; i++) box(26.5, 1.2, 0.8, M(0xd9622b, { emissive: 0x7a2f0f, emissiveIntensity: 0.5 }), 80, 3 + i * 0.01, -50 + i * 8);
+  const assy = []; for (let i = 0; i < 12; i++) { const a = box(5, 1.1, 3, P(0x7a8a99), 70 + (i % 4) * 7, 0.55, 18 + Math.floor(i / 4) * 9); a.userData.id = "ass"; assy.push(a); }
+  lab("Assemblage et contrôle", "12 postes · 20 MDH", 80, 9, 27, 22);
+  zone("mt", -92, 62, 10, 8, 5, 0x56606b, "Poste MT", "18 MDH"); zone("fro", -76, 62, 16, 8, 5, 0x3d7f6a, "Groupes de froid", "4 × 3 MDH");
+  zone("mat", -56, 62, 12, 8, 9, 0xf2b632, "Centrale matière", "10 MDH"); zone("air", -38, 62, 10, 8, 4, 0x8a929a, "Compresseurs", "3 × 2 MDH");
+  for (let i = 0; i < 4; i++) { const s = new T.Mesh(new T.CylinderGeometry(1.8, 1.8, 14, 18), P(0xe9e3d8)); s.position.set(-62 + i * 4, 7, 66); scene.add(s); }
+  // chariots autonomes (AGV)
+  const agvs = []; for (let i = 0; i < 5; i++) { const a = new T.Group(); box(3, 1, 2, P(0xd9622b), 0, 0.6, 0, a); box(2.6, 0.9, 1.8, P(0x1b2430), 0, 1.5, 0, a);
+    const li = new T.Mesh(new T.SphereGeometry(0.25, 8, 6), M(0x5bc0ff, { emissive: 0x5bc0ff })); li.position.set(1.4, 1.2, 0); a.add(li); scene.add(a); agvs.push({ a, off: i / 5 }); }
+  // opérateurs (silhouettes)
+  const ops = []; for (let i = 0; i < 26; i++) { const o = new T.Group(); box(0.6, 1.2, 0.4, P(i % 3 ? 0x24566b : 0xd9622b), 0, 1.1, 0, o); const h = new T.Mesh(new T.SphereGeometry(0.28, 10, 8), P(0xe7c8a6)); h.position.y = 1.95; o.add(h);
+    const hat = new T.Mesh(new T.SphereGeometry(0.3, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), P(0xf2b632)); hat.position.y = 2.02; o.add(hat);
+    const z = [-35, -6, 22, 46][i % 4]; o.position.set(-85 + (i * 13.7) % 140, 0, z + 3); scene.add(o); ops.push(o); }
+  const ray = new T.Raycaster(), mouse = new T.Vector2();
+  r.domElement.addEventListener("click", (e) => { const rc = r.domElement.getBoundingClientRect(); mouse.set(((e.clientX - rc.left) / rc.width) * 2 - 1, -((e.clientY - rc.top) / rc.height) * 2 + 1);
+    ray.setFromCamera(mouse, cam); const hit = ray.intersectObjects(scene.children, true).find((h) => { let o = h.object; while (o) { if (o.userData && o.userData.id) return true; o = o.parent; } return false; });
+    if (hit) { let o = hit.object; while (!o.userData.id) o = o.parent; u4Select(o.userData.id); } });
+  u4 = { r, scene, cam, ctl, presses, ip, agvs, ops, labels, roof, shell, t0: performance.now(), raf: 0, made: 0, fly: null };
+  addEventListener("resize", u4Resize); u4Resize(); u4Loop();
+}
+function u4Resize() { if (!u4) return; const st = $("u4Stage"), w = st.clientWidth, h = st.clientHeight; if (!w || !h) return; u4.r.setSize(w, h, false); u4.cam.aspect = w / h; u4.cam.updateProjectionMatrix(); }
+function u4Fly(pos, tgt, cap) {
+  if (!u4) return; const T = THREE;
+  u4.fly = { a: u4.cam.position.clone(), b: new T.Vector3(...pos), ta: u4.ctl.target.clone(), tb: new T.Vector3(...tgt), t: 0, t0: performance.now() };
+  if (cap) { $("u4Cap").hidden = false; $("u4Cap").innerHTML = cap.includes("<b>") ? cap : `<b>${cap}</b>`; if (!u4Tour) setTimeout(() => { if (!u4Tour) $("u4Cap").hidden = true; }, 3500); }
+}
+const U4_TOUR = [[[78, 20, 62], [-15, 2, -12], "<b>Le hall de production · 28 000 m²</b>42 presses à injection en 4 rangées, une ligne de peinture, 12 postes d'assemblage et les utilités. Investissement machines et installations : 419 MDH."],
+  [[-44, 12, -30], [-61, 3, -50], "<b>Presses 2 700 t · 6 × 9 MDH</b>Elles moulent les pare-chocs en 75 secondes. Le moule se ferme, la matière fondue est injectée, refroidie, puis le robot sort la pièce."],
+  [[-40, 12, 0], [-48, 2, -20], "<b>Presses 1 500 t · 10 × 5 MDH</b>Panneaux de porte, cycle de 55 secondes. Dotation annuelle : 5 MDH pour la rangée."],
+  [[-30, 9, 30], [-40, 1, 10], "<b>Presses 800 t et 300 t · 26 machines</b>Consoles, grilles, clips. Petites presses rapides : 25 à 40 secondes par cycle."],
+  [[55, 20, -5], [80, 3, -30], "<b>Ligne de peinture · 35 MDH</b>Cabines de peinture et étuve de séchage pour les pièces visibles."],
+  [[60, 12, 50], [80, 1, 27], "<b>Assemblage et contrôle · 20 MDH</b>Montage des sous-ensembles, contrôle qualité avant expédition en flux tendu vers Renault Melloussa."],
+  [[-60, 18, 35], [-65, 4, 62], "<b>Utilités · 64 MDH</b>Poste moyenne tension, groupes de froid pour refroidir les moules, centrale matière et air comprimé."],
+  [[0, 95, 1], [0, 0, 0], "<b>Vue de dessus</b>Les chariots autonomes relient les magasins, les presses et la peinture. Valeur nette du parc fin 2031 : 272 MDH, après 147 MDH d'amortissements."]];
+function u4StartTour() {
+  if (u4Tour) { clearInterval(u4Tour); u4Tour = null; $("u4Tour").textContent = "▶ Visite guidée"; $("u4Cap").hidden = true; return; }
+  let i = 0; $("u4Tour").textContent = "⏸ Arrêter la visite"; $("u4Spin").checked = false; if (u4) u4.ctl.autoRotate = false;
+  const step = () => { if (current !== "usine" || i >= U4_TOUR.length) { clearInterval(u4Tour); u4Tour = null; $("u4Tour").textContent = "▶ Visite guidée"; $("u4Cap").hidden = true; return; }
+    const [p, t, cap] = U4_TOUR[i]; if (i === 1) u4Select("p27"); if (i === 2) u4Select("p15"); if (i === 3) u4Select("p8"); if (i === 4) u4Select("pei"); if (i === 5) u4Select("ass"); if (i === 6) u4Select("fro");
+    u4Fly(p, t, cap); i++; };
+  step(); u4Tour = setInterval(step, 6500);
+}
+function u4Loop() {
+  if (!u4) return; cancelAnimationFrame(u4.raf); const T = THREE, dummy = new T.Object3D();
+  const tick = (now) => {
+    if (current !== "usine" || !$("u4Stage").isConnected) return;
+    const s = Math.max(0, now - u4.t0) / 1000 * 8, pause = $("u4Pause").checked;
+    if (u4.fly) { const f = u4.fly; f.t = Math.min(1, (performance.now() - f.t0) / 1800); const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - Math.pow(-2 * f.t + 2, 2) / 2;
+      u4.cam.position.lerpVectors(f.a, f.b, e); u4.ctl.target.lerpVectors(f.ta, f.tb, e); if (f.t >= 1) u4.fly = null; }
+    u4.ctl.update();
+    const above = u4.cam.position.y > 23 || Math.abs(u4.cam.position.x) > 99 || Math.abs(u4.cam.position.z) > 69; u4.roof.visible = !above; u4.shell.visible = !above;
+    let selPh = null;
+    if (!pause) u4.presses.forEach((p) => {
+      const u = ((s / p.m.cyc) + p.off) % 1; let acc = 0, ph = 0; for (let k = 0; k < U4_PHASES.length; k++) { if (u < acc + U4_PHASES[k][1]) { ph = k; break; } acc += U4_PHASES[k][1]; }
+      const k = (u - acc) / U4_PHASES[ph][1], open = p.L * 0.16;
+      const x = ph === 0 ? open * (1 - k) : ph <= 3 ? 0 : ph === 4 ? open * k : open;
+      p.mov.position.x = x;
+      p.heat.material.emissive.setHex(ph === 1 || ph === 2 ? 0xd9622b : 0x220c04);
+      p.part.visible = ph >= 2 && !(ph === 5 && k > 0.55); p.part.position.x = ph >= 4 ? -p.L * 0.02 + x * 0.5 : -p.L * 0.02;
+      const dz = ph === 5 ? Math.sin(Math.min(1, k * 1.6) * Math.PI) : 0; p.arm.position.y = -dz * p.H * 0.18; p.arm.position.z = ph === 5 ? p.W * 1.1 * Math.min(1, Math.max(0, (k - 0.45) * 2)) : 0;
+      p.lamp.material.color.setHex(ph === 1 ? 0xf2b632 : 0x2bd16b); p.lamp.material.emissive.setHex(ph === 1 ? 0xf2b632 : 0x2bd16b);
+      if (p.m.id === u4Sel && selPh === null) selPh = u;
+    });
+    if (selPh !== null) { const cur = $("u4Cur"); if (cur) cur.style.left = (selPh * 100) + "%"; }
+    // pièces sur convoyeurs
+    const rowsZ = [-50 + 2.5 + 2.6, -20 + 2.1 + 2.6, 10 + 1.65 + 2.6, 38 + 1.2 + 2.6];
+    for (let i = 0; i < 120; i++) { const row = i % 4, xx = -93 + ((i * 7.3 + (pause ? 0 : s * 1.4)) % 170); dummy.position.set(xx, 1.75, rowsZ[row]); dummy.updateMatrix(); u4.ip.setMatrixAt(i, dummy.matrix); }
+    u4.ip.instanceMatrix.needsUpdate = true;
+    u4.agvs.forEach((a) => { const q = ((pause ? 0 : s * 0.004) + a.off) % 1, perim = [[-95, -64], [58, -64], [58, 54], [-95, 54]];
+      const seg = Math.min(3, Math.floor(q * 4)), f = Math.min(1, q * 4 - seg), A = perim[seg], B = perim[(seg + 1) % 4]; a.a.position.set(A[0] + (B[0] - A[0]) * f, 0, A[1] + (B[1] - A[1]) * f); a.a.rotation.y = seg % 2 ? -Math.PI / 2 : 0; if (seg === 2) a.a.rotation.y = Math.PI; });
+    u4.ops.forEach((o, i) => { o.position.y = Math.abs(Math.sin(s * 0.6 + i)) * 0.04; });
+    u4.r.render(u4.scene, u4.cam); u4.raf = requestAnimationFrame(tick); };
+  u4.raf = requestAnimationFrame(tick);
 }
 
 // thème : redessiner les graphiques quand le thème change
