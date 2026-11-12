@@ -50,7 +50,7 @@ class Report(FPDF):
         self.set_xy(14, 7)
         self.set_text_color(255, 255, 255)
         self.set_font("Helvetica", "B", 14)
-        self.cell(100, 6, "CREDIT HORIZON")
+        self.cell(100, 6, latin("CRÉDIT HORIZON"))
         self.set_xy(14, 14)
         self.set_text_color(110, 231, 183)
         self.set_font("Helvetica", "B", 7.5)
@@ -91,7 +91,10 @@ class Report(FPDF):
     def table(self, head: list[str], rows: list[list], widths: list[float] | None = None, size: float = 7.5, level_col: int | None = None):
         self.set_font("Helvetica", "", size)
         self.set_text_color(30, 41, 59)
+        self.set_fill_color(255, 255, 255)
+        self.set_draw_color(226, 232, 240)
         with super().table(col_widths=widths, text_align="LEFT", line_height=size * 0.5, padding=1.2,
+                           cell_fill_color=(244, 249, 247), cell_fill_mode="ROWS",
                            headings_style=_heading_style(), borders_layout="HORIZONTAL_LINES", first_row_as_headings=True) as t:
             row = t.row()
             for h in head:

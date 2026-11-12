@@ -18,6 +18,14 @@ streamlit run app.py               # http://localhost:8501
 Comptes de démonstration (mot de passe commun `Horizon2026!`) — boutons de pré-remplissage sur la page de connexion :
 `admin@`, `directeur@`, `analyste@`, `commercial@`, `controleur@credithorizon.ma`.
 
+## Tests
+
+```bash
+python -m unittest discover -s tests
+```
+
+10 tests : seuils et cotations R01–R08, analyse des dossiers, indicateurs, séparation des tâches, assistant, exports PDF/Excel/Power BI.
+
 ## Modules
 
 | Page | Contenu |
