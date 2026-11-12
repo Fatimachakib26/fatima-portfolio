@@ -1,0 +1,85 @@
+﻿Activite;Bloc;Acteur;Groupe;Role
+1. Réception de la demande;Constitution;Chargé d'affaires;Service commercial;R
+1. Réception de la demande;Constitution;Direction commerciale;Service commercial;A
+1. Réception de la demande;Constitution;Fonction finance;Fonction Finance;–
+1. Réception de la demande;Constitution;Fonction risques;Fonction Risques;I
+1. Réception de la demande;Constitution;Direction générale / comité de crédit;Direction;–
+1. Réception de la demande;Constitution;Contrôle interne / audit;Contrôle interne;–
+2. Constitution du dossier;Constitution;Chargé d'affaires;Service commercial;R
+2. Constitution du dossier;Constitution;Direction commerciale;Service commercial;A
+2. Constitution du dossier;Constitution;Fonction finance;Fonction Finance;–
+2. Constitution du dossier;Constitution;Fonction risques;Fonction Risques;C
+2. Constitution du dossier;Constitution;Direction générale / comité de crédit;Direction;–
+2. Constitution du dossier;Constitution;Contrôle interne / audit;Contrôle interne;–
+3. Vérification des pièces;Analyse / contrôle;Chargé d'affaires;Service commercial;C
+3. Vérification des pièces;Analyse / contrôle;Direction commerciale;Service commercial;C
+3. Vérification des pièces;Analyse / contrôle;Fonction finance;Fonction Finance;–
+3. Vérification des pièces;Analyse / contrôle;Fonction risques;Fonction Risques;A/R
+3. Vérification des pièces;Analyse / contrôle;Direction générale / comité de crédit;Direction;I
+3. Vérification des pièces;Analyse / contrôle;Contrôle interne / audit;Contrôle interne;–
+4. Analyse commerciale;Constitution;Chargé d'affaires;Service commercial;R
+4. Analyse commerciale;Constitution;Direction commerciale;Service commercial;A
+4. Analyse commerciale;Constitution;Fonction finance;Fonction Finance;C
+4. Analyse commerciale;Constitution;Fonction risques;Fonction Risques;I
+4. Analyse commerciale;Constitution;Direction générale / comité de crédit;Direction;–
+4. Analyse commerciale;Constitution;Contrôle interne / audit;Contrôle interne;–
+5. Analyse des risques;Analyse / contrôle;Chargé d'affaires;Service commercial;C
+5. Analyse des risques;Analyse / contrôle;Direction commerciale;Service commercial;I
+5. Analyse des risques;Analyse / contrôle;Fonction finance;Fonction Finance;C
+5. Analyse des risques;Analyse / contrôle;Fonction risques;Fonction Risques;A/R
+5. Analyse des risques;Analyse / contrôle;Direction générale / comité de crédit;Direction;–
+5. Analyse des risques;Analyse / contrôle;Contrôle interne / audit;Contrôle interne;–
+6. Avis de la fonction risques;Analyse / contrôle;Chargé d'affaires;Service commercial;I
+6. Avis de la fonction risques;Analyse / contrôle;Direction commerciale;Service commercial;I
+6. Avis de la fonction risques;Analyse / contrôle;Fonction finance;Fonction Finance;–
+6. Avis de la fonction risques;Analyse / contrôle;Fonction risques;Fonction Risques;A/R
+6. Avis de la fonction risques;Analyse / contrôle;Direction générale / comité de crédit;Direction;I
+6. Avis de la fonction risques;Analyse / contrôle;Contrôle interne / audit;Contrôle interne;–
+7. Autorisation du crédit;Autorisation;Chargé d'affaires;Service commercial;–
+7. Autorisation du crédit;Autorisation;Direction commerciale;Service commercial;C
+7. Autorisation du crédit;Autorisation;Fonction finance;Fonction Finance;C
+7. Autorisation du crédit;Autorisation;Fonction risques;Fonction Risques;C
+7. Autorisation du crédit;Autorisation;Direction générale / comité de crédit;Direction;A/R
+7. Autorisation du crédit;Autorisation;Contrôle interne / audit;Contrôle interne;I
+8. Décaissement;Exécution;Chargé d'affaires;Service commercial;I
+8. Décaissement;Exécution;Direction commerciale;Service commercial;I
+8. Décaissement;Exécution;Fonction finance;Fonction Finance;A/R
+8. Décaissement;Exécution;Fonction risques;Fonction Risques;C
+8. Décaissement;Exécution;Direction générale / comité de crédit;Direction;I
+8. Décaissement;Exécution;Contrôle interne / audit;Contrôle interne;I
+9. Suivi des remboursements;Suivi;Chargé d'affaires;Service commercial;C
+9. Suivi des remboursements;Suivi;Direction commerciale;Service commercial;I
+9. Suivi des remboursements;Suivi;Fonction finance;Fonction Finance;A/R
+9. Suivi des remboursements;Suivi;Fonction risques;Fonction Risques;I
+9. Suivi des remboursements;Suivi;Direction générale / comité de crédit;Direction;I
+9. Suivi des remboursements;Suivi;Contrôle interne / audit;Contrôle interne;–
+10. Déclaration d'un incident;Suivi;Chargé d'affaires;Service commercial;R
+10. Déclaration d'un incident;Suivi;Direction commerciale;Service commercial;C
+10. Déclaration d'un incident;Suivi;Fonction finance;Fonction Finance;R
+10. Déclaration d'un incident;Suivi;Fonction risques;Fonction Risques;A
+10. Déclaration d'un incident;Suivi;Direction générale / comité de crédit;Direction;I
+10. Déclaration d'un incident;Suivi;Contrôle interne / audit;Contrôle interne;I
+11. Traitement des anomalies;Suivi;Chargé d'affaires;Service commercial;C
+11. Traitement des anomalies;Suivi;Direction commerciale;Service commercial;R
+11. Traitement des anomalies;Suivi;Fonction finance;Fonction Finance;R
+11. Traitement des anomalies;Suivi;Fonction risques;Fonction Risques;A
+11. Traitement des anomalies;Suivi;Direction générale / comité de crédit;Direction;I
+11. Traitement des anomalies;Suivi;Contrôle interne / audit;Contrôle interne;C
+12. Priorisation des corrections;Pilotage;Chargé d'affaires;Service commercial;–
+12. Priorisation des corrections;Pilotage;Direction commerciale;Service commercial;C
+12. Priorisation des corrections;Pilotage;Fonction finance;Fonction Finance;C
+12. Priorisation des corrections;Pilotage;Fonction risques;Fonction Risques;R
+12. Priorisation des corrections;Pilotage;Direction générale / comité de crédit;Direction;A
+12. Priorisation des corrections;Pilotage;Contrôle interne / audit;Contrôle interne;C
+13. Suivi des recommandations;Pilotage;Chargé d'affaires;Service commercial;I
+13. Suivi des recommandations;Pilotage;Direction commerciale;Service commercial;R
+13. Suivi des recommandations;Pilotage;Fonction finance;Fonction Finance;R
+13. Suivi des recommandations;Pilotage;Fonction risques;Fonction Risques;C
+13. Suivi des recommandations;Pilotage;Direction générale / comité de crédit;Direction;A
+13. Suivi des recommandations;Pilotage;Contrôle interne / audit;Contrôle interne;R
+14. Révision des procédures;Pilotage;Chargé d'affaires;Service commercial;–
+14. Révision des procédures;Pilotage;Direction commerciale;Service commercial;C
+14. Révision des procédures;Pilotage;Fonction finance;Fonction Finance;C
+14. Révision des procédures;Pilotage;Fonction risques;Fonction Risques;R
+14. Révision des procédures;Pilotage;Direction générale / comité de crédit;Direction;A
+14. Révision des procédures;Pilotage;Contrôle interne / audit;Contrôle interne;C

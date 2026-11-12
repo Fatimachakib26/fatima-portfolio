@@ -1,0 +1,18 @@
+﻿PrincipeID;ComposanteID;Principe;Nature;Appreciation;Diagnostic
+P1;1;Démontre un engagement envers l'intégrité et les valeurs éthiques;Hypothèse à vérifier;Non évalué;Code d'éthique et règles de conflits d'intérêts existants ? La pression sur les volumes accroît l'enjeu.
+P2;1;Exerce une surveillance de la part de l'organe de gouvernance;Hypothèse à vérifier;Non évalué;Surveillance du dispositif par l'organe compétent, selon le statut juridique de l'organisme.
+P3;1;Établit structures, lignes hiérarchiques, pouvoirs et responsabilités;Constat;Déficient;Responsabilités d'autorisation imprécises : structure et pouvoirs non établis.
+P4;1;Démontre un engagement envers la compétence;Hypothèse à vérifier;Non évalué;Compétence des chargés d'affaires en constitution de dossier et formation à la qualité documentaire.
+P5;1;Impose la responsabilité de chacun;Constat et hypothèse;Déficient;Constat : tension volume/qualité. Hypothèse : performance mesurée sans critère de qualité, donc responsabilisation déséquilibrée.
+P6;2;Définit des objectifs adaptés;Constat;Déficient;Objectifs de volume en tension avec la qualité du portefeuille : objectifs non alignés.
+P7;2;Identifie et analyse les risques;Constat;Partiel;Critères de décision non harmonisés. Hypothèse : cartographie des risques inexistante.
+P8;2;Évalue le risque de fraude;Hypothèse à vérifier;Non évalué;Risque de fraude (dossiers falsifiés, collusion) non évalué.
+P9;2;Identifie et analyse les changements importants;Hypothèse à vérifier;Non évalué;Effets de la croissance (volumes, nouveaux produits) sur les risques non analysés.
+P10;3;Sélectionne et développe des activités de contrôle;Constat;Déficient;Dossiers incomplets : contrôles à l'octroi insuffisants.
+P11;3;Sélectionne et développe des contrôles généraux sur la technologie;Hypothèse à vérifier;Non évalué;Droits d'accès et traçabilité dans l'outil de gestion des dossiers.
+P12;3;Déploie par des politiques et des procédures;Constat;Déficient;Critères non harmonisés : procédures non déployées ou non appliquées de façon homogène.
+P13;4;Utilise des informations pertinentes et de qualité;Constat;Déficient;Informations incohérentes : qualité de l'information non assurée.
+P14;4;Communique en interne;Hypothèse à vérifier;Non évalué;Circuit d'alerte entre commercial, finance, risques et direction.
+P15;4;Communique avec l'externe;Hypothèse à vérifier;Non évalué;Communication externe (clients, financeurs, autorités) selon le statut.
+P16;5;Effectue des évaluations continues et/ou ponctuelles;Constat;Déficient;Suivi des anomalies insuffisamment formalisé : évaluations continues faibles.
+P17;5;Évalue et communique les déficiences;Constat et hypothèse;Partiel;Constat : formalisation insuffisante. Hypothèse : pas de plan correctif suivi jusqu'à clôture.
