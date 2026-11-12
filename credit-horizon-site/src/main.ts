@@ -1,4 +1,6 @@
-import { state, save, audit, nextId, splitIds, snapshot, resetDemo, SEED, type Row } from "./store";
+import { state, save, audit, nextId, splitIds, snapshot, resetDemo, loadRemote, SEED, type Row } from "./store";
+import { inClaude, capability, saveFile, attachCloud, cloudReady } from "./platform";
+import { buildContext, ADVISOR_RULES } from "./logic/ai-context";
 import { computeKpis } from "./logic/kpis";
 import { levelFromScore, LEVEL_TREATMENT, LEVELS, PROBABILITY_SCALE, GRAVITY_SCALE, type Level } from "./logic/scoring";
 import { analyzeDossier, CHECKLIST, PRODUCTS, GUARANTEE_TYPES, isRequired } from "./logic/dossier-analysis";
@@ -6,7 +8,7 @@ import { offlineAnswer } from "./logic/offline-advisor";
 import { md } from "./markdown";
 
 /* ================================================================ constantes */
-const ROLES: Record<string, string> = { admin: "Administrateur", directeur: "Directeur", analyste: "Analyste risques", commercial: "Commercial", controleur: "Contrôleur interne" };
+const ROLES: Record<string, string> = { jury: "Jury (lecture seule)", admin: "Administrateur", directeur: "Directeur", analyste: "Analyste risques", commercial: "Commercial", controleur: "Contrôleur interne" };
 const PERMS: Record<string, string[]> = {
   "risks.write": ["admin", "analyste"],
   "controls.write": ["admin", "controleur"],
@@ -16,7 +18,7 @@ const PERMS: Record<string, string[]> = {
   "anomalies.create": ["admin", "directeur", "analyste", "commercial", "controleur"],
   "anomalies.write": ["admin", "directeur", "analyste", "controleur"],
   "dossiers.write": ["admin", "analyste", "commercial"],
-  "audit.view": ["admin", "directeur", "controleur"],
+  "audit.view": ["admin", "directeur", "controleur", "jury"],
   "demo.reset": ["admin"],
 };
 const PERM_LABELS: Record<string, string> = {
@@ -24,6 +26,15 @@ const PERM_LABELS: Record<string, string> = {
   "actions.write": "Piloter le plan d'action", "recommendations.write": "Gérer les recommandations", "anomalies.create": "Déclarer une anomalie",
   "anomalies.write": "Traiter / clôturer une anomalie", "dossiers.write": "Saisir les dossiers TPE", "audit.view": "Consulter le journal d'audit", "demo.reset": "Réinitialiser les données",
 };
+// Comptes de démonstration (cas académique : contrôle d'accès côté navigateur, sans valeur de sécurité réelle)
+const ACCOUNTS: { login: string; password: string; role: string; name: string; desc: string }[] = [
+  { login: "admin", password: "Horizon2026!", role: "admin", name: "Administrateur", desc: "accès complet" },
+  { login: "jury", password: "Jury2026", role: "jury", name: "Membre du jury", desc: "consultation de tous les modules" },
+  { login: "directeur", password: "Direction2026", role: "directeur", name: "Directeur général", desc: "pilotage, plan d'action, anomalies" },
+  { login: "analyste", password: "Risques2026", role: "analyste", name: "Analyste risques", desc: "registre, dossiers, recommandations" },
+  { login: "commercial", password: "Commercial2026", role: "commercial", name: "Chargé d'affaires", desc: "dossiers TPE, déclaration d'anomalies" },
+  { login: "controleur", password: "Controle2026", role: "controleur", name: "Contrôleur interne", desc: "contrôles, COSO, revue indépendante" },
+];
 const can = (p: string) => !!state.user && PERMS[p]?.includes(state.user.role);
 const CAT_COLORS: Record<string, string> = { Crédit: "#2a78d6", Liquidité: "#eb6834", Opérationnel: "#1baf7a", Conformité: "#6250d6", Stratégique: "#e87ba4" };
 const LVL_COLORS: Record<Level, string> = { Faible: "#16a34a", Modéré: "#eab308", Élevé: "#f97316", Critique: "#dc2626" };
@@ -63,18 +74,9 @@ function toast(msg: string, bad = false) {
 }
 
 function download(name: string, content: string, type = "text/csv;charset=utf-8") {
-  try {
-    const blob = new Blob([content], { type });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast(`Fichier ${name} généré.`);
-  } catch {
-    toast("Le téléchargement n'est pas autorisé dans cet affichage.", true);
-  }
+  saveFile(name, content, type)
+    .then(() => toast(`Fichier ${name} prêt.`))
+    .catch((e) => toast(e?.code === "not_granted" || e?.code === "dismissed" ? "Téléchargement annulé." : "Le téléchargement n'a pas pu être lancé.", true));
 }
 function csv(rows: Row[], cols: [string, string][]) {
   const e = (v: unknown) => {
@@ -85,7 +87,7 @@ function csv(rows: Row[], cols: [string, string][]) {
 }
 
 /* ================================================================ état d'interface */
-const ui: any = { selRisk: null, dossier: null, draft: null, cosoTab: 1, suiviTab: "actions", chat: [] as { role: string; content: string }[], filter: "" };
+const ui: any = { ai: "offline", busy: false, selRisk: null, dossier: null, draft: null, cosoTab: 1, suiviTab: "actions", chat: [] as { role: string; content: string }[], filter: "" };
 
 /* ================================================================ graphiques SVG */
 function donut(data: { label: string; value: number; color: string }[]) {
@@ -188,12 +190,17 @@ function confirmBox(text: string, onYes: () => void) {
 
 /* ================================================================ pages */
 function pLogin() {
-  return `<div class="login"><div class="hero">${LOGO}<h1>Maîtriser le risque,<br>accompagner la croissance des TPE.</h1>
-    <p>Registre P × G, cartographie 5 × 5, analyse des dossiers TPE, diagnostic COSO 2013, contrôle interne, gouvernance RACI, appétence au risque et assistant « Risk Advisor ».</p>
-    <small>Projet EMSI · Génie Financier – Contrôle interne &amp; gestion des risques financiers</small></div>
-    <div class="login-r"><h2>Choisissez votre rôle</h2><p class="muted">Version de démonstration : chaque rôle dispose de droits différents (séparation des tâches).</p>
-    <div class="roles">${SEED.demo_users.map((u: Row) => `<button class="role" data-act="login" data-role="${u.role}"><b>${ROLES[u.role]}</b><span>${esc(u.name)}</span></button>`).join("")}</div>
-    <div class="note demo-note">🧪 Cas académique fictif « Crédit Horizon » (EMSI). Les données marquées « Démo » sont des données de démonstration. Vos modifications sont conservées dans ce navigateur.</div></div></div>`;
+  return `<div class="login"><div class="hero"><div class="glow"></div><div class="emblem">${EMBLEM}</div>
+    <div class="kicker">CRÉDIT HORIZON · RISK INTELLIGENCE</div><h1>Gestion des<br><span>risques financiers</span></h1>
+    <p>Plateforme interne de maîtrise des risques d'un organisme de financement des TPE : registre P × G, cartographie, analyse des dossiers,
+    diagnostic COSO 2013, contrôle interne, gouvernance RACI, appétence au risque et assistant IA « Risk Advisor ».</p>
+    <div class="credit">Projet réalisé par <b>Fatima Zahrae Chakib</b> et <b>Inass Mouichou</b> · EMSI Tanger · Génie financier – Actuariat &amp; Finance, 5<sup>e</sup> année</div></div>
+    <div class="login-r"><form id="loginf" class="login-card" autocomplete="off"><div class="lc-h">${EMBLEM}<div><h2>Connexion</h2><p>Crédit Horizon · Contrôle interne &amp; gestion des risques</p></div></div>
+      <label><span>Identifiant</span><input id="lid" placeholder="admin" autocapitalize="none" spellcheck="false"></label>
+      <label><span>Mot de passe</span><input id="lpw" type="password"></label><div class="err" id="lerr" role="alert"></div>
+      <button class="btn big-btn">Se connecter</button>
+      <div class="accounts"><b>Comptes de démonstration :</b>${ACCOUNTS.map((a) => `<button type="button" class="acc" data-act="prefill" data-l="${a.login}"><code>${a.login}</code> / <code>${a.password}</code> <span>— ${esc(a.desc)}</span></button>`).join("")}
+      <small>Cliquez sur un compte pour remplir le formulaire. Cas académique fictif : les données marquées « Démo » sont des données de démonstration.</small></div></form></div></div>`;
 }
 
 function pDashboard() {
@@ -500,7 +507,7 @@ const CAPS = [
 function pAssistant() {
   return header("✦", "Risk Advisor – Assistant", "Consultant virtuel en gestion des risques et COSO 2013. Il raisonne uniquement sur les données enregistrées dans la plateforme et ne prend aucune décision d'octroi.",
     ui.chat.length ? `<button class="btn ghost" data-act="chat-reset">Nouvelle conversation</button>` : "") +
-    `<div class="note">Cette version autonome fonctionne sans serveur : les réponses sont produites par le moteur d'analyse intégré, à partir des données réelles de la plateforme. La version Streamlit se connecte au modèle Claude lorsqu'une clé API est configurée.</div>
+    `<div class="note ${ui.ai === "claude" ? "ok-note" : ""}">${ui.ai === "claude" ? "✦ IA générative connectée : <b>Claude</b>, via claude.ai. L'assistant reçoit uniquement les données enregistrées dans la plateforme." : "Moteur d'analyse intégré : les réponses sont calculées à partir des données réelles de la plateforme. Ouvert depuis claude.ai, l'assistant utilise le modèle Claude."}</div>
     <div class="caps">${CAPS.map(([l, q]) => `<button data-act="ask" data-q="${esc(q)}">${l}</button>`).join("")}</div>
     <div class="chat" id="chat">${ui.chat.map((m: Row) => `<div class="msg ${m.role}">${m.role === "user" ? esc(m.content) : `<div class="md">${md(m.content)}</div>`}</div>`).join("") || `<p class="muted c">Choisissez une analyse ou posez votre question.</p>`}</div>
     <form id="askf" class="askf"><input id="askq" placeholder="Ex. : Pourquoi R03 est-il le risque le plus critique ? Quels contrôles pour R07 ?" autocomplete="off"><button class="btn">Envoyer</button></form>`;
@@ -517,7 +524,7 @@ function pRapports() {
       ["exp-actions", "Plan d'action (CSV)", "Actions priorisées et avancement."],
       ["exp-anoms", "Anomalies (CSV)", "Registre unique des anomalies (C04)."],
       ["exp-json", "Sauvegarde complète (JSON)", "Toutes les données de la plateforme, réimportables."],
-      ["exp-print", "Synthèse imprimable", "Ouvre une synthèse exécutive mise en page pour l'impression ou le PDF."],
+      ...(inClaude() ? [] : [["exp-print", "Synthèse imprimable", "Ouvre une synthèse exécutive mise en page pour l'impression ou le PDF."]]),
     ].map(([a, t, d]) => `<button class="card exp" data-act="${a}"><b>${t}</b><small>${d}</small></button>`).join("")}</div>
     <div class="note">Le rapport PDF complet (registre, cartographie, contrôles, COSO, RACI, recommandations, plan d'action) est fourni avec ce site : <b>Credit_Horizon_Rapport_Risques.pdf</b>.</div>
     ${card("Importer une sauvegarde", `<input type="file" id="imp" accept="application/json"><p class="muted s">Restaure un fichier JSON exporté depuis cette plateforme.</p>`)}`;
@@ -533,6 +540,7 @@ function pAdmin() {
 
 /* ================================================================ rendu */
 const PAGES: Record<string, () => string> = { dashboard: pDashboard, registre: pRegistre, cartographie: pCarto, dossiers: pDossiers, coso: pCoso, controles: pControles, suivi: pSuivi, gouvernance: pGouv, appetence: pAppetence, assistant: pAssistant, rapports: pRapports, administration: pAdmin };
+const EMBLEM = `<svg class="emb" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d6047"/><stop offset="1" stop-color="#04261c"/></linearGradient><linearGradient id="eg2" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#d1fae5"/></linearGradient></defs><rect width="120" height="120" rx="28" fill="url(#eg)"/><rect x="3" y="3" width="114" height="114" rx="25" fill="none" stroke="#34d399" stroke-opacity=".35"/><path d="M22 80 Q60 22 98 80" fill="none" stroke="url(#eg2)" stroke-width="8" stroke-linecap="round"/><path d="M16 88h88" stroke="#d1fae5" stroke-width="6" stroke-linecap="round"/><rect x="40" y="62" width="8" height="18" rx="2" fill="#34d399"/><rect x="56" y="52" width="8" height="28" rx="2" fill="#6ee7b7"/><rect x="72" y="62" width="8" height="18" rx="2" fill="#34d399"/><circle cx="60" cy="40" r="7" fill="#f59e0b"/></svg>`;
 const LOGO = `<div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0a4d38"/><path d="M12 42 Q32 14 52 42" fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round"/><path d="M8 46h48" stroke="#d1fae5" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="24" r="5" fill="#34d399"/></svg><div><b>CRÉDIT HORIZON</b><small>RISK INTELLIGENCE</small></div></div>`;
 
 function route() {
@@ -569,13 +577,44 @@ function applyFilter() {
   if (c) c.textContent = `${n} risque(s)`;
 }
 
-function ask(q: string) {
+async function ask(q: string) {
+  if (ui.busy) return;
+  ui.busy = true;
+  const snap: any = snapshot();
+  const focus = ui.dossier && /dossier/i.test(q) ? ui.dossier : undefined;
   ui.chat.push({ role: "user", content: q });
-  ui.chat.push({ role: "assistant", content: offlineAnswer(snapshot() as any, q, ui.dossier && /dossier/i.test(q) ? ui.dossier : undefined) });
-  audit("Requête IA", "Risk Advisor", "", q.slice(0, 200));
-  save();
+  ui.chat.push({ role: "assistant", content: "_Analyse des données de la plateforme…_" });
+  audit("Requête IA", "Risk Advisor", ui.ai, q.slice(0, 200));
   if (route() !== "assistant") location.hash = "assistant";
   else render();
+  const last = ui.chat[ui.chat.length - 1];
+  const paint = () => {
+    const el = document.querySelector("#chat .msg.assistant:last-child .md");
+    if (el) el.innerHTML = md(last.content);
+    const c = document.getElementById("chat");
+    if (c) c.scrollTop = c.scrollHeight;
+  };
+  const sample = await capability("sample");
+  if (sample) {
+    const history = ui.chat.slice(0, -1).filter((m: Row) => !String(m.content).startsWith("_Analyse"));
+    const first = history.findIndex((m: Row) => m.role === "user");
+    const pre = `${ADVISOR_RULES}\n\nUtilisateur connecté : ${state.user!.name} (rôle : ${ROLES[state.user!.role]}).\n\n${buildContext(snap, focus)}\n\n---\nDemande de l'utilisateur :\n\n`;
+    const input = history.slice(first).slice(-12).map((m: Row, i: number) => ({ role: m.role, content: i === 0 ? pre + m.content : m.content }));
+    if (input[0]?.role !== "user") input.unshift({ role: "user", content: pre + q });
+    try {
+      const r = await sample(input, { cache: false, onText: ({ text }: { text: string }) => { last.content = text || "_Rédaction…_"; paint(); } });
+      last.content = r.text + (r.truncated ? "\n\n> Réponse écourtée : demandez une analyse plus ciblée." : "");
+      ui.ai = "claude";
+    } catch (e: any) {
+      const why = e?.code === "not_granted" ? "l'accès à Claude n'a pas été autorisé" : e?.code === "rate_limited" ? "la limite d'utilisation de Claude est atteinte pour le moment" : "Claude n'a pas répondu";
+      last.content = `> Réponse du moteur d'analyse intégré (${why}).\n\n` + offlineAnswer(snap, q, focus);
+    }
+  } else {
+    last.content = offlineAnswer(snap, q, focus);
+  }
+  ui.busy = false;
+  save();
+  paint();
 }
 
 function validate(fields: Field[], v: Row) {
@@ -620,12 +659,12 @@ document.addEventListener("click", (e) => {
   const act = el.dataset.act!, id = el.dataset.id!;
   const find = (rows: Row[]) => rows.find((r) => String(r.id) === id) || null;
   switch (act) {
-    case "login":
-      state.user = { role: el.dataset.role, name: SEED.demo_users.find((u: Row) => u.role === el.dataset.role).name };
-      audit("Connexion", "Session", el.dataset.role!);
-      save();
-      location.hash = "dashboard";
-      return render();
+    case "prefill": {
+      const a = ACCOUNTS.find((x) => x.login === el.dataset.l)!;
+      (document.getElementById("lid") as HTMLInputElement).value = a.login;
+      (document.getElementById("lpw") as HTMLInputElement).value = a.password;
+      return;
+    }
     case "logout":
       state.user = null;
       save();
@@ -786,6 +825,19 @@ document.addEventListener("submit", (e) => {
     }
     closeModal();
     render();
+  } else if (f.id === "loginf") {
+    const id = (document.getElementById("lid") as HTMLInputElement).value.trim().toLowerCase();
+    const pw = (document.getElementById("lpw") as HTMLInputElement).value;
+    const acc = ACCOUNTS.find((a) => a.login === id && a.password === pw);
+    if (!acc) {
+      document.getElementById("lerr")!.textContent = "Identifiant ou mot de passe incorrect.";
+      return;
+    }
+    state.user = { role: acc.role, name: acc.name, login: acc.login };
+    audit("Connexion", "Session", acc.login);
+    save();
+    if (location.hash !== "#dashboard") location.hash = "dashboard";
+    render();
   } else if (f.id === "askf") {
     const q = (document.getElementById("askq") as HTMLInputElement).value.trim();
     if (q) ask(q);
@@ -860,3 +912,14 @@ function printSummary() {
 }
 
 render();
+// Publication claude.ai : reprise des données enregistrées dans l'espace privé + détection de l'IA.
+attachCloud().then((json) => {
+  if (json && loadRemote(json)) render();
+  else if (cloudReady()) save();
+});
+capability("sample").then((smp) => {
+  if (smp) {
+    ui.ai = "claude";
+    if (route() === "assistant" && state.user) render();
+  }
+});

@@ -2,6 +2,7 @@
 import seed from "./seed.json";
 import { analyzeDossier } from "./logic/dossier-analysis";
 import { levelFromScore } from "./logic/scoring";
+import { queueCloudSave } from "./platform";
 
 const KEY = "credit-horizon-site-v1";
 export type Row = Record<string, any>;
@@ -63,11 +64,30 @@ function load(): State {
 export const state: State = load();
 
 export function save() {
+  let json = JSON.stringify(state);
+  if (json.length > 230_000) {
+    state.audit = state.audit.slice(0, 50); // limite d'un document de stockage
+    json = JSON.stringify(state);
+  }
   try {
-    localStorage.setItem(KEY, JSON.stringify(state));
+    localStorage.setItem(KEY, json);
   } catch {
     /* mode privé ou quota : les données restent en mémoire pour la session */
   }
+  queueCloudSave(json);
+}
+
+/** Remplace l'état par la copie enregistrée dans l'espace privé de l'utilisateur. */
+export function loadRemote(json: string): boolean {
+  try {
+    const p = JSON.parse(json);
+    if (p && Array.isArray(p.risks)) {
+      Object.assign(state, p);
+      try { localStorage.setItem(KEY, json); } catch {}
+      return true;
+    }
+  } catch {}
+  return false;
 }
 
 export function resetDemo() {

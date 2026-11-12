@@ -1,6 +1,7 @@
 // Assemble le site en UN SEUL fichier HTML autonome (aucune dépendance externe, fonctionne hors ligne).
 import { build } from "esbuild";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+mkdirSync("dist", { recursive: true });
 
 const r = await build({ entryPoints: ["src/main.ts"], bundle: true, minify: true, write: false, format: "iife", target: "es2019", charset: "utf8", legalComments: "none" });
 const js = r.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
@@ -14,5 +15,8 @@ const html = `<!doctype html>
 <body><div id="app"></div><div id="modal"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript>Activez JavaScript pour utiliser CRÉDIT HORIZON RISK INTELLIGENCE.</noscript>
 <script>${js}</script></body></html>`;
-for (const out of process.argv.slice(2).length ? process.argv.slice(2) : ["../credit_horizon_site.html"]) writeFileSync(out, html);
+writeFileSync("../credit_horizon_site.html", html);
+// Version artefact claude.ai : le squelette html/head/body est ajouté à la publication.
+const artifact = `<title>Crédit Horizon Risk Intelligence</title>\n<style>${css}</style>\n<div id="app"></div><div id="modal"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>\n<script>${js}</script>\n`;
+writeFileSync("dist/credit-horizon-artifact.html", artifact);
 console.log("Site généré :", (html.length / 1024).toFixed(0), "Ko");
