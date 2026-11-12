@@ -26,8 +26,8 @@ export async function PUT(req: Request, ctx: Ctx) {
     const d = dossierSchema.parse(await req.json());
     const analysis = analyzeDossier(d as any);
     const rows = await q(
-      `update dossiers set company=$2::jsonb, request=$3::jsonb, financials=$4::jsonb, documents=$5::jsonb, guarantees=$6::jsonb,
-       observations=$7, analysis=$8::jsonb, status=$9, updated_at=now() where id=$1 returning *`,
+      `update dossiers set company=$2::text::jsonb, request=$3::text::jsonb, financials=$4::text::jsonb, documents=$5::text::jsonb, guarantees=$6::text::jsonb,
+       observations=$7, analysis=$8::text::jsonb, status=$9, updated_at=now() where id=$1 returning *`,
       [id, JSON.stringify(d.company), JSON.stringify(d.request), JSON.stringify(d.financials), JSON.stringify(d.documents), JSON.stringify(d.guarantees), d.observations, JSON.stringify(analysis), analysis.status],
     );
     if (!rows.length) throw new HttpError(404, "Dossier introuvable.");

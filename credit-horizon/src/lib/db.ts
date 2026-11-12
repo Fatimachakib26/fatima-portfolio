@@ -38,7 +38,9 @@ async function createDriver(): Promise<Driver> {
   const url = process.env.DATABASE_URL;
   if (url) {
     const postgres = (await import("postgres")).default;
-    const sql = postgres(url, { max: 5, prepare: false, idle_timeout: 20, ssl: url.includes("localhost") ? false : "require" });
+    const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url) || /sslmode=disable/.test(url);
+    // prepare:false → compatible avec le pooler transactionnel de Supabase (pgBouncer)
+    const sql = postgres(url, { max: Number(process.env.PG_POOL_MAX) || (process.env.VERCEL ? 1 : 5), prepare: false, idle_timeout: 20, ssl: local ? false : "require" });
     return {
       kind: "postgres",
       async query(text, params = []) {
@@ -162,7 +164,7 @@ export async function seed(d: Driver, opts: { keepUsers?: boolean } = {}) {
     const analysis = analyzeDossier(ds as any);
     await d.query(
       `insert into dossiers (id,company,request,financials,documents,guarantees,observations,analysis,status,created_by,is_demo)
-       values ($1,$2::jsonb,$3::jsonb,$4::jsonb,$5::jsonb,$6::jsonb,$7,$8::jsonb,$9,'Données de démonstration',true)`,
+       values ($1,$2::text::jsonb,$3::text::jsonb,$4::text::jsonb,$5::text::jsonb,$6::text::jsonb,$7,$8::text::jsonb,$9,'Données de démonstration',true)`,
       [ds.id, JSON.stringify(ds.company), JSON.stringify(ds.request), JSON.stringify(ds.financials), JSON.stringify(ds.documents), JSON.stringify(ds.guarantees), ds.observations, JSON.stringify(analysis), analysis.status],
     );
   }

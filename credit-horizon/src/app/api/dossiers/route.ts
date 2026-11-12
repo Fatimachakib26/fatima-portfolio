@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const analysis = analyzeDossier(d as any);
     const [row] = await q(
       `insert into dossiers (id,company,request,financials,documents,guarantees,observations,analysis,status,created_by)
-       values ($1,$2::jsonb,$3::jsonb,$4::jsonb,$5::jsonb,$6::jsonb,$7,$8::jsonb,$9,$10) returning *`,
+       values ($1,$2::text::jsonb,$3::text::jsonb,$4::text::jsonb,$5::text::jsonb,$6::text::jsonb,$7,$8::text::jsonb,$9,$10) returning *`,
       [id, JSON.stringify(d.company), JSON.stringify(d.request), JSON.stringify(d.financials), JSON.stringify(d.documents), JSON.stringify(d.guarantees), d.observations, JSON.stringify(analysis), analysis.status, user.name],
     );
     await audit(user, "Création + analyse", "Dossier TPE", id, analysis.status);
