@@ -1,0 +1,11 @@
+﻿ActionID;Priorite;Action;Responsable;Echeance;Livrable;Risques;Controles;Statut;Avancement
+A01;P1;Formaliser les délégations et désigner le décideur habilité;Direction générale;Semaines 1 à 2;Matrice des pouvoirs validée;R07;C02, C03;En cours;60
+A02;P1;Créer la checklist des pièces obligatoires (C01);Commercial et risques;Semaines 1 à 2;Checklist et preuve de contrôle;R01, R08;C01;Terminé;100
+A03;P1;Formaliser la double validation et la preuve de décision (C02, C03);Direction et risques;Semaines 2 à 3;"Procédure d'autorisation ; droits d'accès par rôle";R02, R03, R07;C02, C03;En cours;40
+A04;P1;Ouvrir le registre des anomalies et dérogations (C04);Fonction risques;Semaines 2 à 3;Registre et règles d'escalade;R01, R08;C04;Terminé;100
+A05;P2;Adopter la grille commune d'analyse des dossiers;Fonction risques;Semaines 3 à 5;Grille d'analyse validée;R02;C02, C06;À faire;0
+A06;P2;Mettre en place le suivi des retards et la prévision de trésorerie (C05);Fonction finance;Semaines 3 à 6;"État des échéances ; prévision glissante";R04, R05, R06;C05;À faire;0
+A07;P2;Mettre en place le suivi de la concentration (C07);Fonction risques;Semaines 5 à 7;Tableau de concentration;R03;C07;À faire;0
+A08;P3;"Produire le tableau de bord risques et contrôle ; contrôler le reporting (C08)";Risques et finance;Semaines 7 à 9;Reporting validé;R05, R08;C08;À faire;0
+A09;P3;Faire approuver la charte d'appétence et sensibiliser les équipes;Direction générale;Semaines 9 à 10;Charte et preuve de sensibilisation;R03, R07;;À faire;0
+A10;P3;Évaluer l'exécution et l'efficacité des contrôles;Contrôle interne / audit;Semaines 10 à 12;Rapport de revue et plan d'amélioration;;C01, C02, C03, C04, C05, C06, C07, C08;À faire;0

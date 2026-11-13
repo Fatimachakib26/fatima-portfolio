@@ -1,0 +1,7 @@
+﻿AnomalieID;DateDetection;Dossier;Nature;Gravite;RisqueID;ControleID;Responsable;Echeance;Statut;NiveauEscalade;EnRetard
+AN-006;2026-10-28;TPE-2026-009;Échéance impayée de 45 jours non escaladée;Majeure;R04;C05;Fonction finance;2026-11-10;Ouverte;2;True
+AN-005;2026-10-20;Reporting sept. 2026;Écart non expliqué entre l'échéancier et les encaissements du reporting mensuel;Significative;R08;C08;Fonction finance;2026-11-05;En cours;2;True
+AN-004;2026-10-11;TPE-2026-030;Dérogation accordée sans motivation écrite tracée;Significative;R02;C04;Fonction risques;2026-10-25;Ouverte;1;True
+AN-003;2026-10-02;TPE-2026-027;Décision signée par un collaborateur sans délégation formelle;Critique;R07;C02;Direction générale;2026-10-09;Ouverte;3;True
+AN-002;2026-09-19;TPE-2026-021;Incohérence entre le chiffre d'affaires déclaré et les relevés bancaires;Majeure;R01;C01;Fonction risques;2026-10-03;En cours;2;True
+AN-001;2026-09-08;TPE-2026-014;Pièce manquante : justificatifs de revenus absents lors de la présentation en décision;Majeure;R01;C01;Fonction risques;2026-09-22;Clôturée;1;False
