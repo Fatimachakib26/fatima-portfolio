@@ -1,5 +1,5 @@
 import { computeKpis, type SnapshotLike as Snapshot } from "./kpis";
-import { LEVEL_TREATMENT, levelFromScore, PROBABILITY_SCALE, GRAVITY_SCALE } from "./scoring";
+import { LEVEL_TREATMENT, PROBABILITY_SCALE, GRAVITY_SCALE } from "./scoring";
 
 /**
  * Moteur d'analyse déterministe utilisé lorsque aucun modèle génératif n'est configuré

@@ -1,0 +1,392 @@
+{
+  "raw_rows": 545751,
+  "clean_rows": 544605,
+  "rejected_rows": 1146,
+  "rejects_by_rule": {
+    "R02": 1136,
+    "R07": 10
+  },
+  "status_counts": {
+    "PIF": 397428,
+    "CANCLD": 65922,
+    "EXEMPT": 46669,
+    "CHGOFF": 34544,
+    "COMMIT": 42
+  },
+  "population_counts": {
+    "Dénoué": 431972,
+    "Non décaissé": 65964,
+    "En cours (non publié)": 46669
+  },
+  "gross_approval_total": 205370785693.0,
+  "rules": [
+    {
+      "rule": "R01",
+      "description": "Suppression des espaces en début/fin de texte",
+      "rows_before": 545751,
+      "rows_after": 545751,
+      "affected": null,
+      "note": "677670 cellules corrigées"
+    },
+    {
+      "rule": "R02",
+      "description": "Suppression des doublons exacts (première occurrence conservée)",
+      "rows_before": 545751,
+      "rows_after": 544615,
+      "affected": 1136,
+      "note": ""
+    },
+    {
+      "rule": "R03",
+      "description": "Normalisation des codes : « P I F » → PIF, Y/N → 1/0 ou booléen",
+      "rows_before": 544615,
+      "rows_after": 544615,
+      "affected": null,
+      "note": ""
+    },
+    {
+      "rule": "R04",
+      "description": "Conversion des montants, taux et durées en nombres ; montant > 0 obligatoire",
+      "rows_before": 544615,
+      "rows_after": 544615,
+      "affected": null,
+      "note": ""
+    },
+    {
+      "rule": "R05",
+      "description": "Conversion des dates ; date d'approbation obligatoire",
+      "rows_before": 544615,
+      "rows_after": 544615,
+      "affected": null,
+      "note": ""
+    },
+    {
+      "rule": "R06",
+      "description": "Contrôle : garantie SBA ≤ montant approuvé",
+      "rows_before": 544615,
+      "rows_after": 544615,
+      "affected": null,
+      "note": ""
+    },
+    {
+      "rule": "R07",
+      "description": "Contrôle : un prêt soldé/passé en perte a une date cohérente, postérieure à l'approbation",
+      "rows_before": 544615,
+      "rows_after": 544605,
+      "affected": 10,
+      "note": ""
+    },
+    {
+      "rule": "R08",
+      "description": "Suppression des données personnelles (nom, adresse, code postal de l'emprunteur)",
+      "rows_before": 544605,
+      "rows_after": 544605,
+      "affected": null,
+      "note": "BorrName, BorrStreet, BorrZip"
+    },
+    {
+      "rule": "R09",
+      "description": "Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai et taux de perte",
+      "rows_before": 544605,
+      "rows_after": 544605,
+      "affected": null,
+      "note": ""
+    }
+  ],
+  "profile": [
+    {
+      "column": "AsOfDate",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 1,
+      "examples": "2026-09-30"
+    },
+    {
+      "column": "Program",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 1,
+      "examples": " 7A"
+    },
+    {
+      "column": "LocationID",
+      "empty": 1,
+      "empty_pct": 0.0,
+      "distinct": 3112,
+      "examples": "0012096 | 0089255 | 0029760"
+    },
+    {
+      "column": "BorrName",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 433984,
+      "examples": "United Renal Associates of Georgia, P.C. | Sylvia H. Caruso | Bangor Wine & Cheese"
+    },
+    {
+      "column": "BorrStreet",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 472659,
+      "examples": "5669 Peachtree Dunwoody Road NE, Suite 2 | 5 BROADWAY, SUITE 104 | 436 State Street."
+    },
+    {
+      "column": "BorrCity",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 26418,
+      "examples": "Atlanta | SAUGUS | Bangor"
+    },
+    {
+      "column": "BorrState",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 58,
+      "examples": "GA | MA | ME"
+    },
+    {
+      "column": "BorrZip",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 24035,
+      "examples": "30342 | 01906 | 04401"
+    },
+    {
+      "column": "BankName",
+      "empty": 1,
+      "empty_pct": 0.0,
+      "distinct": 2854,
+      "examples": "Wells Fargo Bank National Association | TruNorth Bank | Machias Savings Bank"
+    },
+    {
+      "column": "BankFDICNumber",
+      "empty": 39309,
+      "empty_pct": 7.2,
+      "distinct": 2432,
+      "examples": "03511 | 26484 | 19531"
+    },
+    {
+      "column": "BankNCUANumber",
+      "empty": 528060,
+      "empty_pct": 96.76,
+      "distinct": 453,
+      "examples": "03943 | 05536 | 24692"
+    },
+    {
+      "column": "BankStreet",
+      "empty": 1,
+      "empty_pct": 0.0,
+      "distinct": 3013,
+      "examples": "3201 N 4th Ave | 248 Andover St, Route 114 | 4 Center St"
+    },
+    {
+      "column": "BankCity",
+      "empty": 1,
+      "empty_pct": 0.0,
+      "distinct": 2137,
+      "examples": "Sioux Falls | Peabody | MACHIAS"
+    },
+    {
+      "column": "BankState",
+      "empty": 1,
+      "empty_pct": 0.0,
+      "distinct": 56,
+      "examples": "SD | MA | ME"
+    },
+    {
+      "column": "BankZip",
+      "empty": 1,
+      "empty_pct": 0.0,
+      "distinct": 2608,
+      "examples": "57104 | 01960 | 04654"
+    },
+    {
+      "column": "GrossApproval",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 20014,
+      "examples": "51000.0 | 30000.0 | 74000.0"
+    },
+    {
+      "column": "SBAGuaranteedApproval",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 26978,
+      "examples": "25500.0 | 27000.0 | 66600.0"
+    },
+    {
+      "column": "ApprovalDate",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 3407,
+      "examples": "2009-10-01 | 2009-10-02 | 2009-10-05"
+    },
+    {
+      "column": "ApprovalFY",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 10,
+      "examples": "2010 | 2011 | 2012"
+    },
+    {
+      "column": "FirstDisbursementDate",
+      "empty": 67051,
+      "empty_pct": 12.29,
+      "distinct": 3678,
+      "examples": "2009-10-01 | 2010-02-01 | 2009-11-01"
+    },
+    {
+      "column": "ProcessingMethod",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 24,
+      "examples": "SBA Express Program | 7a General | Preferred Lenders Program"
+    },
+    {
+      "column": "InitialInterestRate",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 1799,
+      "examples": "5.8 | 6.5 | 5.5"
+    },
+    {
+      "column": "FixedorVariableInterestInd",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 2,
+      "examples": "V | F"
+    },
+    {
+      "column": "TermInMonths",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 342,
+      "examples": "13.0 | 60.0 | 72.0"
+    },
+    {
+      "column": "NaicsCode",
+      "empty": 2,
+      "empty_pct": 0.0,
+      "distinct": 1269,
+      "examples": "621111 | 812113 | 424820"
+    },
+    {
+      "column": "NaicsDescription",
+      "empty": 3,
+      "empty_pct": 0.0,
+      "distinct": 2023,
+      "examples": "Offices of Physicians (except Mental Hea | Nail Salons | Wine and Distilled Alcoholic Beverage Me"
+    },
+    {
+      "column": "FranchiseCode",
+      "empty": 498201,
+      "empty_pct": 91.29,
+      "distinct": 5074,
+      "examples": "03512 | 50965 | 70552"
+    },
+    {
+      "column": "FranchiseName",
+      "empty": 498307,
+      "empty_pct": 91.31,
+      "distinct": 4446,
+      "examples": "ALPHAGRAPHICS, PRINTSHOPS OF THE FUTU | MARCO'S PIZZA | RODEWAY INNS"
+    },
+    {
+      "column": "ProjectCounty",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 1899,
+      "examples": "FULTON | ESSEX | PENOBSCOT"
+    },
+    {
+      "column": "ProjectState",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 58,
+      "examples": "GA | MA | ME"
+    },
+    {
+      "column": "SBADistrictOffice",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 67,
+      "examples": "GEORGIA DISTRICT OFFICE | MASSACHUSETTS DISTRICT OFFICE | MAINE DISTRICT OFFICE"
+    },
+    {
+      "column": "CongressionalDistrict",
+      "empty": 29,
+      "empty_pct": 0.01,
+      "distinct": 55,
+      "examples": "05 | 06 | 02"
+    },
+    {
+      "column": "BusinessType",
+      "empty": 32,
+      "empty_pct": 0.01,
+      "distinct": 4,
+      "examples": "CORPORATION | INDIVIDUAL | PARTNERSHIP"
+    },
+    {
+      "column": "BusinessAge",
+      "empty": 1861,
+      "empty_pct": 0.34,
+      "distinct": 11,
+      "examples": "New, Less than 1 Year old | Existing, 5 or more years | Less than 4 years old but at least 3"
+    },
+    {
+      "column": "LoanStatus",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 5,
+      "examples": "P I F | EXEMPT | CHGOFF"
+    },
+    {
+      "column": "PaidInFullDate",
+      "empty": 148030,
+      "empty_pct": 27.12,
+      "distinct": 203,
+      "examples": "2010-11-30 | 2013-11-30 | 2015-11-30"
+    },
+    {
+      "column": "ChargeOffDate",
+      "empty": 511207,
+      "empty_pct": 93.67,
+      "distinct": 3656,
+      "examples": "2015-03-19 | 2012-03-22 | 2015-07-14"
+    },
+    {
+      "column": "GrossChargeOffAmount",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 33386,
+      "examples": "0.0 | 226624.93 | 11989.8"
+    },
+    {
+      "column": "RevolverStatus",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 2,
+      "examples": "Y | N"
+    },
+    {
+      "column": "JobsSupported",
+      "empty": 2,
+      "empty_pct": 0.0,
+      "distinct": 313,
+      "examples": "6.0 | 1.0 | 3.0"
+    },
+    {
+      "column": "CollateralInd",
+      "empty": 0,
+      "empty_pct": 0.0,
+      "distinct": 2,
+      "examples": "N | Y"
+    },
+    {
+      "column": "SoldSecMrktInd",
+      "empty": 417762,
+      "empty_pct": 76.55,
+      "distinct": 3,
+      "examples": "Y | N"
+    }
+  ]
+}

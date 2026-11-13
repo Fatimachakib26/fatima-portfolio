@@ -1,82 +1,96 @@
-import { state, save, audit, nextId, splitIds, snapshot, resetDemo, loadRemote, SEED, type Row } from "./store";
-import { inClaude, capability, saveFile, attachCloud, cloudReady } from "./platform";
-import { buildContext, ADVISOR_RULES } from "./logic/ai-context";
+import { state, save, audit, nextId, splitIds, snapshot, resetBaseline, replaceState, setPersist, maturity, SEED, type Row } from "./store";
+import { identity, connectStore, queueSave, saveRoles, saveFile, capability, searchPeople, profiles, sharedStore, type Identity } from "./platform";
 import { computeKpis } from "./logic/kpis";
-import { levelFromScore, LEVEL_TREATMENT, LEVELS, PROBABILITY_SCALE, GRAVITY_SCALE, type Level } from "./logic/scoring";
+import { levelFromScore, LEVEL_TREATMENT, PROBABILITY_SCALE, GRAVITY_SCALE, type Level } from "./logic/scoring";
 import { analyzeDossier, CHECKLIST, PRODUCTS, GUARANTEE_TYPES, isRequired } from "./logic/dossier-analysis";
 import { offlineAnswer } from "./logic/offline-advisor";
+import { buildContext, ADVISOR_RULES } from "./logic/ai-context";
 import { md } from "./markdown";
+import marts from "../../data-pipeline/data/marts/sba_marts.json";
 
-/* ================================================================ constantes */
-const ROLES: Record<string, string> = { jury: "Jury (lecture seule)", admin: "Administrateur", directeur: "Directeur", analyste: "Analyste risques", commercial: "Commercial", controleur: "Contrôleur interne" };
+/* ================================================================ rôles et droits */
+const ROLES: Record<string, string> = {
+  admin: "Administrateur", direction: "Direction générale", risques: "Fonction risques",
+  commercial: "Chargé d'affaires", controle: "Contrôle interne", lecteur: "Lecture seule",
+};
 const PERMS: Record<string, string[]> = {
-  "risks.write": ["admin", "analyste"],
-  "controls.write": ["admin", "controleur"],
-  "coso.write": ["admin", "controleur"],
-  "actions.write": ["admin", "directeur", "analyste", "controleur"],
-  "recommendations.write": ["admin", "analyste", "controleur"],
-  "anomalies.create": ["admin", "directeur", "analyste", "commercial", "controleur"],
-  "anomalies.write": ["admin", "directeur", "analyste", "controleur"],
-  "dossiers.write": ["admin", "analyste", "commercial"],
-  "audit.view": ["admin", "directeur", "controleur", "jury"],
-  "demo.reset": ["admin"],
+  "risks.write": ["admin", "risques"],
+  "controls.write": ["admin", "controle"],
+  "coso.write": ["admin", "controle"],
+  "actions.write": ["admin", "direction", "risques", "controle"],
+  "recos.write": ["admin", "risques", "controle"],
+  "anom.create": ["admin", "direction", "risques", "commercial", "controle"],
+  "anom.write": ["admin", "direction", "risques", "controle"],
+  "dossiers.write": ["admin", "risques", "commercial"],
+  "team.manage": ["admin"],
+  "audit.view": ["admin", "direction", "controle"],
 };
 const PERM_LABELS: Record<string, string> = {
-  "risks.write": "Modifier le registre des risques", "controls.write": "Gérer les fiches de contrôle", "coso.write": "Mettre à jour le diagnostic COSO",
-  "actions.write": "Piloter le plan d'action", "recommendations.write": "Gérer les recommandations", "anomalies.create": "Déclarer une anomalie",
-  "anomalies.write": "Traiter / clôturer une anomalie", "dossiers.write": "Saisir les dossiers TPE", "audit.view": "Consulter le journal d'audit", "demo.reset": "Réinitialiser les données",
+  "risks.write": "Modifier le registre des risques", "controls.write": "Gérer les fiches de contrôle", "coso.write": "Apprécier les principes COSO",
+  "actions.write": "Piloter le plan d'action", "recos.write": "Gérer les recommandations", "anom.create": "Déclarer une anomalie",
+  "anom.write": "Traiter et clôturer une anomalie", "dossiers.write": "Saisir et analyser les dossiers TPE", "team.manage": "Gérer l'équipe et les rôles",
+  "audit.view": "Consulter le journal d'audit",
 };
-// Comptes de démonstration (cas académique : contrôle d'accès côté navigateur, sans valeur de sécurité réelle)
-const ACCOUNTS: { login: string; password: string; role: string; name: string; desc: string }[] = [
-  { login: "admin", password: "Horizon2026!", role: "admin", name: "Administrateur", desc: "accès complet" },
-  { login: "jury", password: "Jury2026", role: "jury", name: "Membre du jury", desc: "consultation de tous les modules" },
-  { login: "directeur", password: "Direction2026", role: "directeur", name: "Directeur général", desc: "pilotage, plan d'action, anomalies" },
-  { login: "analyste", password: "Risques2026", role: "analyste", name: "Analyste risques", desc: "registre, dossiers, recommandations" },
-  { login: "commercial", password: "Commercial2026", role: "commercial", name: "Chargé d'affaires", desc: "dossiers TPE, déclaration d'anomalies" },
-  { login: "controleur", password: "Controle2026", role: "controleur", name: "Contrôleur interne", desc: "contrôles, COSO, revue indépendante" },
-];
-const can = (p: string) => !!state.user && PERMS[p]?.includes(state.user.role);
-const CAT_COLORS: Record<string, string> = { Crédit: "#2a78d6", Liquidité: "#eb6834", Opérationnel: "#1baf7a", Conformité: "#6250d6", Stratégique: "#e87ba4" };
-const LVL_COLORS: Record<Level, string> = { Faible: "#16a34a", Modéré: "#eab308", Élevé: "#f97316", Critique: "#dc2626" };
-const CELL: Record<Level, string> = { Faible: "#bbf7d0", Modéré: "#fef08a", Élevé: "#fed7aa", Critique: "#fca5a5" };
 
-const NAV = [
-  { group: "Pilotage", items: [["dashboard", "Dashboard exécutif", "◧"]] },
-  { group: "Risques", items: [["registre", "Registre des risques", "☰"], ["cartographie", "Cartographie", "▦"], ["dossiers", "Dossiers TPE", "▤"], ["appetence", "Appétence au risque", "◎"]] },
-  { group: "Contrôle interne", items: [["coso", "Diagnostic COSO", "⌂"], ["controles", "Fiches de contrôle", "⛨"], ["suivi", "Suivi & anomalies", "✓"], ["gouvernance", "Gouvernance RACI", "⇄"]] },
-  { group: "Intelligence", items: [["assistant", "Risk Advisor IA", "✦"], ["rapports", "Rapports & exports", "⇩"], ["administration", "Administration", "⚙"]] },
-];
+const session: { me: Identity | null; role: string; members: Record<string, string>; ready: boolean; storeError: string } = {
+  me: null, role: "lecteur", members: {}, ready: false, storeError: "",
+};
+const can = (p: string) => PERMS[p]?.includes(session.role) ?? false;
+const who = () => `${session.me?.name ?? "—"} (${ROLES[session.role]})`;
+function resolveRole() {
+  const me = session.me!;
+  session.role = me.mode === "local" || me.isOwner ? "admin" : session.members[me.id] || "lecteur";
+}
 
 /* ================================================================ utilitaires */
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-const fmtMAD = (n: unknown) => (n === "" || n == null || isNaN(Number(n)) ? "–" : new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(Number(n)) + " MAD");
+const nf = new Intl.NumberFormat("fr-FR");
+const n0 = (v: number) => nf.format(Math.round(v));
+const pct = (v: number | null | undefined, d = 1) => (v == null || isNaN(v) ? "–" : `${(v * 100).toFixed(d).replace(".", ",")} %`);
+const usd = (v: number) => (v >= 1e9 ? `${(v / 1e9).toFixed(1).replace(".", ",")} Md$` : v >= 1e6 ? `${(v / 1e6).toFixed(1).replace(".", ",")} M$` : v >= 1e3 ? `${n0(v / 1e3)} k$` : `${n0(v)} $`);
+const mad = (v: unknown) => (v === "" || v == null || isNaN(Number(v)) ? "–" : `${n0(Number(v))} MAD`);
 const today = () => new Date().toISOString().slice(0, 10);
-const pill = (l: Level, s?: number) => `<span class="pill" style="background:${LVL_COLORS[l]}">${l}${s !== undefined ? ` · ${s}` : ""}</span>`;
-const badge = (t: string, cls = "") => `<span class="badge ${cls}">${esc(t)}</span>`;
-const demo = (r: Row) => (r.is_demo ? `<span class="badge demo">Démo</span>` : "");
-const tone = (s: string) =>
-  ["Terminé", "Clôturée", "Efficace", "Opérationnel", "Mise en œuvre", "Satisfaisant"].includes(s) ? "ok"
-  : ["En cours", "En déploiement", "Partiel"].includes(s) ? "info"
-  : ["Ouverte", "Bloqué", "Déficient", "Critique"].some((x) => s.startsWith(x)) || s.startsWith("Incomplet") ? "bad"
-  : ["À faire", "À lancer", "À concevoir"].includes(s) ? "warn" : "";
-const header = (icon: string, title: string, sub: string, actions = "") =>
-  `<div class="ph"><div class="ph-t"><div class="ph-i">${icon}</div><div><h1>${title}</h1><p>${sub}</p></div></div><div class="ph-a">${actions}</div></div>`;
-const readonly = (t: string) => `<div class="note">🔒 ${t}</div>`;
-const card = (title: string, body: string, extra = "") => `<section class="card ${extra}">${title ? `<h2>${title}</h2>` : ""}${body}</section>`;
+const fdate = (s: string) => (s ? new Date(s).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "–");
 
-let toastTimer: any;
+const LVL: Record<Level, string> = { Faible: "low", Modéré: "mid", Élevé: "high", Critique: "crit" };
+const level = (l: Level, s?: number) => `<span class="lvl ${LVL[l]}"><i></i>${l}${s !== undefined ? `<b>${s}</b>` : ""}</span>`;
+const STATUS_TONE: Record<string, string> = {
+  Terminé: "ok", Clôturée: "ok", Efficace: "ok", Opérationnel: "ok", "Mise en œuvre": "ok", Satisfaisant: "ok",
+  "En cours": "info", "En déploiement": "info", Partiel: "warn",
+  Ouverte: "bad", Bloqué: "bad", Déficient: "bad", Abandonnée: "mute",
+  "À faire": "mute", "À lancer": "mute", Proposé: "mute", "Non évalué": "mute",
+};
+const status = (s: string) => `<span class="st ${STATUS_TONE[s] ?? (s.startsWith("Incomplet") ? "bad" : s.startsWith("Complet") ? "ok" : "mute")}">${esc(s)}</span>`;
+const ids = (v: unknown) => splitIds(v).map((x) => `<span class="ref">${esc(x)}</span>`).join("");
+
+const I: Record<string, string> = {
+  overview: "M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z",
+  portfolio: "M3 3v18h18M7 15l4-4 3 3 6-6",
+  risks: "M12 3 2 20h20zM12 10v4M12 17h.01",
+  dossiers: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5",
+  controls: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6zM9 12l2 2 4-4",
+  actions: "M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01",
+  framework: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5zM20 17v4H6.5",
+  advisor: "M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z",
+  admin: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",
+  plus: "M12 5v14M5 12h14", down: "M12 3v12M7 10l5 5 5-5M5 21h14", ext: "M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5",
+  close: "M18 6 6 18M6 6l12 12", menu: "M3 6h18M3 12h18M3 18h18", check: "M20 6 9 17l-5-5", lock: "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4",
+};
+const icon = (k: string, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${I[k]}"/></svg>`;
+
+let toastT: any;
 function toast(msg: string, bad = false) {
   const el = document.getElementById("toast")!;
   el.textContent = msg;
   el.className = "toast show" + (bad ? " bad" : "");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (el.className = "toast"), 3200);
+  clearTimeout(toastT);
+  toastT = setTimeout(() => (el.className = "toast"), 3400);
 }
-
 function download(name: string, content: string, type = "text/csv;charset=utf-8") {
-  saveFile(name, content, type)
-    .then(() => toast(`Fichier ${name} prêt.`))
-    .catch((e) => toast(e?.code === "not_granted" || e?.code === "dismissed" ? "Téléchargement annulé." : "Le téléchargement n'a pas pu être lancé.", true));
+  Promise.resolve()
+    .then(() => saveFile(name, content, type))
+    .then(() => toast(`${name} prêt.`))
+    .catch((e: any) => toast(e?.code === "dismissed" || e?.code === "not_granted" ? "Téléchargement annulé." : "Le téléchargement n'a pas pu démarrer.", true));
 }
 function csv(rows: Row[], cols: [string, string][]) {
   const e = (v: unknown) => {
@@ -85,213 +99,258 @@ function csv(rows: Row[], cols: [string, string][]) {
   };
   return "﻿" + [cols.map((c) => e(c[1])).join(";"), ...rows.map((r) => cols.map((c) => e(r[c[0]])).join(";"))].join("\r\n");
 }
+function record(action: string, entity: string, id: string, details = "") {
+  audit(who(), action, entity, id, details);
+  save();
+}
 
 /* ================================================================ état d'interface */
-const ui: any = { ai: "offline", busy: false, selRisk: null, dossier: null, draft: null, cosoTab: 1, suiviTab: "actions", chat: [] as { role: string; content: string }[], filter: "" };
+const ui: any = { sel: null, view: "table", filter: "", cat: "", dossier: null, draft: null, tab: {}, chat: [] as Row[], busy: false, ai: false, names: {} };
+const tab = (page: string, def: string) => ui.tab[page] ?? def;
 
-/* ================================================================ graphiques SVG */
-function donut(data: { label: string; value: number; color: string }[]) {
-  const total = data.reduce((a, d) => a + d.value, 0) || 1;
-  let a0 = -Math.PI / 2;
-  const R = 70, r = 44, cx = 90, cy = 90;
-  const arcs = data.map((d) => {
-    const a1 = a0 + (d.value / total) * Math.PI * 2;
-    const large = a1 - a0 > Math.PI ? 1 : 0;
-    const p = (rad: number, a: number) => `${cx + rad * Math.cos(a)},${cy + rad * Math.sin(a)}`;
-    const mid = (a0 + a1) / 2;
-    const path = `<path d="M${p(R, a0)} A${R},${R} 0 ${large} 1 ${p(R, a1 - 0.0001)} L${p(r, a1 - 0.0001)} A${r},${r} 0 ${large} 0 ${p(r, a0)} Z" fill="${d.color}" stroke="#fff" stroke-width="2"><title>${esc(d.label)} : ${d.value}</title></path>
-      <text x="${cx + 57 * Math.cos(mid)}" y="${cy + 57 * Math.sin(mid) + 4}" text-anchor="middle" class="svg-v">${d.value}</text>`;
-    a0 = a1;
-    return path;
-  });
-  return `<div class="chart-row"><svg viewBox="0 0 180 180" class="donut" role="img" aria-label="Répartition par catégorie">${arcs.join("")}<text x="90" y="88" text-anchor="middle" class="svg-big">${total}</text><text x="90" y="104" text-anchor="middle" class="svg-s">risques</text></svg>
-    <ul class="legend">${data.map((d) => `<li><i style="background:${d.color}"></i>${esc(d.label)} <b>${d.value}</b></li>`).join("")}</ul></div>`;
+/* ================================================================ briques d'interface */
+const head = (title: string, lead: string, actions = "", eyebrow = "") =>
+  `<header class="ph"><div>${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ""}<h1>${title}</h1><p class="lead">${lead}</p></div>${actions ? `<div class="ph-a">${actions}</div>` : ""}</header>`;
+const panel = (title: string, body: string, opts: { aside?: string; cls?: string; sub?: string } = {}) =>
+  `<section class="panel ${opts.cls ?? ""}">${title || opts.aside ? `<div class="panel-h"><div>${title ? `<h2>${title}</h2>` : ""}${opts.sub ? `<p>${opts.sub}</p>` : ""}</div>${opts.aside ?? ""}</div>` : ""}${body}</section>`;
+const metric = (label: string, value: string, note = "", tone = "") => `<div class="metric ${tone}"><span>${label}</span><strong>${value}</strong>${note ? `<small>${note}</small>` : ""}</div>`;
+const table = (head: string[], rows: unknown[][], opts: { cls?: string; empty?: string; num?: number[] } = {}) =>
+  rows.length
+    ? `<div class="tw"><table class="${opts.cls ?? ""}"><thead><tr>${head.map((h, i) => `<th class="${opts.num?.includes(i) ? "n" : ""}">${h}</th>`).join("")}</tr></thead><tbody>${rows
+        .map((r) => `<tr>${r.map((c, i) => `<td class="${opts.num?.includes(i) ? "n" : ""}">${c}</td>`).join("")}</tr>`)
+        .join("")}</tbody></table></div>`
+    : `<div class="empty">${opts.empty ?? "Aucun élément."}</div>`;
+const btn = (label: string, act: string, extra = "", kind = "") => `<button class="btn ${kind}" data-act="${act}" ${extra}>${label}</button>`;
+const tabs = (page: string, items: [string, string, number?][], cur: string) =>
+  `<nav class="tabs" role="tablist">${items.map(([k, l, n]) => `<button role="tab" aria-selected="${k === cur}" class="${k === cur ? "on" : ""}" data-act="tab" data-page="${page}" data-id="${k}">${l}${n != null ? `<span>${n}</span>` : ""}</button>`).join("")}</nav>`;
+const note = (t: string, kind = "") => `<div class="note ${kind}">${t}</div>`;
+const meter = (v: number, max = 1, tone = "") => `<span class="meter ${tone}"><i style="width:${Math.max(0, Math.min(100, (v / max) * 100))}%"></i></span>`;
+const readonly = (t: string) => note(`${icon("lock")} ${t}`, "lock");
+
+/* ---------------------------------------------------------------- graphiques */
+function columns(data: { label: string; value: number; note?: string; muted?: boolean }[], fmt: (v: number) => string, max?: number) {
+  const m = max ?? Math.max(...data.map((d) => d.value), 0.0001);
+  return `<div class="cols" role="img" aria-label="${esc(data.map((d) => `${d.label} ${fmt(d.value)}`).join(", "))}">${data
+    .map((d) => `<div class="col ${d.muted ? "muted" : ""}" title="${esc(d.label)} : ${fmt(d.value)}${d.note ? " – " + esc(d.note) : ""}"><span class="v">${fmt(d.value)}</span><span class="bar"><i style="height:${(d.value / m) * 100}%"></i></span><span class="l">${esc(d.label)}</span></div>`)
+    .join("")}</div>`;
 }
-
-function bars(data: { label: string; value: number; color: string }[]) {
-  const max = Math.max(1, ...data.map((d) => d.value));
-  const W = 300, H = 170, bw = 44, gap = (W - data.length * bw) / (data.length + 1);
-  return `<svg viewBox="0 0 ${W} ${H + 24}" class="chart" role="img" aria-label="Répartition par niveau">
-    ${[0, 0.5, 1].map((t) => `<line x1="0" x2="${W}" y1="${H - t * (H - 20)}" y2="${H - t * (H - 20)}" class="grid"/>`).join("")}
-    ${data.map((d, i) => {
-      const h = (d.value / max) * (H - 20), x = gap + i * (bw + gap);
-      return `<rect x="${x}" y="${H - h}" width="${bw}" height="${Math.max(h, 0)}" rx="4" fill="${d.color}"><title>${d.label} : ${d.value}</title></rect>
-        <text x="${x + bw / 2}" y="${H - h - 5}" text-anchor="middle" class="svg-v">${d.value}</text>
-        <text x="${x + bw / 2}" y="${H + 16}" text-anchor="middle" class="svg-s">${d.label}</text>`;
-    }).join("")}</svg>`;
-}
-
-function lines(points: { label: string; avg: number; max: number }[]) {
-  const W = 320, H = 160, L = 26, n = points.length;
-  const X = (i: number) => L + (n <= 1 ? 0 : (i * (W - L - 10)) / (n - 1));
-  const Y = (v: number) => H - (v / 25) * (H - 10);
-  const path = (k: "avg" | "max") => points.map((p, i) => `${i ? "L" : "M"}${X(i)},${Y(p[k])}`).join(" ");
-  return `<svg viewBox="0 0 ${W} ${H + 40}" class="chart" role="img" aria-label="Évolution des scores">
-    ${[0, 5, 10, 15, 20, 25].map((v) => `<line x1="${L}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${L - 5}" y="${Y(v) + 4}" text-anchor="end" class="svg-s">${v}</text>`).join("")}
-    <path d="${path("max")}" fill="none" stroke="#2a78d6" stroke-width="2"/><path d="${path("avg")}" fill="none" stroke="#0f7a58" stroke-width="2"/>
-    ${points.map((p, i) => `<circle cx="${X(i)}" cy="${Y(p.max)}" r="4" fill="#2a78d6"><title>${p.label} – max ${p.max}</title></circle><circle cx="${X(i)}" cy="${Y(p.avg)}" r="4" fill="#0f7a58"><title>${p.label} – moyen ${p.avg}</title></circle>
-      <text x="${X(i)}" y="${H + 16}" text-anchor="middle" class="svg-s">${p.label}</text>`).join("")}
-    <g transform="translate(${L},${H + 32})"><rect width="14" height="3" y="-4" fill="#2a78d6"/><text x="18" class="svg-s">Score maximal</text><rect x="110" width="14" height="3" y="-4" fill="#0f7a58"/><text x="128" class="svg-s">Score moyen</text></g></svg>`;
-}
-
-function heatmap(risks: Row[], compact = false, clickable = false) {
-  let h = `<div class="hm ${compact ? "compact" : ""}"><div class="hm-y">Probabilité</div><div class="hm-grid">`;
+function matrix(risks: Row[], compact = false) {
+  let h = `<div class="mx ${compact ? "compact" : ""}"><div class="mx-yl">Probabilité</div><div class="mx-g">`;
   for (let p = 5; p >= 1; p--) {
-    h += `<div class="hm-lab">${p}${compact ? "" : `<small>${PROBABILITY_SCALE[p - 1].label}</small>`}</div>`;
+    h += `<div class="mx-ax">${p}${compact ? "" : `<small>${PROBABILITY_SCALE[p - 1].label}</small>`}</div>`;
     for (let g = 1; g <= 5; g++) {
       const s = p * g, l = levelFromScore(s);
-      const here = risks.filter((r) => Number(r.probability) === p && Number(r.gravity) === g);
-      h += `<div class="hm-cell" style="background:${CELL[l]}" title="P=${p} × G=${g} = ${s} (${l})"><span class="hm-s">${s}</span>${here
-        .map((r) => `<button class="chip ${ui.selRisk === r.id ? "sel" : ""}" ${clickable ? `data-act="sel-risk" data-id="${r.id}"` : ""} title="${esc(r.title)}">${r.id}</button>`)
-        .join("")}</div>`;
+      const here = risks.filter((r) => +r.probability === p && +r.gravity === g);
+      h += `<div class="mx-c ${LVL[l]}" title="P${p} × G${g} = ${s} (${l})"><em>${s}</em>${here.map((r) => `<button class="mx-r ${ui.sel === r.id ? "on" : ""}" data-act="sel" data-id="${r.id}" title="${esc(r.title)}">${r.id}</button>`).join("")}</div>`;
     }
   }
-  h += `<div></div>${[1, 2, 3, 4, 5].map((g) => `<div class="hm-lab x">${g}${compact ? "" : `<small>${GRAVITY_SCALE[g - 1].label}</small>`}</div>`).join("")}</div></div>
-    <div class="hm-x">Gravité</div><div class="legend inline">${LEVELS.map((l) => `<span><i style="background:${LVL_COLORS[l]}"></i>${l}</span>`).join("")}</div>`;
+  h += `<div></div>${[1, 2, 3, 4, 5].map((g) => `<div class="mx-ax x">${g}${compact ? "" : `<small>${GRAVITY_SCALE[g - 1].label}</small>`}</div>`).join("")}</div></div><div class="mx-xl">Gravité</div>`;
   return h;
 }
 
-/* ================================================================ formulaires modaux */
+/* ================================================================ modales */
 type Field = { k: string; l: string; t?: "text" | "textarea" | "select" | "number" | "date" | "range"; o?: string[]; req?: boolean; full?: boolean; min?: number; max?: number; hint?: string };
-let modalSubmit: ((v: Row) => string | void) | null = null;
-
-function openModal(title: string, fields: Field[], values: Row, onSubmit: (v: Row) => string | void) {
-  modalSubmit = onSubmit;
-  const f = fields
-    .map((x) => {
-      const v = values[x.k] ?? (x.t === "range" ? x.min ?? 0 : "");
-      const label = `${x.l}${x.req ? " *" : ""}`;
-      let input = "";
-      if (x.t === "textarea") input = `<textarea name="${x.k}" ${x.req ? "required" : ""}>${esc(v)}</textarea>`;
-      else if (x.t === "select") input = `<select name="${x.k}">${x.o!.map((o) => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
-      else if (x.t === "range") input = `<div class="range"><input type="range" name="${x.k}" min="${x.min}" max="${x.max}" value="${v}" oninput="this.nextElementSibling.textContent=this.value"><output>${v}</output></div>`;
-      else input = `<input name="${x.k}" type="${x.t || "text"}" value="${esc(v)}" ${x.req ? "required" : ""}>`;
-      return `<label class="${x.full || x.t === "textarea" ? "full" : ""}"><span>${label}</span>${input}${x.hint ? `<small>${esc(x.hint)}</small>` : ""}</label>`;
-    })
-    .join("");
-  document.getElementById("modal")!.innerHTML = `<div class="ov" data-act="close-modal"></div><div class="mdl" role="dialog" aria-modal="true"><div class="mdl-h"><h3>${esc(title)}</h3><button data-act="close-modal" aria-label="Fermer">✕</button></div>
-    <form id="mform" class="mform">${f}<div class="err full" id="merr"></div><div class="full right"><button type="button" class="btn ghost" data-act="close-modal">Annuler</button><button class="btn">Enregistrer</button></div></form></div>`;
+let onSubmit: ((v: Row) => string | void) | null = null;
+function modal(title: string, fields: Field[], values: Row, submit: (v: Row) => string | void) {
+  onSubmit = submit;
+  const f = fields.map((x) => {
+    const v = values[x.k] ?? (x.t === "range" ? x.min ?? 0 : "");
+    const id = `f_${x.k}`;
+    let input = "";
+    if (x.t === "textarea") input = `<textarea id="${id}" name="${x.k}" ${x.req ? "required" : ""}>${esc(v)}</textarea>`;
+    else if (x.t === "select") input = `<select id="${id}" name="${x.k}">${x.o!.map((o) => `<option ${o === String(v) ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+    else if (x.t === "range") input = `<div class="range"><input id="${id}" type="range" name="${x.k}" min="${x.min}" max="${x.max}" value="${v}" oninput="this.nextElementSibling.value=this.value"><output>${v}</output></div>`;
+    else input = `<input id="${id}" name="${x.k}" type="${x.t || "text"}" value="${esc(v)}" ${x.req ? "required" : ""}>`;
+    return `<div class="fld ${x.full || x.t === "textarea" ? "full" : ""}"><label for="${id}">${x.l}${x.req ? " <i>*</i>" : ""}</label>${input}${x.hint ? `<small>${esc(x.hint)}</small>` : ""}</div>`;
+  }).join("");
+  document.getElementById("modal")!.innerHTML = `<div class="scrim" data-act="close"></div><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-t"><div class="dlg-h"><h3 id="dlg-t">${esc(title)}</h3><button class="icon-btn" data-act="close" aria-label="Fermer">${icon("close")}</button></div>
+    <form id="mform" class="form">${f}<p class="err full" id="merr" role="alert"></p><div class="full dlg-a"><button type="button" class="btn ghost" data-act="close">Annuler</button><button class="btn primary">Enregistrer</button></div></form></div>`;
   document.getElementById("modal")!.className = "open";
+  (document.querySelector("#mform input, #mform textarea, #mform select") as HTMLElement | null)?.focus();
 }
-function closeModal() {
-  document.getElementById("modal")!.className = "";
-  document.getElementById("modal")!.innerHTML = "";
-  modalSubmit = null;
-}
-function confirmBox(text: string, onYes: () => void) {
-  document.getElementById("modal")!.innerHTML = `<div class="ov" data-act="close-modal"></div><div class="mdl small" role="alertdialog"><div class="mdl-h"><h3>Confirmation</h3></div><p>${esc(text)}</p>
-    <div class="right"><button class="btn ghost" data-act="close-modal">Annuler</button><button class="btn danger" id="yes">Confirmer</button></div></div>`;
+function confirmBox(text: string, yes: () => void, label = "Supprimer") {
+  document.getElementById("modal")!.innerHTML = `<div class="scrim" data-act="close"></div><div class="dlg small" role="alertdialog" aria-modal="true"><div class="dlg-h"><h3>Confirmer</h3></div><p>${esc(text)}</p>
+    <div class="dlg-a"><button class="btn ghost" data-act="close">Annuler</button><button class="btn danger" id="yes">${label}</button></div></div>`;
   document.getElementById("modal")!.className = "open";
   document.getElementById("yes")!.onclick = () => {
-    closeModal();
-    onYes();
+    close();
+    yes();
   };
 }
+function close() {
+  document.getElementById("modal")!.className = "";
+  document.getElementById("modal")!.innerHTML = "";
+  onSubmit = null;
+}
+
+/* ================================================================ portefeuille de référence (SBA) */
+const M: any = marts;
+const O = M.overview;
+const T = M.tables;
+const LOANS = M.files.loans;
+const MIN_SAMPLE = 100; // en dessous, un taux de défaut n'est pas interprétable
+const AGE_FR: Record<string, string> = {
+  "Existing, 5 or more years": "Existante, 5 ans et plus", "Existing or more than 2 years old": "Existante, plus de 2 ans",
+  "New, Less than 1 Year old": "Nouvelle, moins d'1 an", "New Business or 2 years or less": "Nouvelle, 2 ans ou moins",
+  "Less than 2 years old but at least 1": "1 à 2 ans", "Less than 3 years old but at least 2": "2 à 3 ans", "Less than 4 years old but at least 3": "3 à 4 ans", "Less than 5 years old but at least 4": "4 à 5 ans",
+  "Change of Ownership": "Reprise d'entreprise", "Startup, Loan Funds will Open Business": "Création (le prêt finance l'ouverture)", Unanswered: "Non renseigné",
+};
 
 /* ================================================================ pages */
-function pLogin() {
-  return `<div class="login"><div class="hero"><div class="glow"></div><div class="emblem">${EMBLEM}</div>
-    <div class="kicker">CRÉDIT HORIZON · RISK INTELLIGENCE</div><h1>Gestion des<br><span>risques financiers</span></h1>
-    <p>Plateforme interne de maîtrise des risques d'un organisme de financement des TPE : registre P × G, cartographie, analyse des dossiers,
-    diagnostic COSO 2013, contrôle interne, gouvernance RACI, appétence au risque et assistant IA « Risk Advisor ».</p>
-    <div class="credit">Projet réalisé par <b>Fatima Zahrae Chakib</b> et <b>Inass Mouichou</b> · EMSI Tanger · Génie financier – Actuariat &amp; Finance, 5<sup>e</sup> année</div></div>
-    <div class="login-r"><form id="loginf" class="login-card" autocomplete="off"><div class="lc-h">${EMBLEM}<div><h2>Connexion</h2><p>Crédit Horizon · Contrôle interne &amp; gestion des risques</p></div></div>
-      <label><span>Identifiant</span><input id="lid" placeholder="admin" autocapitalize="none" spellcheck="false"></label>
-      <label><span>Mot de passe</span><input id="lpw" type="password"></label><div class="err" id="lerr" role="alert"></div>
-      <button class="btn big-btn">Se connecter</button>
-      <div class="accounts"><b>Comptes de démonstration :</b>${ACCOUNTS.map((a) => `<button type="button" class="acc" data-act="prefill" data-l="${a.login}"><code>${a.login}</code> / <code>${a.password}</code> <span>— ${esc(a.desc)}</span></button>`).join("")}
-      <small>Cliquez sur un compte pour remplir le formulaire. Cas académique fictif : les données marquées « Démo » sont des données de démonstration.</small></div></form></div></div>`;
-}
-
-function pDashboard() {
+function pOverview() {
   const s = snapshot(), k = computeKpis(s as any), r = s.risks;
-  const cats = Object.keys(CAT_COLORS).map((c) => ({ label: c, value: r.filter((x) => x.category === c).length, color: CAT_COLORS[c] })).filter((d) => d.value);
-  const lv = LEVELS.map((l) => ({ label: l, value: r.filter((x) => x.level === l).length, color: LVL_COLORS[l] }));
-  const months = Array.from(new Set(s.history.map((h) => String(h.recorded_at).slice(0, 7)))).sort();
-  const M = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
-  const evo = months.map((m) => {
-    const last: Record<string, number> = {};
-    s.history.filter((h) => String(h.recorded_at).slice(0, 7) <= m).forEach((h) => (last[h.risk_id] = h.score));
-    const v = Object.entries(last).filter(([id]) => r.some((x) => x.id === id)).map(([, x]) => x);
-    return { label: M[Number(m.slice(5)) - 1], avg: v.length ? +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : 0, max: v.length ? Math.max(...v) : 0 };
-  });
   const top = [...r].sort((a, b) => b.score - a.score || a.id.localeCompare(b.id)).slice(0, 5);
-  const pend = s.actions.filter((a) => a.status !== "Terminé").slice(0, 6);
-  const closure = s.anomalies.length ? Math.round((k.closedAnomalies / s.anomalies.length) * 100) : 0;
-  const ind = (l: string, v: number) => `<div class="ind"><div><span>${l}</span><b>${v} %</b></div><div class="bar"><i style="width:${v}%"></i></div></div>`;
-  return header("◧", "Dashboard exécutif", "Vue consolidée de l'exposition aux risques, du dispositif de contrôle interne et de l'avancement des actions correctives.", `<a class="btn em" href="#assistant">Analyse IA de la situation →</a>`) +
-    `<div class="kpis">
-      ${kpi("Risques recensés", k.total, `Score moyen ${k.avgScore.toFixed(1)} / 25`, "brand")}${kpi("Risques critiques", k.critical, `${k.high} risques élevés`, "red")}
-      ${kpi("Contrôles opérationnels", `${k.operationalControls}/${k.totalControls}`, `${k.coveredRisks}/${k.total} risques couverts`, "green")}
-      ${kpi("Actions en attente", k.pendingActions, `Avancement moyen ${k.actionProgress} %`, "amber")}
-      ${kpi("Anomalies ouvertes", k.openAnomalies, `${k.overdueAnomalies} en retard`, k.overdueAnomalies ? "red" : "brand")}
-      ${kpi("Maturité COSO", `${k.avgMaturity.toFixed(1)}/5`, `${k.deficientPrinciples}/17 principes déficients`, "amber")}</div>
-    <div class="g3">${card("Répartition par catégorie", donut(cats))}${card("Répartition par niveau de criticité", `<p class="muted s">1–4 Faible · 5–9 Modéré · 10–15 Élevé · 16–25 Critique</p>${bars(lv)}`)}
-      ${card("Évolution des risques", `<p class="muted s">Dernière cotation P × G connue en fin de mois</p>${lines(evo)}`)}</div>
-    <div class="g2w">${card("Top 5 des risques prioritaires", table(["#", "Risque", "Catégorie", "P", "G", "Criticité", "Responsable"], top.map((x, i) => [
-      `<b class="muted">${i + 1}</b>`, `<b>${x.id}</b> · ${esc(x.title)}`, `<span class="dot" style="background:${CAT_COLORS[x.category]}"></span>${esc(x.category)}`, x.probability, x.gravity, pill(x.level, x.score), `<small>${esc(x.owner)}</small>`])) + `<a class="lnk" href="#registre">Registre complet →</a>`)}
-      ${card("Cartographie synthétique", heatmap(r, true) + `<a class="lnk" href="#cartographie">Ouvrir →</a>`)}</div>
-    <div class="g2">${card("Indicateurs de contrôle interne", ind("Couverture des risques par au moins un contrôle", Math.round((k.coveredRisks / Math.max(1, k.total)) * 100)) +
-      ind("Contrôles opérationnels ou efficaces", Math.round((k.operationalControls / Math.max(1, k.totalControls)) * 100)) + ind("Taux de clôture des anomalies", closure) +
-      ind("Avancement du plan d'action", k.actionProgress) + ind("Principes COSO non déficients", Math.round(((17 - k.deficientPrinciples) / 17) * 100)) +
-      `<p class="muted s">Dossiers TPE suspendus (règle de blocage C01) : ${k.dossiersBlocked}/${k.dossiers}</p>`)}
-      ${card("Actions correctives en attente", `<ul class="list">${pend.map((a) => `<li>${badge(a.priority, a.priority === "P1" ? "bad" : a.priority === "P2" ? "warn" : "")}<div><b>${a.id}</b> · ${esc(a.title)}<small>${esc(a.owner)} · ${esc(a.due)}</small></div><div class="mini"><div class="bar"><i style="width:${a.progress}%"></i></div><small>${a.progress} %</small></div></li>`).join("")}</ul><a class="lnk" href="#suivi">Plan d'action →</a>`)}</div>`;
+  const p1 = s.actions.filter((a) => a.priority === "P1" && a.status !== "Terminé");
+  const openAn = s.anomalies.filter((a) => a.status !== "Clôturée");
+  const late = openAn.filter((a) => a.due_on && a.due_on < today());
+  const blocked = s.dossiers.filter((d) => d.analysis?.blocking);
+  const todo = [
+    ...late.map((a) => [`Anomalie ${a.id} en retard`, esc(String(a.nature).slice(0, 90)), "#actions", "bad"]),
+    ...blocked.map((d) => [`Dossier ${d.id} suspendu`, `${esc(d.company?.name)} · ${d.analysis.completeness.missingDocs.length} pièce(s) manquante(s)`, "#dossiers", "warn"]),
+    ...p1.slice(0, 5).map((a) => [`${a.id} · priorité 1`, `${esc(a.title)} — ${esc(a.owner)}`, "#actions", ""]),
+  ];
+  const live = s.controls.filter((c) => ["Opérationnel", "Efficace"].includes(c.status)).length;
+  return head("Vue d'ensemble", "Exposition aux risques, état du dispositif de contrôle et actions à mener.", "", new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })) +
+    `<div class="metrics">
+      ${metric("Risques critiques", `${k.critical}<em>/ ${k.total}</em>`, `${k.high} élevés · score moyen ${k.avgScore.toFixed(1).replace(".", ",")}`, k.critical ? "bad" : "")}
+      ${metric("Contrôles en service", `${live}<em>/ ${k.totalControls}</em>`, live ? `${k.coveredRisks}/${k.total} risques couverts` : "aucun contrôle encore déployé", live ? "" : "warn")}
+      ${metric("Plan d'action", `${k.actionProgress} %`, `${k.pendingActions} actions ouvertes dont ${p1.length} P1`)}
+      ${metric("Anomalies ouvertes", `${k.openAnomalies}`, late.length ? `${late.length} en retard` : "aucune en retard", late.length ? "bad" : "")}
+      ${metric("Défaut de référence", pct(O.default_rate), `prêts TPE SBA ${O.cohorts}`)}
+    </div>
+    <div class="grid g-7-5">
+      ${panel("Risques prioritaires", table(["", "Risque", "Criticité", "Traitement attendu"], top.map((x) => [`<span class="ref">${x.id}</span>`, `<a href="#risks" data-act="sel" data-id="${x.id}" class="lk">${esc(x.title)}</a>`, level(x.level, x.score), `<small>${LEVEL_TREATMENT[x.level as Level]}</small>`])), { aside: `<a class="more" href="#risks">Registre</a>` })}
+      ${panel("Cartographie", matrix(r, true), { aside: `<button class="more" data-act="view" data-id="matrix">Agrandir</button>` })}
+    </div>
+    <div class="grid g-7-5">
+      ${panel("À traiter", todo.length ? `<ul class="todo">${todo.map(([t, d, h, tone]) => `<li class="${tone}"><a href="${h}"><b>${t}</b><span>${d}</span></a></li>`).join("")}</ul>` : `<div class="empty">Rien d'urgent : aucune anomalie en retard, aucun dossier suspendu, aucune action prioritaire ouverte.</div>`)}
+      ${panel("Repère de marché", `<p class="small">Taux de défaut par année d'octroi · prêts garantis SBA 7(a) aux petites entreprises</p>
+        ${columns(T.by_cohort.map((c: Row) => ({ label: `${String(c.cohort_fy).slice(2)}`, value: c.default_rate, muted: c.cohort_fy >= 2018 })), (v) => pct(v, 1))}
+        <p class="small">Défaut médian <b>${O.median_months_to_default.toFixed(0)} mois</b> après l'octroi ; ${pct(O.share_defaults_within_24m, 0)} des pertes seulement dans les 24 premiers mois.</p>`, { aside: `<a class="more" href="#portfolio">Analyse</a>` })}
+    </div>`;
 }
-const kpi = (l: string, v: unknown, h: string, t: string) => `<div class="kpi ${t}"><span>${l}</span><b>${v}</b><small>${h}</small></div>`;
-const table = (head: string[], rows: unknown[][], cls = "") =>
-  `<div class="tw"><table class="${cls}"><thead><tr>${head.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 
+function pPortfolio() {
+  const sec = T.by_sector as Row[];
+  const totalUsd = sec.reduce((a, r) => a + r.approved_usd, 0);
+  const big = sec.filter((x) => x.resolved > 1000);
+  const age = [...(T.by_business_age as Row[])].sort((a, b) => b.loans - a.loans);
+  const newBiz = age.filter((a) => /^New|Startup/i.test(a.business_age));
+  const existing = age.find((a) => /5 or more/i.test(a.business_age));
+  const newRate = newBiz.reduce((a, r) => a + r.defaults, 0) / Math.max(1, newBiz.reduce((a, r) => a + r.resolved, 0));
+  const coll = T.by_collateral as Row[];
+  const cy = coll.find((c) => c.collateral === true), cn = coll.find((c) => c.collateral === false);
+  const lo = big.reduce((a, b) => (a.default_rate < b.default_rate ? a : b)), hi = big.reduce((a, b) => (a.default_rate > b.default_rate ? a : b));
+  const t = tab("portfolio", "analyse");
+  const body = t === "analyse"
+    ? `<div class="metrics">
+        ${metric("Prêts décaissés", n0(O.loans_funded), `${O.cohorts} · ${O.lenders} prêteurs`)}
+        ${metric("Taux de défaut", pct(O.default_rate, 2), `${n0(O.defaults)} pertes sur ${n0(O.loans_resolved)} prêts dénoués`, "bad")}
+        ${metric("Taux de perte", pct(O.loss_rate, 2), `${usd(O.chargeoff_usd)} passés en perte`)}
+        ${metric("Prêt médian", usd(O.median_loan_usd), `durée médiane ${Math.round(O.median_term_months / 12)} ans`)}
+        ${metric("Délai médian avant perte", `${O.median_months_to_default.toFixed(0)} mois`, `${pct(O.share_defaults_within_24m, 0)} des pertes avant 24 mois`)}
+      </div>
+      ${panel("Ce que ces données apprennent à Crédit Horizon", `<ul class="insights">
+        <li><div>${ids("R03, C07")}</div><p><b>Le secteur pèse sur le risque.</b> Parmi les secteurs de plus de 1 000 prêts dénoués, le défaut va de ${pct(lo.default_rate)} (${esc(lo.sector.toLowerCase())}) à ${pct(hi.default_rate)} (${esc(hi.sector.toLowerCase())}). Le suivi de la concentration doit comparer chaque secteur du portefeuille à ces repères.</p></li>
+        <li><div>${ids("R04, C05")}</div><p><b>Les pertes arrivent tard.</b> La moitié survient plus de ${O.median_months_to_default.toFixed(0)} mois après l'octroi : la surveillance des retards doit couvrir toute la vie du prêt, pas seulement la première année.</p></li>
+        <li><div>${ids("R01, R02")}</div><p><b>L'ancienneté compte.</b> Entreprises nouvelles ou en création : ${pct(newRate)} de défaut, contre ${pct(existing?.default_rate)} pour celles de 5 ans et plus. La grille commune d'analyse doit l'intégrer.</p></li>
+        <li><div>${ids("Charte")}</div><p><b>La garantie réelle réduit le défaut</b> : ${pct(cn?.default_rate)} sans garantie, ${pct(cy?.default_rate)} avec. Argument pour le niveau « autorisation renforcée » de la charte.</p></li>
+      </ul><p class="small">Repère externe : prêts américains du programme SBA 7(a). Ces chiffres ne décrivent pas le portefeuille de Crédit Horizon.</p>`)}
+      <div class="grid g-1-1">
+        ${panel("Défaut par année d'octroi", columns(T.by_cohort.map((c: Row) => ({ label: `FY${String(c.cohort_fy).slice(2)}`, value: c.default_rate, note: `${n0(c.resolved)} prêts dénoués`, muted: c.cohort_fy >= 2018 })), (v) => pct(v, 1)) +
+          `<p class="small">Cohortes 2018 et 2019 en clair : encore des prêts en cours, leur taux peut évoluer.</p>`)}
+        ${panel("Délai entre octroi et perte", columns(T.time_to_default.map((b: Row) => ({ label: b.bucket.replace(" mois", ""), value: b.share })), (v) => pct(v, 0)) + `<p class="small">Répartition des ${n0(O.defaults)} prêts passés en perte, en mois.</p>`)}
+      </div>
+      ${panel("Secteurs d'activité", table(["Secteur", "Prêts", "Part de l'encours", "Taux de défaut", "Taux de perte"], sec.slice(0, 14).map((r) => [esc(r.sector), n0(r.loans), `<div class="mcell">${meter(r.approved_usd / totalUsd, 0.2)}<span>${pct(r.approved_usd / totalUsd)}</span></div>`, `<div class="mcell">${meter(r.default_rate ?? 0, 0.16, "bad")}<span>${pct(r.default_rate)}</span></div>`, pct(r.loss_rate)]), { num: [1, 4] }),
+        { sub: `Les trois premiers secteurs représentent ${pct(O.top3_sector_share, 0)} de l'encours (indice de Herfindahl ${O.hhi_sector.toFixed(3).replace(".", ",")}).` })}
+      <div class="grid g-1-1-1">
+        ${panel("Montant du prêt", table(["Tranche", "Prêts", "Défaut"], T.by_size.map((r: Row) => [esc(r.size_band), n0(r.loans), pct(r.default_rate)]), { num: [1, 2] }))}
+        ${panel("Durée", table(["Durée", "Prêts", "Défaut"], T.by_term.map((r: Row) => [esc(r.term_band), n0(r.loans), pct(r.default_rate)]), { num: [1, 2] }))}
+        ${panel("Garantie et taux", table(["Caractéristique", "Prêts", "Défaut"], [
+          ...coll.map((r: Row) => [r.collateral ? "Avec garantie réelle" : "Sans garantie réelle", n0(r.loans), pct(r.default_rate)]),
+          ...(T.by_rate_type as Row[]).map((r) => [r.rate_type === "F" ? "Taux fixe" : "Taux variable", n0(r.loans), pct(r.default_rate)]),
+        ], { num: [1, 2] }))}
+      </div>
+      ${panel("Ancienneté de l'entreprise", table(["Ancienneté déclarée", "Prêts", "Dénoués", "Taux de défaut"], age.map((r) => [esc(AGE_FR[r.business_age] ?? r.business_age), n0(r.loans), n0(r.resolved), r.resolved < MIN_SAMPLE ? `<span class="mute-t" title="Moins de ${MIN_SAMPLE} prêts dénoués : taux non significatif">n.s.</span>` : pct(r.default_rate)]), { num: [1, 2, 3] }), { sub: `Taux non significatif (n.s.) en dessous de ${MIN_SAMPLE} prêts dénoués.` })}`
+    : `<div class="grid g-1-1 top">${panel("Source", `<dl class="kv">
+          <dt>Éditeur</dt><dd>${esc(M.source.publisher)}</dd>
+          <dt>Jeu de données</dt><dd>${esc(M.source.dataset)}<br><small>Identifiant ${esc(M.source.dataset_identifier)}</small></dd>
+          <dt>Page officielle</dt><dd><a href="${M.source.landing_page}" target="_blank" rel="noopener">data.sba.gov ${icon("ext")}</a></dd>
+          <dt>Fichier analysé</dt><dd><a href="${LOANS.url}" target="_blank" rel="noopener">${esc(LOANS.name)}</a></dd>
+          <dt>Situation au</dt><dd>${fdate(O.as_of)} · ${esc(M.source.update_frequency.toLowerCase())}</dd>
+          <dt>Licence</dt><dd>${esc(M.source.license)}</dd>
+          <dt>Volume brut</dt><dd>${n0(LOANS.rows)} lignes × ${LOANS.columns} colonnes · ${(LOANS.bytes / 1e6).toFixed(1).replace(".", ",")} Mo</dd>
+          <dt>Empreinte SHA-256</dt><dd><code class="hash">${LOANS.sha256}</code></dd>
+          <dt>Téléchargé le</dt><dd>${fdate(LOANS.downloaded_at)}</dd>
+        </dl><p class="small">Vérification : téléchargez le fichier depuis la page officielle et calculez son empreinte (<code>sha256sum</code> sous Linux et macOS, <code>Get-FileHash</code> sous Windows). Une empreinte identique prouve qu'il s'agit exactement du fichier analysé. L'éditeur publie une version par trimestre : un fichier plus récent aura une autre empreinte.</p>`)}
+        ${panel("Méthode", `<ol class="steps">
+          <li><b>Acquisition</b><span>Téléchargement depuis le portail officiel, contrôle de la taille annoncée, calcul de l'empreinte, manifeste.</span></li>
+          <li><b>Profilage</b><span>Chaque colonne lue en texte, sans conversion : vides, valeurs distinctes, formats, écarts avec le dictionnaire officiel.</span></li>
+          <li><b>Validation et nettoyage</b><span>Neuf règles numérotées et comptées ; toute ligne écartée est conservée avec la règle qui l'a écartée.</span></li>
+          <li><b>Minimisation</b><span>Nom, adresse et code postal des emprunteurs supprimés : inutiles à l'analyse du risque.</span></li>
+          <li><b>Tables d'analyse</b><span>Agrégats par cohorte, secteur, montant, durée, ancienneté et garantie, avec des définitions uniques.</span></li>
+          <li><b>Contrôle croisé</b><span>Taux de défaut recalculé indépendamment depuis le fichier brut ; totaux de chaque table rapprochés.</span></li>
+        </ol>`)}</div>
+      ${panel("Réconciliation", `<div class="recon"><div><strong>${n0(LOANS.rows)}</strong><span>lignes brutes</span></div><b>=</b><div><strong>${n0(LOANS.rows - 1146)}</strong><span>lignes retenues</span></div><b>+</b><div><strong>1 146</strong><span>lignes rejetées</span></div></div>
+        <div class="grid g-1-1">${table(["Règle", "Motif du rejet", "Lignes"], [["R02", "Doublon exact d'une ligne précédente", "1 136"], ["R07", "Prêt passé en perte sans date de passage en perte", "10"]], { num: [2] })}
+        ${table(["Population", "Prêts", "Traitement"], [["Dénoués : remboursés ou passés en perte", n0(O.loans_resolved), "base des taux"], ["En cours, issue non publiée (EXEMPT)", n0(O.loans_active_undisclosed), "exclus : issue inconnue"], ["Non décaissés : annulés ou engagés", n0(LOANS.rows - 1146 - O.loans_funded), "exclus : aucun risque porté"]], { num: [1] })}</div>`)}`;
+  return head("Portefeuille de référence", "Données publiques et vérifiables de défaut sur les prêts aux petites entreprises, utilisées comme repère externe pour coter les risques du registre.",
+    `<button class="btn ghost" data-act="exp-marts">${icon("down")} Données (CSV)</button>`, `Source officielle · U.S. Small Business Administration · situation au ${fdate(O.as_of)}`) +
+    tabs("portfolio", [["analyse", "Analyse"], ["source", "Source et méthode"]], t) + body;
+}
+
+/* ---------------------------------------------------------------- risques */
 const RISK_FIELDS: Field[] = [
-  { k: "title", l: "Intitulé du risque", req: true, full: true },
-  { k: "category", l: "Catégorie", t: "select", o: Object.keys(CAT_COLORS) },
+  { k: "title", l: "Intitulé", req: true, full: true },
+  { k: "category", l: "Catégorie", t: "select", o: ["Crédit", "Liquidité", "Opérationnel", "Conformité", "Stratégique"] },
   { k: "basis", l: "Fondement", t: "select", o: ["Constat", "Hypothèse"] },
-  { k: "event", l: "Description de l'événement", t: "textarea", req: true },
+  { k: "event", l: "Événement redouté", t: "textarea", req: true },
   { k: "causes", l: "Causes", t: "textarea" },
   { k: "consequences", l: "Conséquences", t: "textarea" },
-  { k: "probability", l: "Probabilité (1 à 5)", t: "range", min: 1, max: 5, hint: PROBABILITY_SCALE.map((p) => `${p.v} = ${p.label}`).join(" · ") },
-  { k: "gravity", l: "Gravité (1 à 5)", t: "range", min: 1, max: 5, hint: GRAVITY_SCALE.map((p) => `${p.v} = ${p.label}`).join(" · ") },
+  { k: "probability", l: "Probabilité", t: "range", min: 1, max: 5, hint: PROBABILITY_SCALE.map((p) => `${p.v} ${p.label}`).join(" · ") },
+  { k: "gravity", l: "Gravité", t: "range", min: 1, max: 5, hint: GRAVITY_SCALE.map((p) => `${p.v} ${p.label}`).join(" · ") },
   { k: "justification", l: "Justification de la cotation", t: "textarea" },
   { k: "owner", l: "Responsable", req: true },
-  { k: "control_ids", l: "Contrôles associés", hint: "Ex. : C01, C04" },
-  { k: "coso_principles", l: "Principes COSO", hint: "Ex. : P10, P12" },
+  { k: "control_ids", l: "Contrôles associés", hint: "Identifiants séparés par des virgules, ex. C01, C04" },
+  { k: "coso_principles", l: "Principes COSO", hint: "Ex. P10, P12" },
   { k: "recommendation", l: "Recommandation", t: "textarea" },
 ];
 
-function pRegistre() {
-  const r = snapshot().risks.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+function pRisks() {
+  const all = snapshot().risks.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
   const w = can("risks.write");
-  const sel = r.find((x) => x.id === ui.selRisk) || r[0];
-  const rows = r.map((x) => `<tr class="click ${sel?.id === x.id ? "selr" : ""}" data-act="sel-risk" data-id="${x.id}" data-text="${esc([x.id, x.title, x.event, x.causes, x.consequences, x.owner, x.category, x.level, x.control_ids].join(" ").toLowerCase())}">
-    <td><b>${x.id}</b> ${demo(x)}</td><td><b>${esc(x.title)}</b><small class="clamp">${esc(x.event)}</small></td><td><span class="dot" style="background:${CAT_COLORS[x.category] || "#94a3b8"}"></span>${esc(x.category)}</td>
-    <td class="c">${x.probability}</td><td class="c">${x.gravity}</td><td class="c"><b class="big">${x.score}</b></td><td>${pill(x.level)}</td><td><small>${esc(x.owner)}</small></td>
-    <td>${splitIds(x.control_ids).map((c) => badge(c, "brand")).join(" ")}</td></tr>`).join("");
-  return header("☰", "Registre des risques", "Identification, cotation P × G automatique, criticité, responsables, contrôles et recommandations. R01 à R08 proviennent du projet EMSI.",
-    w ? `<button class="btn" data-act="risk-new">+ Nouveau risque</button>` : "") +
-    (w ? "" : readonly("Consultation seule : le registre est modifié par la fonction risques et l'administrateur (séparation des tâches).")) +
-    card("", `<div class="toolbar"><input id="q" type="search" placeholder="Rechercher (identifiant, événement, cause, responsable…)" value="${esc(ui.filter)}" autocomplete="off"><span class="muted s" id="qcount">${r.length} risque(s)</span></div>
-      <div class="tw"><table id="rtable"><thead><tr><th>ID</th><th>Risque / événement</th><th>Catégorie</th><th>P</th><th>G</th><th>P × G</th><th>Criticité</th><th>Responsable</th><th>Contrôles</th></tr></thead><tbody>${rows}</tbody></table></div>`) +
-    (sel ? riskSheet(sel, w) : "");
+  const sel = all.find((x) => x.id === ui.sel);
+  const cats = Array.from(new Set(all.map((r) => r.category)));
+  const rows = all
+    .filter((x) => !ui.cat || x.category === ui.cat)
+    .map((x) => `<tr class="row ${sel?.id === x.id ? "on" : ""}" data-act="sel" data-id="${x.id}" tabindex="0" data-text="${esc([x.id, x.title, x.event, x.causes, x.consequences, x.owner, x.level].join(" ").toLowerCase())}">
+      <td><span class="ref">${x.id}</span></td><td><b>${esc(x.title)}</b><small>${esc(x.category)} · ${esc(x.owner)}</small></td>
+      <td class="n">${x.probability}</td><td class="n">${x.gravity}</td><td>${level(x.level, x.score)}</td><td class="ids">${ids(x.control_ids)}</td></tr>`).join("");
+  const view = ui.view === "matrix" ? panel("", matrix(all)) : panel("", `<div class="toolbar"><input id="q" type="search" placeholder="Rechercher un risque, une cause, un responsable" value="${esc(ui.filter)}" aria-label="Rechercher">
+      <select id="cat" aria-label="Catégorie"><option value="">Toutes catégories</option>${cats.map((c) => `<option ${c === ui.cat ? "selected" : ""}>${esc(c)}</option>`).join("")}</select><span class="count" id="qn"></span></div>
+      <div class="tw"><table id="rt" class="hover"><thead><tr><th></th><th>Risque</th><th class="n">P</th><th class="n">G</th><th>Criticité</th><th>Contrôles</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+  return head("Risques", "Registre coté par probabilité × gravité. Criticité : 1–4 faible, 5–9 modéré, 10–15 élevé, 16–25 critique.",
+    `<div class="seg" role="group" aria-label="Affichage"><button class="${ui.view !== "matrix" ? "on" : ""}" data-act="view" data-id="table">Registre</button><button class="${ui.view === "matrix" ? "on" : ""}" data-act="view" data-id="matrix">Matrice</button></div>
+     <button class="btn ghost" data-act="exp-risks">${icon("down")} CSV</button>${w ? btn(`${icon("plus")} Nouveau risque`, "risk-new", "", "primary") : ""}`) +
+    (w ? "" : readonly("Lecture seule : le registre est tenu par la fonction risques.")) +
+    `<div class="grid ${sel ? "g-7-5 top" : ""}">${view}${sel ? riskDetail(sel, w) : ""}</div>`;
 }
 
-function riskSheet(x: Row, w: boolean) {
-  const P = PROBABILITY_SCALE[x.probability - 1], G = GRAVITY_SCALE[x.gravity - 1];
+function riskDetail(x: Row, w: boolean) {
   const hist = state.history.filter((h) => h.risk_id === x.id);
-  return card(`Fiche ${x.id} – ${esc(x.title)}`, `<div class="row-b">${pill(x.level, x.score)} ${badge(x.category)} ${badge(x.basis, "warn")} ${demo(x)}</div>
-    <div class="g3 tight"><div><h4>Événement redouté</h4><p>${esc(x.event)}</p></div><div><h4>Causes</h4><p>${esc(x.causes) || "–"}</p></div><div><h4>Conséquences</h4><p>${esc(x.consequences) || "–"}</p></div>
-    <div><h4>Cotation</h4><p>P = ${x.probability} (${P.label}) × G = ${x.gravity} (${G.label}) = <b>${x.score}</b></p></div><div><h4>Justification</h4><p>${esc(x.justification) || "–"}</p></div>
-    <div><h4>Traitement attendu</h4><p>${LEVEL_TREATMENT[x.level as Level]}</p></div></div>
-    <p><b>Recommandation :</b> ${esc(x.recommendation) || "–"}<br><b>Responsable :</b> ${esc(x.owner)} · <b>Contrôles :</b> ${esc(x.control_ids) || "–"} · <b>COSO :</b> ${esc(x.coso_principles) || "–"}</p>
-    <p class="muted s">Historique des cotations : ${hist.map((h) => `${String(h.recorded_at).slice(0, 7)} → ${h.score}`).join(" · ") || "–"}</p>
-    <div class="right">${w ? `<button class="btn ghost" data-act="risk-edit" data-id="${x.id}">Modifier</button><button class="btn danger" data-act="risk-del" data-id="${x.id}">Supprimer</button>` : ""}
-    <button class="btn em" data-act="ask" data-q="Analyse le risque ${x.id} : explique son score P × G, relie-le aux principes COSO et propose une recommandation complète.">✦ Analyser avec Risk Advisor</button></div>`);
-}
-
-function pCarto() {
-  const r = snapshot().risks;
-  const sel = r.find((x) => x.id === ui.selRisk);
-  return header("▦", "Cartographie des risques", "Matrice thermique interactive 5 × 5. Cliquez sur un risque pour afficher sa fiche.") +
-    `<div class="g2w">${card("", heatmap(r, false, true))}<div>${sel ? riskSheet(sel, can("risks.write")) : card("Fiche du risque", `<p class="muted">Sélectionnez un risque dans la matrice.</p>`)}
-    ${card("Synthèse par zone", [...LEVELS].reverse().map((l) => `<p>${pill(l)} <small>${r.filter((x) => x.level === l).sort((a, b) => b.score - a.score).map((x) => `${x.id} (${x.score})`).join(", ") || "aucun risque"}</small></p>`).join(""))}</div></div>`;
+  const ctrls = state.controls.filter((c) => splitIds(c.risk_ids).includes(x.id));
+  const acts = state.actions.filter((a) => splitIds(a.risk_ids).includes(x.id));
+  const rec = state.recommendations.find((r) => r.risk_id === x.id);
+  return `<aside class="panel detail" aria-label="Fiche ${x.id}"><div class="panel-h"><div><p class="eyebrow">${x.id} · ${esc(x.category)} · ${esc(x.basis)}</p><h2>${esc(x.title)}</h2></div><button class="icon-btn" data-act="sel" data-id="" aria-label="Fermer la fiche">${icon("close")}</button></div>
+    <div class="score-line">${level(x.level, x.score)}<span>P ${x.probability} · ${PROBABILITY_SCALE[x.probability - 1].label}</span><span>G ${x.gravity} · ${GRAVITY_SCALE[x.gravity - 1].label}</span></div>
+    <p class="treat">${LEVEL_TREATMENT[x.level as Level]}</p>
+    <dl class="kv stack"><dt>Événement redouté</dt><dd>${esc(x.event)}</dd><dt>Causes</dt><dd>${esc(x.causes) || "–"}</dd><dt>Conséquences</dt><dd>${esc(x.consequences) || "–"}</dd>
+      <dt>Justification</dt><dd>${esc(x.justification) || "–"}</dd><dt>Responsable</dt><dd>${esc(x.owner)}</dd>
+      <dt>Contrôles</dt><dd>${ctrls.map((c) => `<div class="li"><span class="ref">${c.id}</span> ${esc(c.name)} ${status(c.status)}</div>`).join("") || "Aucun contrôle associé"}</dd>
+      <dt>Recommandation</dt><dd>${esc(rec?.action ?? x.recommendation) || "–"}</dd>
+      <dt>Actions</dt><dd>${acts.map((a) => `<div class="li"><span class="ref">${a.id}</span> ${esc(a.title)} ${status(a.status)}</div>`).join("") || "–"}</dd>
+      <dt>Historique</dt><dd>${hist.map((h) => `${fdate(h.recorded_at)} · ${h.score}`).join(" → ")}</dd></dl>
+    <div class="dlg-a">${w ? `${btn("Supprimer", "risk-del", `data-id="${x.id}"`, "ghost danger-t")}${btn("Modifier", "risk-edit", `data-id="${x.id}"`, "ghost")}` : ""}${btn(`${icon("advisor")} Analyser`, "ask", `data-q="Analyse le risque ${x.id} : explique sa cotation, son rattachement COSO, les repères du portefeuille de référence et propose une recommandation complète."`, "primary")}</div></aside>`;
 }
 
 /* ---------------------------------------------------------------- dossiers */
@@ -306,89 +365,65 @@ const EMPTY_D = () => ({
 
 function pDossiers() {
   const w = can("dossiers.write");
-  if (!ui.draft) {
-    const d = state.dossiers.find((x) => x.id === ui.dossier) || state.dossiers[0];
-    ui.dossier = d?.id ?? null;
-    ui.draft = d ? JSON.parse(JSON.stringify({ company: d.company, request: d.request, financials: d.financials, documents: d.documents, guarantees: d.guarantees, observations: d.observations })) : EMPTY_D();
-  }
+  if (ui.draft) return dossierEditor(w);
+  return head("Dossiers TPE", "Contrôle de complétude (C01), incohérences et points de vigilance avant l'avis de la fonction risques. L'outil n'émet aucune décision d'octroi.",
+    w ? btn(`${icon("plus")} Nouveau dossier`, "dos-new", "", "primary") : "") +
+    (w ? "" : readonly("Lecture seule : la saisie des dossiers est réservée aux chargés d'affaires et à la fonction risques.")) +
+    panel("", table(["Référence", "Entreprise", "Financement", "Complétude", "Analyse", "Saisi par"], state.dossiers.map((d) => [
+      `<button class="link" data-act="dos-open" data-id="${d.id}">${d.id}</button>`, `${esc(d.company?.name)}<small>${esc(d.company?.sector)}</small>`,
+      `${mad(d.request?.amount)}<small>${esc(d.request?.product)} · ${esc(d.request?.duration_months)} mois</small>`, `<div class="mcell">${meter(d.analysis?.completeness?.rate ?? 0, 100)}<span>${d.analysis?.completeness?.rate ?? 0} %</span></div>`,
+      status(d.status), `<small>${esc(d.created_by)}<br>${fdate(d.created_at)}</small>`]), { empty: w ? `<p><b>Aucun dossier.</b> Saisissez une demande de financement : l'analyse de complétude et de cohérence se met à jour pendant la saisie.</p>${btn(`${icon("plus")} Saisir un dossier`, "dos-new", "", "primary")}` : "Aucun dossier saisi." }));
+}
+
+function dossierEditor(w: boolean) {
   const d = ui.draft;
-  const list = table(["Référence", "Entreprise", "Financement", "Complétude", "Statut de l'analyse", ""], state.dossiers.map((x) => [
-    `<b>${x.id}</b> ${demo(x)}`, `${esc(x.company?.name)}<small>${esc(x.company?.sector)}</small>`, `${fmtMAD(x.request?.amount)}<small>${esc(x.request?.product)} · ${esc(x.request?.duration_months)} mois</small>`,
-    `<div class="bar"><i style="width:${x.analysis?.completeness?.rate ?? 0}%"></i></div><small>${x.analysis?.completeness?.rate ?? 0} %</small>`, badge(x.status, tone(x.status)),
-    `<button class="btn ghost sm" data-act="dos-open" data-id="${x.id}">Ouvrir</button>`]));
-  const T = (part: string, k: string, label: string, type = "text", hint = "") =>
-    `<label><span>${label}</span><input data-d="${part}.${k}" type="${type}" value="${esc(d[part][k])}" ${w ? "" : "disabled"}>${hint ? `<small>${hint}</small>` : ""}</label>`;
-  const S = (part: string, k: string, label: string, opts: readonly string[]) =>
-    `<label><span>${label}</span><select data-d="${part}.${k}" ${w ? "" : "disabled"}>${opts.map((o) => `<option ${o === d[part][k] ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></label>`;
+  const T_ = (part: string, k: string, label: string, type = "text", hint = "") =>
+    `<div class="fld"><label for="d_${part}_${k}">${label}</label><input id="d_${part}_${k}" data-d="${part}.${k}" type="${type}" value="${esc(d[part][k])}" ${w ? "" : "disabled"}>${hint ? `<small>${hint}</small>` : ""}</div>`;
+  const S_ = (part: string, k: string, label: string, opts: readonly string[]) =>
+    `<div class="fld"><label for="d_${part}_${k}">${label}</label><select id="d_${part}_${k}" data-d="${part}.${k}" ${w ? "" : "disabled"}>${opts.map((o) => `<option ${o === d[part][k] ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></div>`;
   const docs = CHECKLIST.map((c) => {
     const req = c.stage === "avant_avis" && isRequired(c.key, d);
-    return `<div class="doc"><div>${esc(c.label)}<small>${c.scope} · ${c.stage === "avant_decision" ? "exigé avant la décision" : req ? "obligatoire avant avis" : "non requis pour ce dossier"}</small></div><div class="seg">${[["oui", "Oui"], ["non", "Non"], ["na", "N/A"]]
+    return `<div class="chk"><div>${esc(c.label)}<small>${c.stage === "avant_decision" ? "Exigé avant la décision" : req ? "Obligatoire avant l'avis" : "Non requis pour ce dossier"}</small></div><div class="seg sm" role="group" aria-label="${esc(c.label)}">${[["oui", "Oui"], ["non", "Non"], ["na", "N/A"]]
       .map(([v, l]) => `<button type="button" class="${d.documents[c.key] === v ? "on " + v : ""}" data-act="doc" data-k="${c.key}" data-v="${v}" ${w ? "" : "disabled"}>${l}</button>`).join("")}</div></div>`;
   }).join("");
-  return header("▤", "Analyse intelligente des dossiers TPE", "Complétude documentaire (contrôle C01), informations manquantes, incohérences, points de vigilance et synthèse. La plateforme ne prend aucune décision d'octroi.",
-    w ? `<button class="btn ghost" data-act="dos-new">+ Nouveau dossier</button>` : "") +
-    (w ? "" : readonly("Consultation seule : la saisie des dossiers est réservée aux commerciaux, analystes et administrateurs.")) +
-    card("Dossiers enregistrés", list) +
-    `<div class="g2w"><div id="dform"><p class="muted"><b>${ui.dossier ? `Dossier ${ui.dossier}` : "Nouveau dossier"}</b> – l'analyse se met à jour pendant la saisie.</p>
-      ${card("1. Informations de l'entreprise", `<div class="fg">${T("company", "name", "Raison sociale *")}${S("company", "legal_form", "Forme juridique", ["SARL", "SARLAU", "SA", "SNC", "Entreprise individuelle", "Auto-entrepreneur", "Coopérative"])}${T("company", "creation_date", "Date de création", "date")}
-        ${T("company", "rc_number", "N° registre de commerce")}${T("company", "ice", "ICE")}${T("company", "city", "Ville")}${T("company", "manager_name", "Dirigeant")}${T("company", "employees", "Effectif", "number")}${T("company", "name_on_documents", "Raison sociale sur les pièces", "text", "Contrôle de concordance")}</div>`)}
-      ${card("2. Activité et financement demandé", `<div class="fg">${T("company", "sector", "Secteur d'activité")}${T("company", "activity", "Description de l'activité")}${S("request", "product", "Type de financement", PRODUCTS)}
-        ${T("request", "amount", "Montant demandé (MAD) *", "number")}${T("request", "duration_months", "Durée (mois) *", "number")}${T("request", "purpose", "Objet du financement")}</div>`)}
-      ${card("3. Informations financières (MAD)", `<div class="fg">${T("financials", "fiscal_year", "Exercice")}${T("financials", "revenue_n", "CA exercice N", "number")}${T("financials", "revenue_n1", "CA exercice N-1", "number")}
-        ${T("financials", "revenue_bank", "CA selon relevés bancaires", "number", "Contrôle de cohérence")}${T("financials", "net_result", "Résultat net", "number")}${T("financials", "equity", "Fonds propres", "number")}
-        ${T("financials", "existing_debt", "Dettes financières existantes", "number")}${T("financials", "existing_monthly_installments", "Mensualités existantes", "number")}</div>`)}
-      ${card("4. Pièces justificatives – grille de vérification (C01)", docs)}
-      ${card("5. Garanties", `<div class="fg">${S("guarantees", "type", "Nature de la garantie", GUARANTEE_TYPES)}${T("guarantees", "value", "Valeur estimée (MAD)", "number")}${T("guarantees", "description", "Description")}</div>`)}
-      ${card("6. Observations de l'analyste", `<textarea data-d="observations" ${w ? "" : "disabled"} placeholder="Appréciation motivée, éléments vérifiés, points restant à confirmer…">${esc(d.observations)}</textarea>`)}
-    </div><div class="sticky"><div id="analysis">${analysisPanel()}</div>
-      <div class="right">${w ? `<button class="btn" data-act="dos-save">Enregistrer et analyser</button>${ui.dossier ? `<button class="btn danger" data-act="dos-del">Supprimer</button>` : ""}` : ""}
-      ${ui.dossier && can("anomalies.create") ? `<button class="btn ghost" data-act="dos-anom">Inscrire l'anomalie (C04)</button>` : ""}
-      ${ui.dossier ? `<button class="btn em" data-act="ask" data-q="Analyse le dossier ${ui.dossier} : complétude, incohérences, vigilance, risques concernés et diligences à mener avant l'avis de la fonction risques.">✦ Synthèse Risk Advisor</button>` : ""}</div></div></div>`;
+  return head(ui.dossier ? `Dossier ${ui.dossier}` : "Nouveau dossier", "Saisissez la demande : l'analyse se recalcule à chaque modification.",
+    `${btn("Retour à la liste", "dos-close", "", "ghost")}${w ? btn("Enregistrer", "dos-save", "", "primary") : ""}`) +
+    `<div class="grid g-7-5 top"><div class="form-col">
+      ${panel("Entreprise", `<div class="form f3">${T_("company", "name", "Raison sociale *")}${S_("company", "legal_form", "Forme juridique", ["SARL", "SARLAU", "SA", "SNC", "Entreprise individuelle", "Auto-entrepreneur", "Coopérative"])}${T_("company", "creation_date", "Date de création", "date")}
+        ${T_("company", "rc_number", "Registre de commerce")}${T_("company", "ice", "ICE")}${T_("company", "city", "Ville")}${T_("company", "manager_name", "Dirigeant")}${T_("company", "employees", "Effectif", "number")}${T_("company", "name_on_documents", "Raison sociale sur les pièces", "text", "Sert au contrôle de concordance")}</div>`)}
+      ${panel("Activité et financement", `<div class="form f3">${T_("company", "sector", "Secteur d'activité")}${S_("request", "product", "Produit", PRODUCTS)}${T_("request", "amount", "Montant demandé (MAD) *", "number")}
+        ${T_("request", "duration_months", "Durée (mois) *", "number")}${T_("company", "activity", "Activité")}${T_("request", "purpose", "Objet du financement")}</div>`)}
+      ${panel("Données financières (MAD)", `<div class="form f4">${T_("financials", "fiscal_year", "Exercice")}${T_("financials", "revenue_n", "Chiffre d'affaires N", "number")}${T_("financials", "revenue_n1", "Chiffre d'affaires N-1", "number")}
+        ${T_("financials", "revenue_bank", "CA selon relevés bancaires", "number")}${T_("financials", "net_result", "Résultat net", "number")}${T_("financials", "equity", "Fonds propres", "number")}
+        ${T_("financials", "existing_debt", "Dettes financières", "number")}${T_("financials", "existing_monthly_installments", "Mensualités en cours", "number")}</div>`)}
+      ${panel("Pièces justificatives", docs, { sub: "Grille de vérification du contrôle C01" })}
+      ${panel("Garanties", `<div class="form f3">${S_("guarantees", "type", "Nature", GUARANTEE_TYPES)}${T_("guarantees", "value", "Valeur estimée (MAD)", "number")}${T_("guarantees", "description", "Description")}</div>`)}
+      ${panel("Observations de l'analyste", `<textarea data-d="observations" aria-label="Observations" ${w ? "" : "disabled"} placeholder="Éléments vérifiés, points à confirmer, appréciation motivée">${esc(d.observations)}</textarea>`)}
+    </div><div class="sticky" id="analysis">${analysisPanel()}</div></div>`;
 }
 
 function analysisPanel() {
   const a = analyzeDossier(ui.draft);
-  const ic = (s: string) => (s === "alerte" ? "🔴" : s === "attention" ? "🟠" : "🔵");
-  const sec = (t: string, items: any[]) => (items.length ? `<h4>${t} (${items.length})</h4><ul class="find">${items.map((i) => `<li>${ic(i.severity)} ${esc(i.message)} ${i.risk ? `<small>(${i.risk})</small>` : ""}</li>`).join("")}</ul>` : "");
-  return card("Résultat de l'analyse", `<p class="muted s">Aide à l'analyse – aucune décision d'octroi</p><div class="status ${a.blocking ? "bad" : "ok"}">${a.blocking ? "⛔" : "✅"} ${a.status}</div>
-    <p class="s">Complétude documentaire : ${a.completeness.present}/${a.completeness.required}</p><div class="bar"><i style="width:${a.completeness.rate}%"></i></div>
-    ${sec("Pièces manquantes", a.completeness.missingDocs.map((m) => ({ message: m, severity: "alerte" })))}${sec("Incohérences", a.inconsistencies)}${sec("Informations manquantes", a.missingInfo)}${sec("Points de vigilance", a.vigilance)}
-    ${a.ratios.length ? `<h4>Ratios calculés (seuils indicatifs)</h4>${a.ratios.map((r) => `<div class="kv"><span>${esc(r.label)}</span><b>${esc(r.value)}</b></div>`).join("")}` : ""}
-    ${a.linkedRisks.length ? `<p>Risques concernés : ${a.linkedRisks.map((x) => badge(x, "brand")).join(" ")}</p>` : ""}
-    <h4>Synthèse d'analyse</h4><p>${esc(a.synthesis)}</p><div class="note">${esc(a.disclaimer)}</div>`);
+  const items = (title: string, list: Row[]) =>
+    list.length ? `<h3>${title} <span>${list.length}</span></h3><ul class="find">${list.map((i) => `<li class="${i.severity}">${esc(i.message)}${i.risk ? ` <span class="ref">${i.risk}</span>` : ""}</li>`).join("")}</ul>` : "";
+  return `<section class="panel analysis"><div class="panel-h"><div><p class="eyebrow">Aide à l'analyse · aucune décision d'octroi</p><h2>${a.blocking ? "Présentation suspendue" : "Transmissible pour avis"}</h2></div></div>
+    <div class="verdict ${a.blocking ? "bad" : "ok"}">${a.blocking ? "Le dossier ne peut pas être présenté en l'état : pièce manquante ou incohérence significative (règle de blocage C01)." : "Les pièces requises sont présentes et aucune incohérence significative n'est relevée : le dossier peut être transmis à la fonction risques."}</div>
+    <div class="comp"><span>Complétude</span>${meter(a.completeness.rate, 100, a.completeness.rate === 100 ? "ok" : "")}<b>${a.completeness.present}/${a.completeness.required}</b></div>
+    ${items("Pièces manquantes", a.completeness.missingDocs.map((m) => ({ message: m, severity: "alerte" })))}${items("Incohérences", a.inconsistencies)}${items("Points de vigilance", a.vigilance)}${items("Informations à compléter", a.missingInfo)}
+    ${a.ratios.length ? `<h3>Ratios <span>seuils indicatifs</span></h3><dl class="kv compact">${a.ratios.map((r) => `<dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd>`).join("")}</dl>` : ""}
+    <h3>Synthèse</h3><p class="small">${esc(a.synthesis)}</p>
+    <div class="dlg-a">${ui.dossier && can("dossiers.write") ? btn("Supprimer", "dos-del", "", "ghost danger-t") : ""}${ui.dossier && can("anom.create") && a.blocking ? btn("Inscrire l'anomalie", "dos-anom", "", "ghost") : ""}${ui.dossier ? btn(`${icon("advisor")} Synthèse`, "ask", `data-q="Analyse le dossier ${ui.dossier} : complétude, incohérences, vigilance, risques du registre concernés et diligences avant l'avis de la fonction risques."`, "ghost") : ""}</div></section>`;
 }
 
-/* ---------------------------------------------------------------- COSO */
-function pCoso() {
-  const w = can("coso.write");
-  const comp = state.components.find((c) => c.id === ui.cosoTab)!;
-  const pr = state.principles.filter((p) => p.component_id === comp.id);
-  const col: Record<string, string> = { Déficient: "bad", Partiel: "warn", Satisfaisant: "ok", "Non évalué": "" };
-  const cnt = (a: string) => state.principles.filter((p) => p.assessment === a).length;
-  return header("⌂", "Diagnostic COSO 2013", "Cinq composantes et dix-sept principes : constats, lacunes, risques, recommandations, responsables et indicateurs de suivi.") +
-    (w ? "" : readonly("Consultation seule : le diagnostic COSO est mis à jour par le contrôle interne et l'administrateur.")) +
-    `<div class="g2">${card("Maturité par composante (1 à 5)", state.components.map((c) => `<div class="ind"><div><span>${c.id}. ${esc(c.name)}</span><b>${c.maturity}/5</b></div><div class="bar"><i style="width:${c.maturity * 20}%"></i></div></div>`).join(""))}
-    ${card("Appréciation des 17 principes", `<div class="kpis small">${["Déficient", "Partiel", "Satisfaisant", "Non évalué"].map((a) => kpi(a, cnt(a), "principes", col[a] === "bad" ? "red" : col[a] === "warn" ? "amber" : col[a] === "ok" ? "green" : "brand")).join("")}</div>
-      <div class="pgrid">${state.principles.map((p) => `<button class="pchip ${col[p.assessment]} ${p.component_id === comp.id ? "sel" : ""}" data-act="coso-tab" data-id="${p.component_id}" title="${esc(p.title)} : ${p.assessment}">${p.id}</button>`).join("")}</div>`)}</div>
-    <div class="tabs">${state.components.map((c) => `<button class="${c.id === comp.id ? "on" : ""}" data-act="coso-tab" data-id="${c.id}">${c.id}. ${esc(c.name)}</button>`).join("")}</div>
-    <div class="g2w">${card(`${comp.id}. ${esc(comp.name)} (${esc(comp.principles)})`, `<p class="muted"><i>${esc(comp.question)}</i></p>
-      <div class="g2 tight"><div><h4>Constats</h4><p>${esc(comp.findings)}</p></div><div class="box bad"><h4>Lacunes identifiées</h4><p>${esc(comp.gaps)}</p></div>
-      <div><h4>Risques associés</h4><p>${splitIds(comp.risk_ids).map((r) => badge(r, "brand")).join(" ")}</p><h4>Responsables</h4><p>${esc(comp.owner)}</p></div>
-      <div class="box ok"><h4>Recommandations</h4><p>${esc(comp.recommendations)}</p></div><div><h4>Indicateurs de suivi</h4><p>${esc(comp.indicators)}</p></div>
-      <div><h4>Maturité</h4><p><b>${comp.maturity}/5</b> ${demo(comp)}</p></div></div>${w ? `<div class="right"><button class="btn ghost" data-act="coso-edit" data-id="${comp.id}">Modifier la composante</button></div>` : ""}`)}
-    ${card("Principes de la composante", pr.map((p) => `<div class="princ"><div><b class="pid">${p.id}</b> ${esc(p.title)}<div>${badge(p.assessment, col[p.assessment])} ${badge(p.nature, "violet")} ${splitIds(p.risk_ids).map((r) => badge(r, "brand")).join(" ")}</div><small>${esc(p.diagnostic)}</small></div>
-      ${w ? `<select data-act-change="assess" data-id="${p.id}" aria-label="Appréciation ${p.id}">${["Non évalué", "Déficient", "Partiel", "Satisfaisant"].map((a) => `<option ${a === p.assessment ? "selected" : ""}>${a}</option>`).join("")}</select>` : ""}</div>`).join(""))}</div>`;
-}
-
-/* ---------------------------------------------------------------- contrôles */
+/* ---------------------------------------------------------------- contrôle interne */
 const CTRL_FIELDS: Field[] = [
-  { k: "name", l: "Intitulé du contrôle", req: true, full: true },
-  { k: "nature", l: "Type de contrôle", t: "select", o: ["Préventif", "Détectif", "Correctif", "Détectif et correctif"] },
-  { k: "status", l: "Statut", t: "select", o: ["À concevoir", "En déploiement", "Opérationnel", "Efficace", "Déficient"] },
-  { k: "objective", l: "Objectif du contrôle", t: "textarea", req: true },
-  { k: "risk_ids", l: "Risque(s) couvert(s)", hint: "Ex. : R01, R08" },
+  { k: "name", l: "Intitulé", req: true, full: true },
+  { k: "nature", l: "Type", t: "select", o: ["Préventif", "Détectif", "Correctif", "Détectif et correctif"] },
+  { k: "status", l: "Statut", t: "select", o: ["Proposé", "En déploiement", "Opérationnel", "Efficace", "Déficient"] },
+  { k: "objective", l: "Objectif", t: "textarea", req: true },
+  { k: "risk_ids", l: "Risques couverts", hint: "Ex. R01, R08" },
   { k: "owner", l: "Responsable", req: true },
-  { k: "procedure", l: "Description de la procédure", t: "textarea" },
+  { k: "procedure", l: "Procédure", t: "textarea" },
   { k: "supervision", l: "Supervision" },
   { k: "frequency", l: "Fréquence", req: true },
   { k: "evidence", l: "Preuve attendue", t: "textarea" },
@@ -396,196 +431,235 @@ const CTRL_FIELDS: Field[] = [
   { k: "anomaly_treatment", l: "Traitement des anomalies", t: "textarea" },
   { k: "last_review", l: "Dernière revue", t: "date" },
 ];
-function pControles() {
-  const w = can("controls.write"), r = snapshot().risks;
-  const matrix = table(["Risque", ...state.controls.map((c) => c.id), "Couverture"], r.map((x) => {
-    const n = state.controls.filter((c) => splitIds(c.risk_ids).includes(x.id)).length;
-    return [`<b>${x.id}</b> <small>${esc(x.title.slice(0, 42))}</small> ${pill(x.level)}`, ...state.controls.map((c) => (splitIds(c.risk_ids).includes(x.id) ? `<b class="ok-t">●</b>` : "")),
-      badge(n === 0 ? "Non couvert" : n === 1 ? "1 – dépendance" : `${n} contrôles`, n === 0 ? "bad" : n === 1 ? "warn" : "ok")];
-  }), "center");
-  return header("⛨", "Contrôle interne – fiches de contrôle", "Objectif, risque couvert, type, procédure, responsable, fréquence, preuve attendue, indicateur et traitement des anomalies.", w ? `<button class="btn" data-act="ctrl-new">+ Nouvelle fiche</button>` : "") +
-    (w ? "" : readonly("Consultation seule : les fiches sont gérées par le contrôle interne et l'administrateur.")) +
-    card("Matrice de couverture risques × contrôles", matrix + `<p class="muted s">Un risque couvert par un seul contrôle constitue un point de dépendance à surveiller en priorité.</p>`) +
-    `<div class="g2">${state.controls.map((c) => card(`${c.id} · ${esc(c.name)}`, `<div class="row-b">${badge(c.nature, "violet")} ${badge(c.status, tone(c.status))} ${splitIds(c.risk_ids).map((x) => badge(x, "brand")).join(" ")} ${demo(c)}</div>
-      <dl>${[["Objectif", c.objective], ["Procédure", c.procedure], ["Responsable", c.owner], ["Supervision", c.supervision], ["Fréquence", c.frequency], ["Preuve attendue", c.evidence], ["Indicateur", c.indicator], ["Traitement des anomalies", c.anomaly_treatment], ["Dernière revue", c.last_review || "–"]]
-        .map(([k, v]) => `<dt>${k}</dt><dd>${esc(v) || "–"}</dd>`).join("")}</dl>${w ? `<div class="right"><button class="btn ghost sm" data-act="ctrl-edit" data-id="${c.id}">Modifier</button><button class="btn danger sm" data-act="ctrl-del" data-id="${c.id}">Supprimer</button></div>` : ""}`)).join("")}</div>`;
+function pControls() {
+  const t = tab("controls", "fiches");
+  const r = snapshot().risks;
+  let body = "";
+  if (t === "fiches") {
+    const w = can("controls.write");
+    const cover = table(["Risque", ...state.controls.map((c) => c.id), "Couverture"], r.map((x) => {
+      const n = state.controls.filter((c) => splitIds(c.risk_ids).includes(x.id)).length;
+      return [`<span class="ref">${x.id}</span> ${esc(x.title.length > 46 ? x.title.slice(0, 46) + "…" : x.title)}`, ...state.controls.map((c) => (splitIds(c.risk_ids).includes(x.id) ? `<span class="dot-on" title="${c.id} couvre ${x.id}">●</span>` : "")),
+        n === 0 ? `<span class="st bad">Non couvert</span>` : n === 1 ? `<span class="st warn">1 contrôle</span>` : `<span class="st ok">${n} contrôles</span>`];
+    }), { cls: "center" });
+    body = (w ? "" : readonly("Lecture seule : les fiches sont tenues par le contrôle interne.")) +
+      panel("Couverture des risques", cover, { sub: "Un risque couvert par un seul contrôle est un point de dépendance." }) +
+      panel("Fiches de contrôle", state.controls.map((c) => `<details class="sheet"><summary><span class="ref">${c.id}</span><b>${esc(c.name)}</b><span class="tag">${esc(c.nature)}</span>${status(c.status)}</summary>
+        <dl class="kv two">${[["Objectif", c.objective], ["Risques couverts", c.risk_ids], ["Procédure", c.procedure], ["Responsable", c.owner], ["Supervision", c.supervision], ["Fréquence", c.frequency], ["Preuve attendue", c.evidence], ["Indicateur", c.indicator], ["Traitement des anomalies", c.anomaly_treatment], ["Dernière revue", c.last_review ? fdate(c.last_review) : "Pas encore revu"]].map(([k, v]) => `<dt>${k}</dt><dd>${esc(v) || "–"}</dd>`).join("")}</dl>
+        ${w ? `<div class="dlg-a">${btn("Supprimer", "ctrl-del", `data-id="${c.id}"`, "ghost danger-t")}${btn("Modifier", "ctrl-edit", `data-id="${c.id}"`, "ghost")}</div>` : ""}</details>`).join(""),
+        { aside: w ? btn(`${icon("plus")} Nouvelle fiche`, "ctrl-new", "", "ghost") : "" });
+  } else {
+    const w = can("coso.write");
+    body = (w ? "" : readonly("Lecture seule : les principes sont appréciés par le contrôle interne.")) +
+      `<div class="coso-row">${state.components.map((c) => {
+        const m = maturity(c.id);
+        return `<div class="coso"><p class="eyebrow">${esc(c.principles)}</p><h3>${esc(c.name)}</h3><div class="comp">${meter(m ?? 0, 5, m != null && m < 2 ? "bad" : "")}<b>${m == null ? "–" : `${String(m).replace(".", ",")}/5`}</b></div></div>`;
+      }).join("")}</div>` +
+      `<p class="small">Maturité calculée à partir des principes appréciés (déficient 1 ; partiel 2,5 ; satisfaisant 4,5). Les principes non évalués ne comptent pas.</p>` +
+      state.components.map((c) => panel(`${c.id}. ${esc(c.name)}`, table(["Principe", "Intitulé", "Nature", "Diagnostic", "Risques", "Appréciation"], state.principles.filter((p) => p.component_id === c.id).map((p) => [
+        `<span class="ref">${p.id}</span>`, esc(p.title), `<small>${esc(p.nature)}</small>`, `<small>${esc(p.diagnostic)}</small>`, ids(p.risk_ids),
+        w ? `<select data-ch="assess" data-id="${p.id}" aria-label="Appréciation ${p.id}">${["Non évalué", "Déficient", "Partiel", "Satisfaisant"].map((a) => `<option ${a === p.assessment ? "selected" : ""}>${a}</option>`).join("")}</select>` : status(p.assessment)])),
+        { sub: `Lacunes : ${esc(c.gaps)} — Recommandation : ${esc(c.recommendations)}` })).join("");
+  }
+  return head("Contrôle interne", "Contrôles organisationnels et diagnostic COSO 2013 : 5 composantes, 17 principes.", `<button class="btn ghost" data-act="${t === "fiches" ? "exp-controls" : "exp-coso"}">${icon("down")} CSV</button>`) +
+    tabs("controls", [["fiches", "Contrôles", state.controls.length], ["coso", "COSO 2013", 17]], t) + body;
 }
 
-/* ---------------------------------------------------------------- suivi */
+/* ---------------------------------------------------------------- plan d'action */
 const ACT_FIELDS: Field[] = [
-  { k: "title", l: "Intitulé de l'action", req: true, full: true }, { k: "priority", l: "Priorité", t: "select", o: ["P1", "P2", "P3"] },
+  { k: "title", l: "Action", req: true, full: true }, { k: "priority", l: "Priorité", t: "select", o: ["P1", "P2", "P3"] },
   { k: "status", l: "Statut", t: "select", o: ["À faire", "En cours", "Terminé", "Bloqué"] }, { k: "owner", l: "Responsable", req: true }, { k: "due", l: "Échéance" },
-  { k: "deliverable", l: "Livrable / preuve", full: true }, { k: "risk_ids", l: "Risques traités" }, { k: "control_ids", l: "Contrôles concernés" },
+  { k: "deliverable", l: "Livrable ou preuve", full: true }, { k: "risk_ids", l: "Risques traités" }, { k: "control_ids", l: "Contrôles concernés" },
   { k: "progress", l: "Avancement (%)", t: "range", min: 0, max: 100 },
 ];
 const REC_FIELDS: Field[] = [
-  { k: "risk_id", l: "RISQUE", req: true, hint: "Ex. : R03" }, { k: "status", l: "Statut", t: "select", o: ["À lancer", "En cours", "Mise en œuvre", "Abandonnée"] },
-  { k: "coso_gap", l: "LACUNE COSO", t: "textarea", req: true }, { k: "action", l: "ACTION CORRECTIVE", t: "textarea", req: true },
-  { k: "owner", l: "RESPONSABLE", req: true }, { k: "basis", l: "Fondement", t: "select", o: ["Constat", "Hypothèse"] }, { k: "indicator", l: "INDICATEUR DE SUIVI", t: "textarea", req: true },
+  { k: "risk_id", l: "Risque", req: true, hint: "Ex. R03" }, { k: "status", l: "Statut", t: "select", o: ["À lancer", "En cours", "Mise en œuvre", "Abandonnée"] },
+  { k: "coso_gap", l: "Lacune COSO", t: "textarea", req: true }, { k: "action", l: "Action corrective", t: "textarea", req: true },
+  { k: "owner", l: "Responsable", req: true }, { k: "basis", l: "Fondement", t: "select", o: ["Constat", "Hypothèse"] }, { k: "indicator", l: "Indicateur de suivi", t: "textarea", req: true },
 ];
 const ANOM_FIELDS: Field[] = [
-  { k: "detected_on", l: "Date de détection", t: "date", req: true }, { k: "dossier_ref", l: "Dossier / référence" }, { k: "nature", l: "Nature de l'anomalie", t: "textarea", req: true },
+  { k: "detected_on", l: "Détectée le", t: "date", req: true }, { k: "dossier_ref", l: "Dossier ou référence" }, { k: "nature", l: "Nature de l'anomalie", t: "textarea", req: true },
   { k: "severity", l: "Gravité", t: "select", o: ["Mineure", "Significative", "Majeure", "Critique"] }, { k: "status", l: "Statut", t: "select", o: ["Ouverte", "En cours", "Clôturée"] },
-  { k: "risk_id", l: "Risque lié", hint: "Ex. : R01" }, { k: "control_id", l: "Contrôle lié", hint: "Ex. : C04" }, { k: "owner", l: "Responsable du traitement", req: true },
-  { k: "due_on", l: "Échéance de régularisation", t: "date" }, { k: "escalation", l: "Niveau d'escalade (charte, art. 11)", t: "range", min: 1, max: 3 }, { k: "resolution", l: "Résolution / preuve de clôture", t: "textarea" },
+  { k: "risk_id", l: "Risque lié", hint: "Ex. R01" }, { k: "control_id", l: "Contrôle lié", hint: "Ex. C04" }, { k: "owner", l: "Responsable du traitement", req: true },
+  { k: "due_on", l: "Échéance de régularisation", t: "date" }, { k: "escalation", l: "Niveau d'escalade (charte, art. 11)", t: "range", min: 1, max: 3 }, { k: "resolution", l: "Résolution et preuve de clôture", t: "textarea" },
 ];
-function pSuivi() {
-  const t = ui.suiviTab, td = today();
-  const tabs = `<div class="tabs">${[["actions", "Plan d'action"], ["recos", "Recommandations"], ["anoms", "Anomalies"]].map(([k, l]) => `<button class="${t === k ? "on" : ""}" data-act="suivi-tab" data-id="${k}">${l}</button>`).join("")}</div>`;
+function pActions() {
+  const s = snapshot();
+  const t = tab("actions", "plan");
   let body = "";
-  if (t === "actions") {
-    const w = can("actions.write"), a = snapshot().actions;
-    body = `<div class="kpis small">${kpi("Avancement moyen", `${a.length ? Math.round(a.reduce((x, y) => x + Number(y.progress), 0) / a.length) : 0} %`, `${a.filter((x) => x.status !== "Terminé").length} action(s) ouverte(s)`, "brand")}${kpi("Actions P1 ouvertes", a.filter((x) => x.priority === "P1" && x.status !== "Terminé").length, "Conditionnent le reste du dispositif", "red")}</div>` +
-      (w ? `<div class="right"><button class="btn" data-act="act-new">+ Nouvelle action</button></div>` : readonly("Le pilotage du plan d'action est réservé à la direction, aux risques et au contrôle interne.")) +
-      card("", table(["Prio.", "Action", "Responsable", "Échéance", "Livrable", "Liens", "Statut", "Avancement", ""], a.map((x) => [badge(x.priority, x.priority === "P1" ? "bad" : x.priority === "P2" ? "warn" : ""), `<b>${x.id}</b> ${esc(x.title)} ${demo(x)}`, `<small>${esc(x.owner)}</small>`, `<small>${esc(x.due)}</small>`, `<small>${esc(x.deliverable)}</small>`, `<small>${esc(x.risk_ids)}<br>${esc(x.control_ids)}</small>`, badge(x.status, tone(x.status)), `<div class="bar"><i style="width:${x.progress}%"></i></div><small>${x.progress} %</small>`, w ? `<button class="btn ghost sm" data-act="act-edit" data-id="${x.id}">Modifier</button>` : ""])));
+  if (t === "plan") {
+    const w = can("actions.write");
+    body = (w ? "" : readonly("Lecture seule : le plan d'action est piloté par la direction, les risques et le contrôle interne.")) +
+      panel("", table(["Priorité", "Action", "Responsable", "Échéance", "Risques", "Statut", "Avancement", ""], s.actions.map((a) => [
+        `<span class="prio p${a.priority.slice(1)}">${a.priority}</span>`, `<span class="ref">${a.id}</span> ${esc(a.title)}<small>${esc(a.deliverable)}</small>`, `<small>${esc(a.owner)}</small>`, `<small>${esc(a.due)}</small>`,
+        `<span class="ids">${ids(a.risk_ids)}</span>`, status(a.status), `<div class="mcell">${meter(a.progress, 100, a.progress === 100 ? "ok" : "")}<span>${a.progress} %</span></div>`, w ? btn("Mettre à jour", "act-edit", `data-id="${a.id}"`, "ghost sm") : ""])),
+        { aside: w ? btn(`${icon("plus")} Action`, "act-new", "", "ghost") : "" });
   } else if (t === "recos") {
-    const w = can("recommendations.write");
-    body = (w ? `<div class="right"><button class="btn" data-act="rec-new">+ Nouvelle recommandation</button></div>` : "") + state.recommendations.map((x) => card("", `<div class="row-b"><b>${x.id}</b> ${badge(x.status, tone(x.status))} ${badge(x.basis, "warn")} ${demo(x)} ${w ? `<button class="btn ghost sm" data-act="rec-edit" data-id="${x.id}">Modifier</button>` : ""}</div>
-      <div class="chain">${[["RISQUE", x.risk_id], ["LACUNE COSO", x.coso_gap], ["ACTION CORRECTIVE", x.action], ["RESPONSABLE", x.owner], ["INDICATEUR DE SUIVI", x.indicator]].map(([k, v]) => `<div><b>${k}</b>${esc(v)}</div>`).join("")}</div>`)).join("");
+    const w = can("recos.write");
+    body = `<div class="chains">${s.recommendations.map((r) => `<article class="chain"><header><span class="ref">${r.id}</span>${status(r.status)}<span class="tag">${esc(r.basis)}</span>${w ? btn("Modifier", "rec-edit", `data-id="${r.id}"`, "ghost sm") : ""}</header>
+      <ol>${[["Risque", `<span class="ref">${esc(r.risk_id)}</span> ${esc(state.risks.find((x) => x.id === r.risk_id)?.title ?? "")}`], ["Lacune COSO", esc(r.coso_gap)], ["Action corrective", esc(r.action)], ["Responsable", esc(r.owner)], ["Indicateur de suivi", esc(r.indicator)]].map(([k, v]) => `<li><span>${k}</span><p>${v}</p></li>`).join("")}</ol></article>`).join("")}</div>` +
+      (w ? `<div class="dlg-a left">${btn(`${icon("plus")} Recommandation`, "rec-new", "", "ghost")}</div>` : "");
   } else {
-    const an = snapshot().anomalies, open = an.filter((x) => x.status !== "Clôturée"), late = open.filter((x) => x.due_on && x.due_on < td);
-    body = `<div class="kpis small">${kpi("Anomalies", an.length, "au registre", "brand")}${kpi("Ouvertes", open.length, "non clôturées", "amber")}${kpi("En retard", late.length, "échéance dépassée", "red")}${kpi("Niveau 3", open.filter((x) => Number(x.escalation) === 3).length, "remontée direction générale", "red")}</div>` +
-      `<div class="right">${can("anomalies.create") ? `<button class="btn" data-act="anom-new">+ Déclarer une anomalie</button>` : ""}</div>` +
-      card("", table(["ID", "Détectée", "Dossier", "Nature", "Gravité", "Risque / contrôle", "Responsable", "Échéance", "Escalade", "Statut", ""], an.map((x) => {
-        const isLate = x.status !== "Clôturée" && x.due_on && x.due_on < td;
-        return [`<b>${x.id}</b> ${demo(x)}`, `<small>${x.detected_on}</small>`, `<small>${esc(x.dossier_ref)}</small>`, `<small>${esc(x.nature)}${x.resolution ? `<br><span class="ok-t">✓ ${esc(x.resolution)}</span>` : ""}</small>`,
-          badge(x.severity, x.severity === "Critique" ? "bad" : x.severity === "Majeure" ? "warn" : ""), `<small>${esc(x.risk_id)} ${x.control_id ? "/ " + esc(x.control_id) : ""}</small>`, `<small>${esc(x.owner)}</small>`,
-          `<small class="${isLate ? "bad-t" : ""}">${x.due_on || "–"}${isLate ? " (retard)" : ""}</small>`, badge("N" + x.escalation, Number(x.escalation) === 3 ? "bad" : Number(x.escalation) === 2 ? "warn" : ""), badge(x.status, tone(x.status)),
-          can("anomalies.write") ? `<button class="btn ghost sm" data-act="anom-edit" data-id="${x.id}">Traiter</button>` : ""];
-      })));
+    const open = s.anomalies.filter((a) => a.status !== "Clôturée");
+    const late = open.filter((a) => a.due_on && a.due_on < today());
+    body = `<div class="metrics four">${metric("Ouvertes", String(open.length))}${metric("En retard", String(late.length), "", late.length ? "bad" : "")}${metric("Niveau 3", String(open.filter((a) => +a.escalation === 3).length), "remontée à la direction générale")}${metric("Clôturées", String(s.anomalies.length - open.length))}</div>` +
+      panel("", table(["Référence", "Détectée", "Nature", "Gravité", "Liens", "Responsable", "Échéance", "Esc.", "Statut", ""], s.anomalies.map((a) => {
+        const isLate = a.status !== "Clôturée" && a.due_on && a.due_on < today();
+        return [`<span class="ref">${a.id}</span><small>${esc(a.dossier_ref)}</small>`, `<small>${fdate(a.detected_on)}</small>`, `${esc(a.nature)}${a.resolution ? `<small class="ok-t">${esc(a.resolution)}</small>` : ""}<small>Déclarée par ${esc(a.declared_by)}</small>`,
+          esc(a.severity), `<span class="ids">${ids(a.risk_id)}${ids(a.control_id)}</span>`, `<small>${esc(a.owner)}</small>`, `<small class="${isLate ? "bad-t" : ""}">${a.due_on ? fdate(a.due_on) : "–"}${isLate ? " · retard" : ""}</small>`, `N${a.escalation}`, status(a.status),
+          can("anom.write") ? btn("Traiter", "anom-edit", `data-id="${a.id}"`, "ghost sm") : ""];
+      }), { empty: `<p><b>Aucune anomalie enregistrée.</b> Toute anomalie ou dérogation doit être inscrite le jour de sa détection (charte, article 11).</p>${can("anom.create") ? btn(`${icon("plus")} Déclarer une anomalie`, "anom-new", "", "primary") : ""}` }),
+      { aside: can("anom.create") && s.anomalies.length ? btn(`${icon("plus")} Déclarer`, "anom-new", "", "ghost") : "" });
   }
-  return header("✓", "Suivi des recommandations et des anomalies", "Plan d'action priorisé, chaînes de recommandations (Risque → Lacune COSO → Action → Responsable → Indicateur) et registre unique des anomalies (C04).") + tabs + body;
+  return head("Plan d'action", "Actions correctives priorisées, chaînes de recommandations et registre unique des anomalies et dérogations (C04).",
+    `<button class="btn ghost" data-act="${t === "plan" ? "exp-actions" : t === "recos" ? "exp-recos" : "exp-anoms"}">${icon("down")} CSV</button>`) +
+    tabs("actions", [["plan", "Actions", s.actions.length], ["recos", "Recommandations", s.recommendations.length], ["anoms", "Anomalies", s.anomalies.filter((a) => a.status !== "Clôturée").length]], t) + body;
 }
 
-/* ---------------------------------------------------------------- gouvernance */
-function pGouv() {
-  const actors = SEED.raci_actors, acts = SEED.raci_activities;
-  const cls: Record<string, string> = { R: "r", A: "a", "A/R": "ar", C: "c", I: "i", "–": "n" };
-  const blocks = ["Constitution", "Analyse / contrôle", "Autorisation"];
-  const isRA = (c: string) => ["R", "A", "A/R"].includes(c);
-  const singleA = acts.filter((a: Row) => Object.values(a.roles).filter((c: any) => c === "A" || c === "A/R").length === 1).length;
-  const checks = actors.map((x: Row) => ({ label: x.label, b: blocks.filter((b) => acts.some((a: Row) => a.block === b && isRA(a.roles[x.key]))) }));
-  const ok = singleA === acts.length && checks.every((c: Row) => c.b.length < 3);
-  const groups: string[] = Array.from(new Set(actors.map((a: Row) => a.group)));
-  return header("⇄", "Gouvernance et matrice RACI", "R = Responsible (réalise) · A = Accountable (valide) · C = Consulted · I = Informed. Séparation des tâches et délégations d'autorisation.") +
-    card("Matrice RACI des décisions (14 activités × 6 acteurs)", `<div class="tw"><table class="raci"><thead><tr><th rowspan="2">Activité</th><th rowspan="2">Bloc</th>${groups.map((g) => `<th colspan="${actors.filter((a: Row) => a.group === g).length}" class="c">${esc(g)}</th>`).join("")}</tr>
-      <tr>${actors.map((a: Row) => `<th class="c">${esc(a.label)}</th>`).join("")}</tr></thead><tbody>${acts.map((a: Row) => `<tr><td>${a.n}. ${esc(a.activity)}</td><td>${badge(a.block)}</td>${actors.map((x: Row) => `<td class="c"><span class="raci-c ${cls[a.roles[x.key]]}">${a.roles[x.key]}</span></td>`).join("")}</tr>`).join("")}</tbody></table></div>`) +
-    `<div class="g2">${card("Contrôle automatique de la séparation des tâches", `<div class="status ${ok ? "ok" : "bad"}">${ok ? "✅ Séparation respectée : aucun acteur ne cumule constitution, analyse et autorisation." : "⛔ Conflit de séparation des tâches."}</div>
-      <p>${singleA === acts.length ? "✅" : "❌"} Une seule responsabilité finale (A) par activité : ${singleA}/${acts.length}</p>${checks.map((c: Row) => `<p>${c.b.length === 3 ? "❌" : "✅"} <b>${esc(c.label)}</b> <small>— R/A sur : ${c.b.join(", ") || "aucun bloc critique"}</small></p>`).join("")}
-      <p class="muted s">L'avis des risques (6) et l'autorisation (7) sont distincts ; le décaissement (8) relève de la finance, la direction étant seulement informée.</p>`)}
-    ${card("Délégations d'autorisation", table(["Décision", "Réalise", "Valide", "Est informé"], SEED.delegations.map((d: Row) => [`<b>${esc(d.decision)}</b>`, `<small>${esc(d.realise)}</small>`, `<small>${esc(d.valide)}</small>`, `<small>${esc(d.informe)}</small>`])) + `<p class="muted s">Les plafonds chiffrés de délégation ne sont pas fournis par le cas (action A01).</p>`)}</div>` +
-    card("Traduction applicative : droits par rôle (contrôle C03)", table(["Droit", ...Object.values(ROLES)], Object.entries(PERMS).map(([p, roles]) => [PERM_LABELS[p], ...Object.keys(ROLES).map((r) => (roles.includes(r) ? `<b class="ok-t">✓</b>` : `<span class="muted">–</span>`))]), "center"));
-}
-
-/* ---------------------------------------------------------------- appétence */
-function pAppetence() {
-  const r = snapshot().risks;
-  const zone = (l: Level) => (l === "Critique" ? "inacceptable" : l === "Élevé" ? "renforcee" : "acceptable");
-  return header("◎", "Charte d'appétence au risque", "Charte qualitative : ce que Crédit Horizon accepte, accepte sous conditions ou refuse. Sans modèle PD/LGD ; les seuils chiffrés seront fixés par la direction.") +
-    `<div class="g3">${SEED.appetite_levels.map((l: Row) => `<section class="card app ${l.key}"><h2>${l.key === "acceptable" ? "✅" : l.key === "renforcee" ? "⚠️" : "⛔"} ${esc(l.title)}</h2><p>${esc(l.description)}</p><ul>${l.examples.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul>
-      <h4>Risques du registre dans cette zone</h4><p>${r.filter((x) => zone(x.level) === l.key).sort((a, b) => b.score - a.score).map((x) => pill(x.level, x.score).replace(x.level, x.id + " " + x.level)).join(" ") || "<i>aucun</i>"}</p></section>`).join("")}</div>
-    <p class="muted s">Lecture applicative : Faible/Modéré → acceptable sous contrôle ; Élevé → autorisation renforcée ; Critique → hors appétence en l'état, renforcement immédiat.</p>
-    <div class="g2">${card("Principes généraux (article 3)", `<ol>${SEED.charter_principles.map((p: string) => `<li>${esc(p)}</li>`).join("")}</ol>`)}
-    ${card("Mécanismes d'escalade (article 11)", SEED.escalation.map((e: Row) => `<p><span class="lvl l${e.level}">N${e.level}</span> <b>${esc(e.title)}</b><br><small>${esc(e.text)}</small></p>`).join(""))}</div>` +
-    card("Appétence par catégorie de risque", table(["Catégorie", "Appétence qualitative", "Limites et situations inacceptables"], SEED.appetite_by_category.map((c: Row) => [`<b>${c.category}</b>`, esc(c.appetite), `<span class="bad-t">${esc(c.limits)}</span>`])));
+/* ---------------------------------------------------------------- référentiel */
+function pFramework() {
+  const t = tab("framework", "charte");
+  let body = "";
+  if (t === "charte") {
+    const r = snapshot().risks;
+    const zone = (l: Level) => (l === "Critique" ? "inacceptable" : l === "Élevé" ? "renforcee" : "acceptable");
+    body = `<div class="grid g-1-1-1">${SEED.appetite_levels.map((l: Row) => `<section class="panel zone ${l.key}"><h2>${esc(l.title)}</h2><p class="small">${esc(l.description)}</p>
+      <ul>${l.examples.map((e: string) => `<li>${esc(e)}</li>`).join("")}</ul><p class="small zr"><b>Risques du registre</b> ${r.filter((x) => zone(x.level) === l.key).map((x) => `<span class="ref">${x.id}</span>`).join("") || "aucun"}</p></section>`).join("")}</div>
+      <p class="small">Positionnement : faible et modéré → accepté sous contrôle ; élevé → autorisation renforcée ; critique → hors appétence en l'état.</p>
+      <div class="grid g-1-1">${panel("Principes (article 3)", `<ol class="plain">${SEED.charter_principles.map((p: string) => `<li>${esc(p)}</li>`).join("")}</ol>`)}
+      ${panel("Escalade (article 11)", SEED.escalation.map((e: Row) => `<div class="esc"><span class="n${e.level}">N${e.level}</span><div><b>${esc(e.title.replace(/^Niveau \d – /, ""))}</b><p class="small">${esc(e.text)}</p></div></div>`).join(""))}</div>` +
+      panel("Appétence par catégorie", table(["Catégorie", "Appétence", "Limites et situations inacceptables"], SEED.appetite_by_category.map((c: Row) => [`<b>${esc(c.category)}</b>`, esc(c.appetite), esc(c.limits)])));
+  } else {
+    const actors = SEED.raci_actors, acts = SEED.raci_activities;
+    const blocks = ["Constitution", "Analyse / contrôle", "Autorisation"];
+    const ra = (c: string) => ["R", "A", "A/R"].includes(c);
+    const conflicts = actors.filter((x: Row) => blocks.every((b) => acts.some((a: Row) => a.block === b && ra(a.roles[x.key]))));
+    const singleA = acts.every((a: Row) => Object.values(a.roles).filter((c: any) => c === "A" || c === "A/R").length === 1);
+    body = note(conflicts.length || !singleA ? "Conflit de séparation des tâches détecté dans la matrice." : `${icon("check")} Séparation des tâches vérifiée : une seule responsabilité finale par activité, et aucun acteur ne cumule constitution, analyse et autorisation.`, conflicts.length || !singleA ? "bad" : "ok") +
+      panel("Matrice RACI", `<div class="tw"><table class="raci"><thead><tr><th>Activité</th>${actors.map((a: Row) => `<th>${esc(a.label)}</th>`).join("")}</tr></thead><tbody>${acts.map((a: Row) => `<tr><td>${a.n}. ${esc(a.activity)}<small>${esc(a.block)}</small></td>${actors.map((x: Row) => `<td><span class="rc r${String(a.roles[x.key]).replace("/", "").replace("–", "n")}">${a.roles[x.key]}</span></td>`).join("")}</tr>`).join("")}</tbody></table></div>`,
+        { sub: "R réalise · A valide, responsabilité finale · C consulté · I informé" }) +
+      panel("Délégations d'autorisation", table(["Décision", "Réalise", "Valide", "Est informé"], SEED.delegations.map((d: Row) => [`<b>${esc(d.decision)}</b>`, `<small>${esc(d.realise)}</small>`, `<small>${esc(d.valide)}</small>`, `<small>${esc(d.informe)}</small>`])));
+  }
+  return head("Référentiel", "Charte d'appétence au risque, matrice RACI et délégations d'autorisation.", "") +
+    tabs("framework", [["charte", "Charte d'appétence"], ["raci", "Gouvernance RACI"]], t) + body;
 }
 
 /* ---------------------------------------------------------------- assistant */
-const CAPS = [
-  ["Analyser le registre", "Analyse l'ensemble du registre des risques : risques prioritaires, répartition et couverture par les contrôles."],
-  ["Expliquer les scores P × G", "Explique les scores P × G de chaque risque du registre."],
-  ["Risques prioritaires", "Identifie les risques prioritaires et justifie l'ordre de traitement."],
-  ["Relier aux principes COSO", "Relie chaque risque aux principes COSO 2013 concernés."],
-  ["Incohérences documentaires", "Détecte les incohérences documentaires et les pièces manquantes dans les dossiers TPE."],
-  ["Proposer des contrôles", "Propose des contrôles internes et identifie les risques insuffisamment couverts."],
-  ["Recommandations", "Génère des recommandations au format RISQUE → LACUNE COSO → ACTION CORRECTIVE → RESPONSABLE → INDICATEUR DE SUIVI."],
-  ["Plan d'action", "Construis le plan d'action priorisé à partir de l'avancement actuel."],
-  ["Analyser les anomalies", "Analyse les anomalies : tendances, retards et escalades."],
-  ["Synthèse exécutive", "Rédige une synthèse exécutive de la situation des risques et du contrôle interne."],
-  ["Rapport de gestion des risques", "Prépare un rapport de gestion des risques : synthèse, recommandations et plan d'action."],
+const PROMPTS = [
+  ["Où en est le dispositif ?", "Fais une synthèse exécutive : risques prioritaires, état des contrôles, plan d'action, anomalies, et les trois décisions à prendre."],
+  ["Risques à traiter en premier", "Quels risques traiter en premier et pourquoi, compte tenu de la chaîne causale entre les risques et des repères du portefeuille de référence ?"],
+  ["Recommandations", "Propose des recommandations pour les risques critiques et élevés au format RISQUE → LACUNE COSO → ACTION CORRECTIVE → RESPONSABLE → INDICATEUR DE SUIVI."],
+  ["Contrôles à mettre en service", "Quels risques sont insuffisamment couverts et quels contrôles faut-il mettre en service en priorité ?"],
+  ["Lire les données de défaut", "Que nous apprennent les données de défaut du portefeuille de référence pour la cotation de R03, R04 et R01 ?"],
+  ["Préparer le comité des risques", "Prépare l'ordre du jour et les points de décision d'un comité des risques à partir des données de la plateforme."],
 ];
-function pAssistant() {
-  return header("✦", "Risk Advisor – Assistant", "Consultant virtuel en gestion des risques et COSO 2013. Il raisonne uniquement sur les données enregistrées dans la plateforme et ne prend aucune décision d'octroi.",
-    ui.chat.length ? `<button class="btn ghost" data-act="chat-reset">Nouvelle conversation</button>` : "") +
-    `<div class="note ${ui.ai === "claude" ? "ok-note" : ""}">${ui.ai === "claude" ? "✦ IA générative connectée : <b>Claude</b>, via claude.ai. L'assistant reçoit uniquement les données enregistrées dans la plateforme." : "Moteur d'analyse intégré : les réponses sont calculées à partir des données réelles de la plateforme. Ouvert depuis claude.ai, l'assistant utilise le modèle Claude."}</div>
-    <div class="caps">${CAPS.map(([l, q]) => `<button data-act="ask" data-q="${esc(q)}">${l}</button>`).join("")}</div>
-    <div class="chat" id="chat">${ui.chat.map((m: Row) => `<div class="msg ${m.role}">${m.role === "user" ? esc(m.content) : `<div class="md">${md(m.content)}</div>`}</div>`).join("") || `<p class="muted c">Choisissez une analyse ou posez votre question.</p>`}</div>
-    <form id="askf" class="askf"><input id="askq" placeholder="Ex. : Pourquoi R03 est-il le risque le plus critique ? Quels contrôles pour R07 ?" autocomplete="off"><button class="btn">Envoyer</button></form>`;
-}
-
-/* ---------------------------------------------------------------- rapports */
-function pRapports() {
-  return header("⇩", "Rapports et exportations", "Exports générés à partir des données enregistrées au moment de l'export.") +
-    `<div class="g3">${[
-      ["exp-risks", "Registre des risques (CSV)", "Séparateur « ; », UTF-8, compatible Excel et Power BI."],
-      ["exp-controls", "Fiches de contrôle (CSV)", "Les huit contrôles et leurs attributs."],
-      ["exp-coso", "Diagnostic COSO (CSV)", "Les 17 principes et leur appréciation."],
-      ["exp-recos", "Recommandations (CSV)", "Chaînes Risque → Lacune → Action → Responsable → Indicateur."],
-      ["exp-actions", "Plan d'action (CSV)", "Actions priorisées et avancement."],
-      ["exp-anoms", "Anomalies (CSV)", "Registre unique des anomalies (C04)."],
-      ["exp-json", "Sauvegarde complète (JSON)", "Toutes les données de la plateforme, réimportables."],
-      ...(inClaude() ? [] : [["exp-print", "Synthèse imprimable", "Ouvre une synthèse exécutive mise en page pour l'impression ou le PDF."]]),
-    ].map(([a, t, d]) => `<button class="card exp" data-act="${a}"><b>${t}</b><small>${d}</small></button>`).join("")}</div>
-    <div class="note">Le rapport PDF complet (registre, cartographie, contrôles, COSO, RACI, recommandations, plan d'action) est fourni avec ce site : <b>Credit_Horizon_Rapport_Risques.pdf</b>.</div>
-    ${card("Importer une sauvegarde", `<input type="file" id="imp" accept="application/json"><p class="muted s">Restaure un fichier JSON exporté depuis cette plateforme.</p>`)}`;
+function pAdvisor() {
+  return head("Risk Advisor", "Assistant d'analyse fondé sur les données de la plateforme et du portefeuille de référence. Il ne prend aucune décision d'octroi.",
+    ui.chat.length ? btn("Nouvelle conversation", "chat-reset", "", "ghost") : "") +
+    `<div class="advisor"><div class="chat" id="chat" aria-live="polite">${ui.chat.length ? ui.chat.map((m: Row) => `<div class="msg ${m.role}">${m.role === "user" ? esc(m.content) : `<div class="md">${md(m.content)}</div>`}</div>`).join("") :
+      `<div class="starter"><p class="small">${ui.ai ? "Connecté au modèle Claude via claude.ai." : "Moteur d'analyse intégré. Ouverte depuis claude.ai, la plateforme utilise le modèle Claude."}</p><div class="prompts">${PROMPTS.map(([l, q]) => `<button data-act="ask" data-q="${esc(q)}"><b>${l}</b><span>${esc(q)}</span></button>`).join("")}</div></div>`}</div>
+    <form id="askf" class="ask"><label class="sr" for="askq">Votre question</label><textarea id="askq" rows="1" placeholder="Posez une question sur un risque, un contrôle, un dossier…"></textarea><button class="btn primary" ${ui.busy ? "disabled" : ""}>Envoyer</button></form></div>`;
 }
 
 /* ---------------------------------------------------------------- administration */
 function pAdmin() {
-  if (!can("audit.view")) return header("⚙", "Administration", "") + readonly("L'administration est réservée à l'administrateur, au directeur et au contrôleur interne.");
-  return header("⚙", "Administration", "Rôles, journal d'audit et données de démonstration.", can("demo.reset") ? `<button class="btn danger" data-act="reset">Réinitialiser les données de démonstration</button>` : "") +
-    card("Rôles disponibles", table(["Rôle", "Droits"], Object.entries(ROLES).map(([k, l]) => [`<b>${l}</b>`, Object.entries(PERMS).filter(([, r]) => r.includes(k)).map(([p]) => badge(PERM_LABELS[p])).join(" ")]))) +
-    card(`Journal d'audit (${state.audit.length})`, state.audit.length ? table(["Date", "Utilisateur", "Action", "Objet", "Détail"], state.audit.slice(0, 200).map((a) => [`<small>${new Date(a.at).toLocaleString("fr-FR")}</small>`, `<small>${esc(a.user)} (${ROLES[a.role] || "–"})</small>`, badge(a.action, a.action === "Suppression" ? "bad" : a.action.startsWith("Création") ? "ok" : ""), `${esc(a.entity)} <b>${esc(a.id)}</b>`, `<small>${esc(a.details)}</small>`])) : `<p class="muted">Aucune opération enregistrée.</p>`);
+  const t = tab("admin", can("team.manage") ? "team" : "data");
+  let body = "";
+  if (t === "team") {
+    const me = session.me!;
+    const entries = Object.entries(session.members);
+    body = me.mode === "local"
+      ? note("Copie locale : la gestion d'équipe est disponible quand la plateforme est ouverte depuis claude.ai. Chaque personne y est identifiée par son compte claude.ai ; la plateforme ne gère aucun mot de passe.")
+      : panel("Membres et rôles", `<p class="small">L'accès se règle dans le menu <b>Partager</b> de claude.ai. Ici, vous attribuez à chaque membre un rôle métier ; une personne sans rôle consulte en lecture seule.</p>
+        ${table(["Membre", "Rôle", ""], [[`<b>${esc(me.name)}</b><small>Propriétaire</small>`, "Administrateur", ""], ...entries.map(([id, role]) => [`<span data-name="${esc(id)}">${esc(ui.names[id] ?? "…")}</span>`,
+          `<select data-ch="role" data-id="${esc(id)}" aria-label="Rôle">${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${k === role ? "selected" : ""}>${l}</option>`).join("")}</select>`, btn("Retirer", "member-del", `data-id="${esc(id)}"`, "ghost sm")])])}
+        <div class="toolbar"><input id="people" type="search" placeholder="Ajouter un membre : rechercher un nom" aria-label="Rechercher une personne"></div><div id="people-res"></div>`) +
+      panel("Droits par rôle", table(["Droit", ...Object.values(ROLES)], Object.entries(PERMS).map(([p, roles]) => [PERM_LABELS[p], ...Object.keys(ROLES).map((r) => (roles.includes(r) ? `<span class="dot-on">●</span>` : `<span class="mute-t">–</span>`))]), { cls: "center" }));
+  } else if (t === "audit") {
+    body = panel("", table(["Date", "Auteur", "Opération", "Objet", "Détail"], state.audit.slice(0, 200).map((a) => [`<small>${new Date(a.at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}</small>`, `<small>${esc(a.who)}</small>`, esc(a.action), `${esc(a.entity)} ${a.id ? `<span class="ref">${esc(a.id)}</span>` : ""}`, `<small>${esc(a.details)}</small>`]), { empty: "Aucune opération enregistrée." }));
+  } else {
+    body = panel("Exports", `<div class="exports">${[["exp-risks", "Registre des risques", "CSV"], ["exp-controls", "Fiches de contrôle", "CSV"], ["exp-coso", "Diagnostic COSO", "CSV"], ["exp-actions", "Plan d'action", "CSV"], ["exp-recos", "Recommandations", "CSV"], ["exp-anoms", "Anomalies", "CSV"], ["exp-marts", "Portefeuille de référence", "CSV"], ["exp-json", "Sauvegarde complète", "JSON"]]
+      .map(([a, l, f]) => `<button class="exp" data-act="${a}"><b>${l}</b><span>${f}</span></button>`).join("")}</div>`) +
+      (can("team.manage") ? panel("Restauration", `<p class="small">Importer une sauvegarde remplace toutes les données de l'équipe. Revenir au référentiel recharge le contenu du rapport et efface les saisies.</p><div class="dlg-a left"><label class="btn ghost file">Importer une sauvegarde<input type="file" id="imp" accept="application/json" hidden></label>${btn("Revenir au référentiel du rapport", "reset", "", "ghost danger-t")}</div>`) : "");
+  }
+  const items: [string, string][] = [];
+  if (can("team.manage")) items.push(["team", "Équipe et rôles"]);
+  if (can("audit.view")) items.push(["audit", "Journal d'audit"]);
+  items.push(["data", "Exports et sauvegardes"]);
+  return head("Administration", "Équipe et rôles, journal d'audit, exports et sauvegardes.", "") + tabs("admin", items, t) + body;
 }
 
 /* ================================================================ rendu */
-const PAGES: Record<string, () => string> = { dashboard: pDashboard, registre: pRegistre, cartographie: pCarto, dossiers: pDossiers, coso: pCoso, controles: pControles, suivi: pSuivi, gouvernance: pGouv, appetence: pAppetence, assistant: pAssistant, rapports: pRapports, administration: pAdmin };
-const EMBLEM = `<svg class="emb" viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d6047"/><stop offset="1" stop-color="#04261c"/></linearGradient><linearGradient id="eg2" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#d1fae5"/></linearGradient></defs><rect width="120" height="120" rx="28" fill="url(#eg)"/><rect x="3" y="3" width="114" height="114" rx="25" fill="none" stroke="#34d399" stroke-opacity=".35"/><path d="M22 80 Q60 22 98 80" fill="none" stroke="url(#eg2)" stroke-width="8" stroke-linecap="round"/><path d="M16 88h88" stroke="#d1fae5" stroke-width="6" stroke-linecap="round"/><rect x="40" y="62" width="8" height="18" rx="2" fill="#34d399"/><rect x="56" y="52" width="8" height="28" rx="2" fill="#6ee7b7"/><rect x="72" y="62" width="8" height="18" rx="2" fill="#34d399"/><circle cx="60" cy="40" r="7" fill="#f59e0b"/></svg>`;
-const LOGO = `<div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0a4d38"/><path d="M12 42 Q32 14 52 42" fill="none" stroke="#10b981" stroke-width="5" stroke-linecap="round"/><path d="M8 46h48" stroke="#d1fae5" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="24" r="5" fill="#34d399"/></svg><div><b>CRÉDIT HORIZON</b><small>RISK INTELLIGENCE</small></div></div>`;
-
-function route() {
-  const h = location.hash.replace("#", "");
-  return PAGES[h] ? h : "dashboard";
-}
+const NAV: [string, string][] = [
+  ["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"], ["risks", "Risques"], ["dossiers", "Dossiers TPE"],
+  ["controls", "Contrôle interne"], ["actions", "Plan d'action"], ["framework", "Référentiel"], ["advisor", "Risk Advisor"], ["admin", "Administration"],
+];
+const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pPortfolio, risks: pRisks, dossiers: pDossiers, controls: pControls, actions: pActions, framework: pFramework, advisor: pAdvisor, admin: pAdmin };
+const MARK = `<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9"/><path d="M8 27c4-8.5 8-12.5 12-12.5S28 18.5 32 27" fill="none" stroke-width="2.6" stroke-linecap="round"/><path d="M7 31h26" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+const route = () => (PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "overview");
 
 function render() {
   const app = document.getElementById("app")!;
-  if (!state.user) {
-    app.innerHTML = pLogin();
+  if (!session.ready) {
+    app.innerHTML = `<div class="boot">${MARK}<p>Ouverture de votre espace…</p></div>`;
     return;
   }
   const cur = route();
-  app.innerHTML = `<aside id="side">${LOGO}<nav>${NAV.map((g) => `<div class="ng">${g.group}</div>${g.items.map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? "on" : ""}"><i>${i}</i>${l}</a>`).join("")}`).join("")}</nav>
-    <div class="me"><b>${esc(state.user.name)}</b><small>${ROLES[state.user.role]}</small><button data-act="logout">Changer de rôle</button></div></aside>
-    <div class="main"><header class="top"><button class="burger" data-act="menu" aria-label="Menu">☰</button>${LOGO}</header>
-    <div class="demo-bar">🧪 <b>Environnement de démonstration</b> – cas académique fictif EMSI. Les éléments marqués « Démo » sont des données de démonstration.</div>
-    <main>${PAGES[cur]()}</main><footer>CRÉDIT HORIZON RISK INTELLIGENCE · Projet EMSI · Aide à la décision : aucune décision d'octroi automatique</footer></div>`;
-  if (cur === "registre") applyFilter();
-  const chat = document.getElementById("chat");
-  if (chat) chat.scrollTop = chat.scrollHeight;
+  const badge: Record<string, number> = {
+    actions: state.anomalies.filter((a) => a.status !== "Clôturée" && a.due_on && a.due_on < today()).length,
+    dossiers: state.dossiers.filter((d) => d.analysis?.blocking).length,
+  };
+  app.innerHTML = `<aside class="side" id="side"><div class="brand">${MARK}<div><b>Crédit Horizon</b><span>Risk Intelligence</span></div></div>
+    <nav aria-label="Navigation principale">${NAV.map(([k, l]) => `<a href="#${k}" class="${k === cur ? "on" : ""}" ${k === cur ? 'aria-current="page"' : ""}>${icon(k)}<span>${l}</span>${badge[k] ? `<em>${badge[k]}</em>` : ""}</a>`).join("")}</nav>
+    <div class="me"><div class="av">${esc((session.me?.name || "?").split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase())}</div><div><b>${esc(session.me?.name)}</b><span>${ROLES[session.role]}</span></div></div></aside>
+    <div class="main"><div class="topbar"><button class="icon-btn menu" data-act="menu" aria-label="Ouvrir le menu">${icon("menu")}</button><span class="crumb">${NAV.find((n) => n[0] === cur)![1]}</span>
+      <span class="sync ${session.me?.mode === "local" ? "" : sharedStore() ? "on" : ""}">${session.me?.mode === "local" ? "Copie locale · données sur cet appareil" : sharedStore() ? "Données partagées avec l'équipe" : "Données sur cet appareil"}</span></div>
+      <main id="content" tabindex="-1">${session.storeError ? note(esc(session.storeError), "bad") : ""}${session.role === "lecteur" && session.me?.mode === "claude" ? note(`${icon("lock")} Vous consultez la plateforme en lecture. L'administrateur peut vous attribuer un rôle.`, "lock") : ""}${PAGES[cur]()}</main>
+      <footer>Crédit Horizon Risk Intelligence · projet EMSI de Fatima Zahrae Chakib et Inass Mouichou · outil d'aide à la décision, sans décision automatique d'octroi</footer></div>`;
+  if (cur === "risks") applyFilter();
+  const c = document.getElementById("chat");
+  if (c) c.scrollTop = c.scrollHeight;
+  if (cur === "admin" && tab("admin", "team") === "team" && session.me?.mode === "claude") loadNames();
+}
+
+async function loadNames() {
+  const list = Object.keys(session.members).filter((id) => !ui.names[id]);
+  if (!list.length) return;
+  const p = await profiles(list);
+  for (const id of list) ui.names[id] = (p as any)[id]?.name || "Membre";
+  document.querySelectorAll<HTMLElement>("[data-name]").forEach((el) => (el.textContent = ui.names[el.dataset.name!] ?? "Membre"));
 }
 
 function applyFilter() {
   const q = ui.filter.toLowerCase().trim();
   let n = 0;
-  document.querySelectorAll<HTMLTableRowElement>("#rtable tbody tr").forEach((tr) => {
+  document.querySelectorAll<HTMLTableRowElement>("#rt tbody tr").forEach((tr) => {
     const show = !q || (tr.dataset.text || "").includes(q);
-    tr.style.display = show ? "" : "none";
+    tr.hidden = !show;
     if (show) n++;
   });
-  const c = document.getElementById("qcount");
-  if (c) c.textContent = `${n} risque(s)`;
+  const c = document.getElementById("qn");
+  if (c) c.textContent = `${n} risque${n > 1 ? "s" : ""}`;
+}
+
+/* ================================================================ assistant */
+function sbaContext() {
+  return `## Portefeuille de référence (données publiques vérifiées)
+Source : ${M.source.publisher}, ${M.source.dataset}, situation au ${O.as_of}, fichier ${LOANS.name} (SHA-256 ${LOANS.sha256}). Prêts SBA 7(a) ${O.cohorts} aux petites entreprises américaines ; repère externe, pas le portefeuille de Crédit Horizon.
+Prêts décaissés ${O.loans_funded}, dénoués ${O.loans_resolved}, défauts ${O.defaults}, taux de défaut ${(O.default_rate * 100).toFixed(2)} %, taux de perte ${(O.loss_rate * 100).toFixed(2)} %, délai médian avant perte ${O.median_months_to_default} mois, part des pertes avant 24 mois ${(O.share_defaults_within_24m * 100).toFixed(1)} %, part des 3 premiers secteurs ${(O.top3_sector_share * 100).toFixed(1)} %.
+Par cohorte : ${T.by_cohort.map((c: Row) => `FY${c.cohort_fy} ${(c.default_rate * 100).toFixed(1)} %`).join(", ")}.
+Par secteur : ${T.by_sector.slice(0, 12).map((r: Row) => `${r.sector} ${(r.default_rate * 100).toFixed(1)} %`).join(" ; ")}.
+Par ancienneté : ${T.by_business_age.map((r: Row) => `${AGE_FR[r.business_age] ?? r.business_age} ${(r.default_rate * 100).toFixed(1)} %`).join(" ; ")}.
+Garantie réelle : ${T.by_collateral.map((r: Row) => `${r.collateral ? "avec" : "sans"} ${(r.default_rate * 100).toFixed(1)} %`).join(", ")}.`;
 }
 
 async function ask(q: string) {
-  if (ui.busy) return;
+  if (ui.busy || !q.trim()) return;
   ui.busy = true;
   const snap: any = snapshot();
   const focus = ui.dossier && /dossier/i.test(q) ? ui.dossier : undefined;
-  ui.chat.push({ role: "user", content: q });
-  ui.chat.push({ role: "assistant", content: "_Analyse des données de la plateforme…_" });
-  audit("Requête IA", "Risk Advisor", ui.ai, q.slice(0, 200));
-  if (route() !== "assistant") location.hash = "assistant";
+  ui.chat.push({ role: "user", content: q }, { role: "assistant", content: "_Analyse en cours…_" });
+  if (route() !== "advisor") location.hash = "advisor";
   else render();
   const last = ui.chat[ui.chat.length - 1];
   const paint = () => {
@@ -596,56 +670,54 @@ async function ask(q: string) {
   };
   const sample = await capability("sample");
   if (sample) {
-    const history = ui.chat.slice(0, -1).filter((m: Row) => !String(m.content).startsWith("_Analyse"));
-    const first = history.findIndex((m: Row) => m.role === "user");
-    const pre = `${ADVISOR_RULES}\n\nUtilisateur connecté : ${state.user!.name} (rôle : ${ROLES[state.user!.role]}).\n\n${buildContext(snap, focus)}\n\n---\nDemande de l'utilisateur :\n\n`;
-    const input = history.slice(first).slice(-12).map((m: Row, i: number) => ({ role: m.role, content: i === 0 ? pre + m.content : m.content }));
-    if (input[0]?.role !== "user") input.unshift({ role: "user", content: pre + q });
+    const conv = ui.chat.slice(0, -1).filter((m: Row) => !m.content.startsWith("_Analyse"));
+    const first = conv.findIndex((m: Row) => m.role === "user");
+    const pre = `${ADVISOR_RULES}\n\nUtilisateur : ${session.me!.name}, rôle ${ROLES[session.role]}.\n\n${buildContext(snap, focus)}\n\n${sbaContext()}\n\n---\nDemande :\n\n`;
+    const input = conv.slice(first).slice(-12).map((m: Row, i: number) => ({ role: m.role, content: i === 0 ? pre + m.content : m.content }));
     try {
       const r = await sample(input, { cache: false, onText: ({ text }: { text: string }) => { last.content = text || "_Rédaction…_"; paint(); } });
-      last.content = r.text + (r.truncated ? "\n\n> Réponse écourtée : demandez une analyse plus ciblée." : "");
-      ui.ai = "claude";
+      last.content = r.text + (r.truncated ? "\n\n> Réponse écourtée : posez une question plus ciblée." : "");
+      ui.ai = true;
     } catch (e: any) {
-      const why = e?.code === "not_granted" ? "l'accès à Claude n'a pas été autorisé" : e?.code === "rate_limited" ? "la limite d'utilisation de Claude est atteinte pour le moment" : "Claude n'a pas répondu";
+      const why = e?.code === "not_granted" ? "l'accès à Claude n'a pas été autorisé" : e?.code === "rate_limited" ? "limite d'utilisation de Claude atteinte" : "Claude n'a pas répondu";
       last.content = `> Réponse du moteur d'analyse intégré (${why}).\n\n` + offlineAnswer(snap, q, focus);
     }
   } else {
     last.content = offlineAnswer(snap, q, focus);
   }
   ui.busy = false;
+  audit(who(), "Question", "Risk Advisor", "", q.slice(0, 160));
   save();
-  paint();
+  render();
 }
 
+/* ================================================================ CRUD */
 function validate(fields: Field[], v: Row) {
   const miss = fields.filter((f) => f.req && !String(v[f.k] ?? "").trim()).map((f) => f.l);
-  return miss.length ? "Champs obligatoires manquants : " + miss.join(", ") : "";
+  return miss.length ? `Champs obligatoires : ${miss.join(", ")}.` : "";
 }
-
-function crudModal(kind: string, rows: Row[], fields: Field[], label: string, prefix: string, pad: number, sep: string, row: Row | null, defaults: Row = {}) {
-  openModal(row ? `Modifier ${row.id}` : `Nouveau : ${label}`, fields, row ? { ...row } : defaults, (v) => {
+function crud(kind: string, rows: Row[], fields: Field[], label: string, prefix: string, pad: number, sep: string, row: Row | null, defaults: Row = {}) {
+  modal(row ? `${label} ${row.id}` : `Nouveau : ${label.toLowerCase()}`, fields, row ? { ...row } : defaults, (v) => {
     const err = validate(fields, v);
     if (err) return err;
     for (const f of fields) if (f.t === "range") v[f.k] = Number(v[f.k]);
     if (row) {
       const before = { ...row };
-      Object.assign(row, v);
+      Object.assign(row, v, { updated_at: today() });
       if (kind === "risk" && (before.probability !== row.probability || before.gravity !== row.gravity))
-        state.history.push({ risk_id: row.id, probability: row.probability, gravity: row.gravity, score: row.probability * row.gravity, recorded_at: new Date().toISOString() });
-      audit("Modification", label, row.id);
-      toast(`${label} ${row.id} mis(e) à jour.`);
+        state.history.push({ risk_id: row.id, probability: row.probability, gravity: row.gravity, score: row.probability * row.gravity, recorded_at: today() });
+      record("Modification", label, row.id);
+      toast(`${label} ${row.id} mis à jour.`);
     } else {
       const id = nextId(rows, prefix, pad, sep);
-      const nr = { id, ...v, is_demo: false, ...(kind === "anom" ? { declared_by: state.user!.name } : {}) };
-      rows.push(nr);
+      rows.push({ id, ...v, ...(kind === "anom" ? { declared_by: session.me!.name } : {}), created_at: today() });
       if (kind === "risk") {
-        state.history.push({ risk_id: id, probability: nr.probability, gravity: nr.gravity, score: nr.probability * nr.gravity, recorded_at: new Date().toISOString() });
-        ui.selRisk = id;
+        state.history.push({ risk_id: id, probability: v.probability, gravity: v.gravity, score: v.probability * v.gravity, recorded_at: today() });
+        ui.sel = id;
       }
-      audit("Création", label, id);
-      toast(`${label} ${id} créé(e).`);
+      record("Création", label, id);
+      toast(`${label} ${id} créé.`);
     }
-    save();
   });
 }
 
@@ -653,93 +725,51 @@ function crudModal(kind: string, rows: Row[], fields: Field[], label: string, pr
 document.addEventListener("click", (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>("[data-act]");
   if (!el) {
-    if (!(e.target as HTMLElement).closest("#side") && document.body.classList.contains("menu")) document.body.classList.remove("menu");
+    if (document.body.classList.contains("nav-open") && !(e.target as HTMLElement).closest("#side")) document.body.classList.remove("nav-open");
     return;
   }
-  const act = el.dataset.act!, id = el.dataset.id!;
+  const act = el.dataset.act!, id = el.dataset.id ?? "";
   const find = (rows: Row[]) => rows.find((r) => String(r.id) === id) || null;
   switch (act) {
-    case "prefill": {
-      const a = ACCOUNTS.find((x) => x.login === el.dataset.l)!;
-      (document.getElementById("lid") as HTMLInputElement).value = a.login;
-      (document.getElementById("lpw") as HTMLInputElement).value = a.password;
-      return;
-    }
-    case "logout":
-      state.user = null;
-      save();
-      return render();
-    case "menu":
-      return document.body.classList.toggle("menu");
-    case "close-modal":
-      return closeModal();
-    case "sel-risk":
-      ui.selRisk = id;
-      return render();
-    case "risk-new":
-      return crudModal("risk", state.risks, RISK_FIELDS, "Risque", "R", 2, "", null, { category: "Crédit", basis: "Constat", probability: 3, gravity: 3 });
-    case "risk-edit":
-      return crudModal("risk", state.risks, RISK_FIELDS, "Risque", "R", 2, "", find(state.risks));
+    case "menu": return void document.body.classList.toggle("nav-open");
+    case "close": return close();
+    case "tab": ui.tab[el.dataset.page!] = id; return render();
+    case "view": ui.view = id; if (route() !== "risks") location.hash = "risks"; return render();
+    case "sel": ui.sel = id || null; if (route() !== "risks" && id) location.hash = "risks"; return render();
+    case "risk-new": return crud("risk", state.risks, RISK_FIELDS, "Risque", "R", 2, "", null, { category: "Crédit", basis: "Constat", probability: 3, gravity: 3 });
+    case "risk-edit": return crud("risk", state.risks, RISK_FIELDS, "Risque", "R", 2, "", find(state.risks));
     case "risk-del":
-      return confirmBox(`Supprimer définitivement le risque ${id} ?`, () => {
+      return confirmBox(`Supprimer le risque ${id} du registre ? Son historique de cotation sera aussi supprimé.`, () => {
         state.risks = state.risks.filter((r) => r.id !== id);
         state.history = state.history.filter((h) => h.risk_id !== id);
-        ui.selRisk = null;
-        audit("Suppression", "Risque", id);
-        save();
+        ui.sel = null;
+        record("Suppression", "Risque", id);
         toast(`Risque ${id} supprimé.`);
         render();
       });
-    case "ctrl-new":
-      return crudModal("ctrl", state.controls, CTRL_FIELDS, "Contrôle", "C", 2, "", null, { nature: "Préventif", status: "À concevoir" });
-    case "ctrl-edit":
-      return crudModal("ctrl", state.controls, CTRL_FIELDS, "Contrôle", "C", 2, "", find(state.controls));
+    case "ctrl-new": return crud("ctrl", state.controls, CTRL_FIELDS, "Contrôle", "C", 2, "", null, { nature: "Préventif", status: "Proposé" });
+    case "ctrl-edit": return crud("ctrl", state.controls, CTRL_FIELDS, "Contrôle", "C", 2, "", find(state.controls));
     case "ctrl-del":
       return confirmBox(`Supprimer la fiche ${id} ?`, () => {
         state.controls = state.controls.filter((r) => r.id !== id);
-        audit("Suppression", "Contrôle", id);
-        save();
+        record("Suppression", "Contrôle", id);
         render();
       });
-    case "act-new":
-      return crudModal("act", state.actions, ACT_FIELDS, "Action", "A", 2, "", null, { priority: "P2", status: "À faire", progress: 0 });
-    case "act-edit":
-      return crudModal("act", state.actions, ACT_FIELDS, "Action", "A", 2, "", find(state.actions));
-    case "rec-new":
-      return crudModal("rec", state.recommendations, REC_FIELDS, "Recommandation", "REC", 2, "", null, { status: "À lancer", basis: "Constat" });
-    case "rec-edit":
-      return crudModal("rec", state.recommendations, REC_FIELDS, "Recommandation", "REC", 2, "", find(state.recommendations));
-    case "anom-new":
-      return crudModal("anom", state.anomalies, ANOM_FIELDS, "Anomalie", "AN", 3, "-", null, { detected_on: today(), severity: "Significative", status: "Ouverte", escalation: 1 });
-    case "anom-edit":
-      return crudModal("anom", state.anomalies, ANOM_FIELDS, "Anomalie", "AN", 3, "-", find(state.anomalies));
-    case "suivi-tab":
-      ui.suiviTab = id;
+    case "act-new": return crud("act", state.actions, ACT_FIELDS, "Action", "A", 2, "", null, { priority: "P2", status: "À faire", progress: 0 });
+    case "act-edit": return crud("act", state.actions, ACT_FIELDS, "Action", "A", 2, "", find(state.actions));
+    case "rec-new": return crud("rec", state.recommendations, REC_FIELDS, "Recommandation", "REC", 2, "", null, { status: "À lancer", basis: "Constat" });
+    case "rec-edit": return crud("rec", state.recommendations, REC_FIELDS, "Recommandation", "REC", 2, "", find(state.recommendations));
+    case "anom-new": return crud("anom", state.anomalies, ANOM_FIELDS, "Anomalie", "AN", 3, "-", null, { detected_on: today(), severity: "Significative", status: "Ouverte", escalation: 1 });
+    case "anom-edit": return crud("anom", state.anomalies, ANOM_FIELDS, "Anomalie", "AN", 3, "-", find(state.anomalies));
+    case "dos-new": ui.dossier = null; ui.draft = EMPTY_D(); if (route() !== "dossiers") location.hash = "dossiers"; return render();
+    case "dos-open": {
+      const d = find(state.dossiers);
+      if (!d) return;
+      ui.dossier = d.id;
+      ui.draft = JSON.parse(JSON.stringify({ company: d.company, request: d.request, financials: d.financials, documents: d.documents, guarantees: d.guarantees, observations: d.observations }));
       return render();
-    case "coso-tab":
-      ui.cosoTab = Number(id);
-      return render();
-    case "coso-edit": {
-      const c = state.components.find((x) => x.id === Number(id))!;
-      openModal(`Modifier – ${c.name}`, [
-        { k: "findings", l: "Constats", t: "textarea" }, { k: "gaps", l: "Lacunes", t: "textarea" }, { k: "risk_ids", l: "Risques associés" }, { k: "owner", l: "Responsables" },
-        { k: "recommendations", l: "Recommandations", t: "textarea" }, { k: "indicators", l: "Indicateurs de suivi", t: "textarea" }, { k: "maturity", l: "Maturité (1 à 5)", t: "range", min: 1, max: 5 },
-      ], { ...c }, (v) => {
-        Object.assign(c, v, { maturity: Number(v.maturity) });
-        audit("Modification", "Composante COSO", String(c.id));
-        save();
-        toast("Composante mise à jour.");
-      });
-      return;
     }
-    case "dos-open":
-      ui.dossier = id;
-      ui.draft = null;
-      return render();
-    case "dos-new":
-      ui.dossier = null;
-      ui.draft = EMPTY_D();
-      return render();
+    case "dos-close": ui.draft = null; ui.dossier = null; return render();
     case "doc":
       ui.draft.documents[el.dataset.k!] = el.dataset.v;
       el.parentElement!.querySelectorAll("button").forEach((b) => (b.className = ""));
@@ -747,108 +777,109 @@ document.addEventListener("click", (e) => {
       document.getElementById("analysis")!.innerHTML = analysisPanel();
       return;
     case "dos-save": {
-      if (!String(ui.draft.company.name).trim()) return toast("La raison sociale est obligatoire.", true);
+      if (!String(ui.draft.company.name).trim()) return toast("Indiquez la raison sociale.", true);
       const a = analyzeDossier(ui.draft);
       if (ui.dossier) {
-        const d = state.dossiers.find((x) => x.id === ui.dossier)!;
-        Object.assign(d, JSON.parse(JSON.stringify(ui.draft)), { analysis: a, status: a.status });
-        audit("Modification + réanalyse", "Dossier TPE", d.id, a.status);
+        Object.assign(state.dossiers.find((x) => x.id === ui.dossier)!, JSON.parse(JSON.stringify(ui.draft)), { analysis: a, status: a.status, updated_at: today() });
+        record("Modification", "Dossier TPE", ui.dossier, a.status);
       } else {
-        const nid = nextId(state.dossiers.filter((x) => x.id.startsWith(`TPE-${new Date().getFullYear()}`)), `TPE-${new Date().getFullYear()}`, 3, "-");
-        state.dossiers.unshift({ id: nid, ...JSON.parse(JSON.stringify(ui.draft)), analysis: a, status: a.status, created_by: state.user!.name, created_at: new Date().toISOString(), is_demo: false });
-        ui.dossier = nid;
-        audit("Création + analyse", "Dossier TPE", nid, a.status);
+        const y = new Date().getFullYear();
+        ui.dossier = nextId(state.dossiers.filter((x) => x.id.startsWith(`TPE-${y}`)), `TPE-${y}`, 3, "-");
+        state.dossiers.unshift({ id: ui.dossier, ...JSON.parse(JSON.stringify(ui.draft)), analysis: a, status: a.status, created_by: session.me!.name, created_at: today() });
+        record("Création", "Dossier TPE", ui.dossier, a.status);
       }
-      save();
-      toast(`Dossier ${ui.dossier} enregistré : ${a.status}.`);
+      toast(`Dossier ${ui.dossier} enregistré.`);
       return render();
     }
     case "dos-del":
       return confirmBox(`Supprimer le dossier ${ui.dossier} ?`, () => {
         state.dossiers = state.dossiers.filter((x) => x.id !== ui.dossier);
-        audit("Suppression", "Dossier TPE", ui.dossier);
+        record("Suppression", "Dossier TPE", ui.dossier);
         ui.dossier = null;
         ui.draft = null;
-        save();
         render();
       });
     case "dos-anom": {
       const a = analyzeDossier(ui.draft);
-      const nature = a.completeness.missingDocs.length ? "Dossier incomplet – pièces manquantes : " + a.completeness.missingDocs.join(" ; ") : a.inconsistencies[0] ? "Incohérence : " + a.inconsistencies[0].message : "Anomalie relevée lors de l'analyse du dossier";
       const nid = nextId(state.anomalies, "AN", 3, "-");
-      state.anomalies.push({ id: nid, detected_on: today(), dossier_ref: ui.dossier, nature, severity: a.inconsistencies.some((i) => i.severity === "alerte") ? "Majeure" : "Significative", risk_id: "R01", control_id: "C01", owner: "Fonction risques", due_on: "", status: "Ouverte", escalation: 1, resolution: "", declared_by: state.user!.name, is_demo: false });
-      audit("Création", "Anomalie", nid, `Depuis ${ui.dossier}`);
-      save();
-      return toast(`Anomalie ${nid} inscrite au registre (C04).`);
+      state.anomalies.push({ id: nid, detected_on: today(), dossier_ref: ui.dossier, nature: a.completeness.missingDocs.length ? `Dossier incomplet : ${a.completeness.missingDocs.join(" ; ")}` : `Incohérence : ${a.inconsistencies[0]?.message ?? "relevée à l'analyse"}`, severity: a.inconsistencies.some((i) => i.severity === "alerte") ? "Majeure" : "Significative", risk_id: "R01", control_id: "C01", owner: "Fonction risques", due_on: "", status: "Ouverte", escalation: 1, resolution: "", declared_by: session.me!.name, created_at: today() });
+      record("Création", "Anomalie", nid, `Dossier ${ui.dossier}`);
+      return toast(`Anomalie ${nid} inscrite au registre.`);
     }
-    case "ask":
-      return ask(el.dataset.q!);
-    case "chat-reset":
-      ui.chat = [];
+    case "ask": return void ask(el.dataset.q!);
+    case "chat-reset": ui.chat = []; return render();
+    case "member-del": {
+      delete session.members[id];
+      saveRoles({ ...session.members }).then(() => toast("Membre retiré.")).catch(() => toast("Modification des rôles impossible.", true));
+      record("Retrait", "Membre", "");
       return render();
+    }
+    case "member-add": {
+      session.members[id] = "lecteur";
+      ui.names[id] = el.dataset.name;
+      saveRoles({ ...session.members }).then(() => toast(`${el.dataset.name} ajouté en lecture seule : choisissez son rôle.`)).catch(() => toast("Modification des rôles impossible.", true));
+      record("Ajout", "Membre", "");
+      return render();
+    }
     case "reset":
-      return confirmBox("Restaurer toutes les données de démonstration du rapport ? Vos modifications seront perdues.", () => {
-        resetDemo();
-        ui.draft = null;
-        ui.dossier = null;
-        toast("Données de démonstration restaurées.");
+      return confirmBox("Recharger le référentiel du rapport ? Toutes les saisies (dossiers, anomalies, mises à jour) seront effacées pour toute l'équipe.", () => {
+        resetBaseline();
+        record("Réinitialisation", "Données", "*");
+        toast("Référentiel du rapport rechargé.");
         render();
-      });
-    case "exp-risks":
-      return download("registre-risques.csv", csv(snapshot().risks, [["id", "Identifiant"], ["title", "Risque"], ["event", "Événement"], ["causes", "Causes"], ["consequences", "Conséquences"], ["category", "Catégorie"], ["probability", "Probabilité"], ["gravity", "Gravité"], ["score", "Score P×G"], ["level", "Criticité"], ["owner", "Responsable"], ["control_ids", "Contrôles"], ["coso_principles", "Principes COSO"], ["recommendation", "Recommandation"]]));
-    case "exp-controls":
-      return download("controles.csv", csv(state.controls, [["id", "Id"], ["name", "Contrôle"], ["nature", "Type"], ["objective", "Objectif"], ["risk_ids", "Risques"], ["procedure", "Procédure"], ["owner", "Responsable"], ["frequency", "Fréquence"], ["evidence", "Preuve"], ["indicator", "Indicateur"], ["anomaly_treatment", "Traitement des anomalies"], ["status", "Statut"]]));
-    case "exp-coso":
-      return download("coso-principes.csv", csv(state.principles, [["id", "Principe"], ["title", "Intitulé"], ["component_id", "Composante"], ["nature", "Nature"], ["assessment", "Appréciation"], ["diagnostic", "Diagnostic"], ["risk_ids", "Risques"]]));
-    case "exp-recos":
-      return download("recommandations.csv", csv(state.recommendations, [["id", "Id"], ["risk_id", "Risque"], ["coso_gap", "Lacune COSO"], ["action", "Action corrective"], ["owner", "Responsable"], ["indicator", "Indicateur de suivi"], ["status", "Statut"]]));
-    case "exp-actions":
-      return download("plan-action.csv", csv(state.actions, [["id", "Id"], ["priority", "Priorité"], ["title", "Action"], ["owner", "Responsable"], ["due", "Échéance"], ["deliverable", "Livrable"], ["risk_ids", "Risques"], ["status", "Statut"], ["progress", "Avancement %"]]));
-    case "exp-anoms":
-      return download("anomalies.csv", csv(state.anomalies, [["id", "Id"], ["detected_on", "Détectée le"], ["dossier_ref", "Dossier"], ["nature", "Nature"], ["severity", "Gravité"], ["risk_id", "Risque"], ["control_id", "Contrôle"], ["owner", "Responsable"], ["due_on", "Échéance"], ["status", "Statut"], ["escalation", "Escalade"]]));
-    case "exp-json":
-      return download("credit-horizon-sauvegarde.json", JSON.stringify({ ...state, user: null }, null, 1), "application/json");
-    case "exp-print":
-      return printSummary();
+      }, "Recharger");
+    case "exp-risks": return download("registre-risques.csv", csv(snapshot().risks, [["id", "Identifiant"], ["title", "Risque"], ["category", "Catégorie"], ["event", "Événement"], ["causes", "Causes"], ["consequences", "Conséquences"], ["probability", "Probabilité"], ["gravity", "Gravité"], ["score", "Score"], ["level", "Criticité"], ["owner", "Responsable"], ["control_ids", "Contrôles"], ["coso_principles", "COSO"], ["recommendation", "Recommandation"]]));
+    case "exp-controls": return download("controles.csv", csv(state.controls, [["id", "Id"], ["name", "Contrôle"], ["nature", "Type"], ["objective", "Objectif"], ["risk_ids", "Risques"], ["procedure", "Procédure"], ["owner", "Responsable"], ["frequency", "Fréquence"], ["evidence", "Preuve"], ["indicator", "Indicateur"], ["status", "Statut"], ["last_review", "Dernière revue"]]));
+    case "exp-coso": return download("coso.csv", csv(state.principles, [["id", "Principe"], ["title", "Intitulé"], ["component_id", "Composante"], ["nature", "Nature"], ["assessment", "Appréciation"], ["diagnostic", "Diagnostic"], ["risk_ids", "Risques"]]));
+    case "exp-actions": return download("plan-action.csv", csv(state.actions, [["id", "Id"], ["priority", "Priorité"], ["title", "Action"], ["owner", "Responsable"], ["due", "Échéance"], ["deliverable", "Livrable"], ["risk_ids", "Risques"], ["status", "Statut"], ["progress", "Avancement"]]));
+    case "exp-recos": return download("recommandations.csv", csv(state.recommendations, [["id", "Id"], ["risk_id", "Risque"], ["coso_gap", "Lacune COSO"], ["action", "Action"], ["owner", "Responsable"], ["indicator", "Indicateur"], ["status", "Statut"]]));
+    case "exp-anoms": return download("anomalies.csv", csv(state.anomalies, [["id", "Id"], ["detected_on", "Détectée le"], ["dossier_ref", "Dossier"], ["nature", "Nature"], ["severity", "Gravité"], ["risk_id", "Risque"], ["control_id", "Contrôle"], ["owner", "Responsable"], ["due_on", "Échéance"], ["status", "Statut"], ["escalation", "Escalade"]]));
+    case "exp-marts": return download("portefeuille-reference-secteurs.csv", csv(T.by_sector, [["sector", "Secteur"], ["loans", "Prêts"], ["approved_usd", "Montant approuvé (USD)"], ["resolved", "Prêts dénoués"], ["defaults", "Défauts"], ["default_rate", "Taux de défaut"], ["chargeoff_usd", "Pertes (USD)"], ["loss_rate", "Taux de perte"]]));
+    case "exp-json": return download("credit-horizon-sauvegarde.json", JSON.stringify(state, null, 1), "application/json");
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  const t = e.target as HTMLElement;
+  if (e.key === "Escape" && document.getElementById("modal")!.className) close();
+  if (e.key === "Enter" && !e.shiftKey && t.id === "askq") {
+    e.preventDefault();
+    ask((t as HTMLTextAreaElement).value);
+  }
+  if ((e.key === "Enter" || e.key === " ") && t.matches("tr.row")) {
+    e.preventDefault();
+    t.click();
   }
 });
 
 document.addEventListener("submit", (e) => {
   const f = e.target as HTMLFormElement;
   e.preventDefault();
-  if (f.id === "mform" && modalSubmit) {
+  if (f.id === "mform" && onSubmit) {
     const v: Row = Object.fromEntries(new FormData(f).entries());
-    const err = modalSubmit(v);
-    if (err) {
-      document.getElementById("merr")!.textContent = err;
-      return;
-    }
-    closeModal();
-    render();
-  } else if (f.id === "loginf") {
-    const id = (document.getElementById("lid") as HTMLInputElement).value.trim().toLowerCase();
-    const pw = (document.getElementById("lpw") as HTMLInputElement).value;
-    const acc = ACCOUNTS.find((a) => a.login === id && a.password === pw);
-    if (!acc) {
-      document.getElementById("lerr")!.textContent = "Identifiant ou mot de passe incorrect.";
-      return;
-    }
-    state.user = { role: acc.role, name: acc.name, login: acc.login };
-    audit("Connexion", "Session", acc.login);
-    save();
-    if (location.hash !== "#dashboard") location.hash = "dashboard";
+    const err = onSubmit(v);
+    if (err) return void (document.getElementById("merr")!.textContent = err);
+    close();
     render();
   } else if (f.id === "askf") {
-    const q = (document.getElementById("askq") as HTMLInputElement).value.trim();
-    if (q) ask(q);
+    ask((document.getElementById("askq") as HTMLTextAreaElement).value);
   }
 });
 
+let peopleT: any;
 document.addEventListener("input", (e) => {
   const t = e.target as HTMLInputElement;
   if (t.id === "q") {
     ui.filter = t.value;
     return applyFilter();
+  }
+  if (t.id === "people") {
+    clearTimeout(peopleT);
+    peopleT = setTimeout(async () => {
+      const res = (await searchPeople(t.value)).filter((p) => p.id !== session.me?.id && !session.members[p.id]);
+      document.getElementById("people-res")!.innerHTML = res.length ? `<ul class="people">${res.slice(0, 8).map((p) => `<li><span>${esc(p.name)}</span>${btn("Ajouter", "member-add", `data-id="${esc(p.id)}" data-name="${esc(p.name)}"`, "ghost sm")}</li>`).join("")}</ul>` : `<p class="small">Aucune personne trouvée. Partagez d'abord la plateforme depuis le menu Partager de claude.ai.</p>`;
+    }, 250);
+    return;
   }
   const path = t.dataset.d;
   if (path && ui.draft) {
@@ -861,65 +892,72 @@ document.addEventListener("input", (e) => {
 
 document.addEventListener("change", (e) => {
   const t = e.target as HTMLSelectElement;
+  if (t.id === "cat") {
+    ui.cat = t.value;
+    return render();
+  }
   if (t.dataset.d && ui.draft) {
     const [part, key] = t.dataset.d.split(".");
     ui.draft[part][key] = t.value;
-    if (key === "type" || key === "product") render();
-    else document.getElementById("analysis")!.innerHTML = analysisPanel();
-  } else if (t.dataset.actChange === "assess") {
+    return key === "type" || key === "product" ? render() : void (document.getElementById("analysis")!.innerHTML = analysisPanel());
+  }
+  if (t.dataset.ch === "assess") {
     const p = state.principles.find((x) => x.id === t.dataset.id)!;
     p.assessment = t.value;
-    audit("Modification", "Principe COSO", p.id, `Appréciation : ${t.value}`);
-    save();
-    toast(`Principe ${p.id} : ${t.value}.`);
-    render();
-  } else if (t.id === "imp") {
+    record("Appréciation", "Principe COSO", p.id, t.value);
+    toast(`${p.id} : ${t.value}.`);
+    return render();
+  }
+  if (t.dataset.ch === "role") {
+    session.members[t.dataset.id!] = t.value;
+    saveRoles({ ...session.members }).then(() => toast(`Rôle attribué : ${ROLES[t.value]}.`)).catch(() => toast("Modification des rôles impossible.", true));
+    record("Rôle", "Membre", "", ROLES[t.value]);
+    return;
+  }
+  if (t.id === "imp") {
     const file = (t as unknown as HTMLInputElement).files?.[0];
-    if (!file) return;
-    file.text().then((txt) => {
-      try {
-        const data = JSON.parse(txt);
-        if (!Array.isArray(data.risks)) throw new Error();
-        Object.assign(state, data, { user: state.user });
-        audit("Import", "Sauvegarde", file.name);
-        save();
+    file?.text().then((txt) => {
+      if (replaceState(txt)) {
+        record("Import", "Sauvegarde", file.name);
         toast("Sauvegarde importée.");
         render();
-      } catch {
-        toast("Fichier invalide : choisissez une sauvegarde JSON de la plateforme.", true);
-      }
+      } else toast("Ce fichier n'est pas une sauvegarde de la plateforme.", true);
     });
   }
 });
 
 window.addEventListener("hashchange", () => {
-  document.body.classList.remove("menu");
+  document.body.classList.remove("nav-open");
+  if (route() !== "dossiers") {
+    ui.draft = null;
+    ui.dossier = null;
+  }
   render();
   window.scrollTo(0, 0);
 });
 
-function printSummary() {
-  const s = snapshot(), k = computeKpis(s as any);
-  const w = window.open("", "_blank");
-  if (!w) return toast("Ouverture d'une nouvelle fenêtre impossible dans cet affichage.", true);
-  const top = [...s.risks].sort((a, b) => b.score - a.score).slice(0, 5);
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>Synthèse exécutive – Crédit Horizon</title><style>body{font:13px system-ui;margin:32px;color:#0f1f1a}h1{color:#063b2b}table{border-collapse:collapse;width:100%;margin:10px 0}th{background:#063b2b;color:#fff;text-align:left}td,th{border:1px solid #cbd5e1;padding:5px}</style>
-    <h1>CRÉDIT HORIZON – Synthèse exécutive</h1><p>Édité le ${new Date().toLocaleString("fr-FR")} · cas académique fictif EMSI</p>
-    <p>${k.total} risques (${k.critical} critiques, ${k.high} élevés), score moyen ${k.avgScore.toFixed(1)}. ${k.operationalControls}/${k.totalControls} contrôles opérationnels ; ${k.coveredRisks}/${k.total} risques couverts. ${k.deficientPrinciples}/17 principes COSO déficients. Plan d'action : ${k.actionProgress} %. Anomalies ouvertes : ${k.openAnomalies} (${k.overdueAnomalies} en retard).</p>
-    <h2>Top 5 des risques</h2><table><tr><th>Id</th><th>Risque</th><th>P</th><th>G</th><th>Score</th><th>Niveau</th></tr>${top.map((r) => `<tr><td>${r.id}</td><td>${esc(r.title)}</td><td>${r.probability}</td><td>${r.gravity}</td><td>${r.score}</td><td>${r.level}</td></tr>`).join("")}</table>
-    <h2>Recommandations</h2><table><tr><th>Risque</th><th>Lacune COSO</th><th>Action</th><th>Responsable</th><th>Indicateur</th></tr>${s.recommendations.map((r) => `<tr><td>${r.risk_id}</td><td>${esc(r.coso_gap)}</td><td>${esc(r.action)}</td><td>${esc(r.owner)}</td><td>${esc(r.indicator)}</td></tr>`).join("")}</table><script>print()<\/script>`);
-  w.document.close();
-}
-
-render();
-// Publication claude.ai : reprise des données enregistrées dans l'espace privé + détection de l'IA.
-attachCloud().then((json) => {
-  if (json && loadRemote(json)) render();
-  else if (cloudReady()) save();
-});
-capability("sample").then((smp) => {
-  if (smp) {
-    ui.ai = "claude";
-    if (route() === "assistant" && state.user) render();
+/* ================================================================ démarrage */
+(async function boot() {
+  render();
+  session.me = await identity();
+  resolveRole();
+  setPersist((json) => queueSave(json, (msg) => {
+    session.storeError = msg;
+    render();
+  }));
+  if (session.me.mode === "claude") {
+    await connectStore(
+      (json) => {
+        if (replaceState(json) && session.ready && !document.getElementById("modal")!.className && !ui.draft) render();
+      },
+      (members) => {
+        session.members = members;
+        resolveRole();
+        if (session.ready) render();
+      },
+    );
+    capability("sample").then((s) => (ui.ai = !!s));
   }
-});
+  session.ready = true;
+  render();
+})();

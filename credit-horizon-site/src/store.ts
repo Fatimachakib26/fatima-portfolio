@@ -1,13 +1,14 @@
-// Données et persistance de la version « site autonome » (stockage local du navigateur).
+// Données de la plateforme. Point de départ : le contenu du rapport EMSI (aucune donnée inventée).
 import seed from "./seed.json";
-import { analyzeDossier } from "./logic/dossier-analysis";
 import { levelFromScore } from "./logic/scoring";
-import { queueCloudSave } from "./platform";
 
-const KEY = "credit-horizon-site-v1";
+const KEY = "credit-horizon-v2";
 export type Row = Record<string, any>;
+export const BASELINE_DATE = "2026-11-01";
+export const ORIGIN = "Rapport EMSI · nov. 2026";
 
 export interface State {
+  version: 2;
   risks: Row[];
   history: Row[];
   controls: Row[];
@@ -18,88 +19,80 @@ export interface State {
   anomalies: Row[];
   dossiers: Row[];
   audit: Row[];
-  user: Row | null;
 }
 
-const now = () => new Date().toISOString();
+export const SEED: any = seed;
 
-function seedState(user: Row | null = null): State {
+export function baseline(): State {
   const s: any = seed;
-  const history: Row[] = [];
-  for (const r of s.risks)
-    (s.history[r.id] || []).forEach(([p, g]: number[], i: number) =>
-      history.push({ risk_id: r.id, probability: p, gravity: g, score: p * g, recorded_at: `${s.history_months[i]}-01T09:00:00Z` }),
-    );
   return {
-    risks: s.risks.map((r: Row) => ({ ...r, is_demo: true })),
-    history,
-    controls: s.controls.map((c: Row) => ({ ...c, last_review: "", is_demo: true })),
-    components: s.coso_components.map((c: Row) => ({ ...c, is_demo: true })),
-    principles: s.coso_principles.map((p: Row) => ({ ...p, is_demo: true })),
-    recommendations: s.recommendations.map((r: Row) => ({ ...r, is_demo: true })),
-    actions: s.actions.map((a: Row) => ({ ...a, is_demo: true })),
-    anomalies: s.anomalies.map((a: Row) => ({ ...a, declared_by: "Données de démonstration", is_demo: true })),
-    dossiers: s.dossiers.map((d: Row) => {
-      const analysis = analyzeDossier(d as any);
-      return { ...d, analysis, status: analysis.status, created_by: "Données de démonstration", created_at: now(), is_demo: true };
-    }),
+    version: 2,
+    risks: s.risks.map((r: Row) => ({ ...r, origin: ORIGIN, updated_at: BASELINE_DATE })),
+    history: s.risks.map((r: Row) => ({ risk_id: r.id, probability: r.probability, gravity: r.gravity, score: r.probability * r.gravity, recorded_at: BASELINE_DATE })),
+    // Le rapport PROPOSE ces contrôles : aucun n'est encore déployé.
+    controls: s.controls.map((c: Row) => ({ ...c, status: "Proposé", last_review: "", origin: ORIGIN })),
+    components: s.coso_components.map((c: Row) => ({ ...c, origin: ORIGIN })),
+    principles: s.coso_principles.map((p: Row) => ({ ...p, origin: ORIGIN })),
+    recommendations: s.recommendations.map((r: Row) => ({ ...r, status: "À lancer", origin: ORIGIN })),
+    actions: s.actions.map((a: Row) => ({ ...a, status: "À faire", progress: 0, origin: ORIGIN })),
+    anomalies: [],
+    dossiers: [],
     audit: [],
-    user,
   };
 }
 
-function load(): State {
+function loadLocal(): State {
   try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const p = JSON.parse(raw);
-      if (p && Array.isArray(p.risks)) return p;
-    }
+    const p = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (p && p.version === 2 && Array.isArray(p.risks)) return p;
   } catch {
-    /* stockage indisponible : données en mémoire */
+    /* stockage indisponible */
   }
-  return seedState();
+  return baseline();
 }
 
-export const state: State = load();
+export const state: State = loadLocal();
+
+let persist: (json: string) => void = () => {};
+export function setPersist(fn: (json: string) => void) {
+  persist = fn;
+}
 
 export function save() {
   let json = JSON.stringify(state);
-  if (json.length > 230_000) {
-    state.audit = state.audit.slice(0, 50); // limite d'un document de stockage
+  if (json.length > 220_000) {
+    state.audit = state.audit.slice(0, 60);
     json = JSON.stringify(state);
   }
   try {
     localStorage.setItem(KEY, json);
   } catch {
-    /* mode privé ou quota : les données restent en mémoire pour la session */
+    /* mode privé */
   }
-  queueCloudSave(json);
+  persist(json);
 }
 
-/** Remplace l'état par la copie enregistrée dans l'espace privé de l'utilisateur. */
-export function loadRemote(json: string): boolean {
+export function replaceState(json: string): boolean {
   try {
     const p = JSON.parse(json);
-    if (p && Array.isArray(p.risks)) {
+    if (p && p.version === 2 && Array.isArray(p.risks)) {
       Object.assign(state, p);
-      try { localStorage.setItem(KEY, json); } catch {}
+      try {
+        localStorage.setItem(KEY, json);
+      } catch {}
       return true;
     }
   } catch {}
   return false;
 }
 
-export function resetDemo() {
-  const fresh = seedState(state.user);
-  Object.assign(state, fresh);
-  audit("Réinitialisation", "Données de démonstration", "*");
-  save();
+export function resetBaseline() {
+  Object.assign(state, baseline());
 }
 
-export function audit(action: string, entity: string, id: string, details = "") {
-  state.audit.unshift({ at: now(), user: state.user?.name ?? "système", role: state.user?.role ?? "", action, entity, id, details: details.slice(0, 300) });
-  state.audit = state.audit.slice(0, 300);
+export function audit(who: string, action: string, entity: string, id: string, details = "") {
+  state.audit.unshift({ at: new Date().toISOString(), who, action, entity, id, details: details.slice(0, 240) });
+  state.audit = state.audit.slice(0, 250);
 }
 
 export function nextId(rows: Row[], prefix: string, pad: number, sep = "") {
@@ -114,10 +107,16 @@ export function nextId(rows: Row[], prefix: string, pad: number, sep = "") {
 
 export const splitIds = (v: unknown) => String(v ?? "").split(/[,;\s]+/).map((x) => x.trim()).filter(Boolean);
 
-/** Vue consolidée calculée (score, niveau) utilisée par les indicateurs et l'assistant. */
+const ASSESS_SCORE: Record<string, number> = { Déficient: 1, Partiel: 2.5, Satisfaisant: 4.5 };
+/** Maturité d'une composante COSO calculée à partir de l'appréciation de ses principes (1 à 5). */
+export function maturity(componentId: number): number | null {
+  const v = state.principles.filter((p) => p.component_id === componentId && ASSESS_SCORE[p.assessment]).map((p) => ASSESS_SCORE[p.assessment]);
+  return v.length ? Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10 : null;
+}
+
 export function snapshot() {
-  const risks = [...state.risks]
-    .map((r) => {
+  const risks: Row[] = state.risks
+    .map((r): Row => {
       const score = Number(r.probability) * Number(r.gravity);
       return { ...r, score, level: levelFromScore(score) };
     })
@@ -125,15 +124,13 @@ export function snapshot() {
   return {
     risks,
     controls: state.controls,
-    components: state.components,
+    components: state.components.map((c) => ({ ...c, maturity: maturity(c.id) ?? 0 })),
     principles: state.principles,
     recommendations: state.recommendations,
     actions: [...state.actions].sort((a, b) => (a.priority + a.id).localeCompare(b.priority + b.id)),
     anomalies: [...state.anomalies].sort((a, b) => (b.detected_on + b.id).localeCompare(a.detected_on + a.id)),
     dossiers: state.dossiers,
     history: state.history,
-    generatedAt: now(),
+    generatedAt: new Date().toISOString(),
   };
 }
-
-export const SEED: any = seed;

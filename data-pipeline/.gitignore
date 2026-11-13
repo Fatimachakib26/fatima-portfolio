@@ -1,0 +1,7 @@
+# Données volumineuses : jamais versionnées. Elles se régénèrent avec `python run.py`
+# et leur intégrité se vérifie avec l'empreinte SHA-256 de data/raw/MANIFEST.json.
+data/raw/*.csv
+data/raw/*.xlsx
+data/clean/
+__pycache__/
+.venv/

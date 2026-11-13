@@ -1,0 +1,30 @@
+{
+  "source": {
+    "publisher": "U.S. Small Business Administration (SBA) – Office of the Chief Data Officer",
+    "dataset": "7(a) & 504 FOIA",
+    "dataset_identifier": "SBA-OHA-2016-08-001",
+    "landing_page": "https://data.sba.gov/dataset/7a-504-foia",
+    "license": "U.S. Government Works (domaine public)",
+    "update_frequency": "Trimestrielle (environ un mois après la fin du trimestre)"
+  },
+  "files": {
+    "loans": {
+      "name": "FOIA_7a_FY2010_FY2019_asof_260930.csv",
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2010_FY2019_asof_260930.csv",
+      "description": "Prêts garantis 7(a) approuvés entre les exercices fiscaux 2010 et 2019, situation au 30/09/2026",
+      "bytes": 255300948,
+      "sha256": "39aa32b71fb5dbb4bfb178c9b3d597c92bb6903622027c2f8360d13e57d0abb2",
+      "downloaded_at": "2026-11-13T15:25:02+00:00",
+      "rows": 545751,
+      "columns": 42
+    },
+    "dictionary": {
+      "name": "7a_504_foia_data_dictionary.xlsx",
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+      "description": "Dictionnaire officiel des champs",
+      "bytes": 24529,
+      "sha256": "777ba97a6f92e325f79905610816cb59d41f1971cd964c54dc30ef02730a3941",
+      "downloaded_at": "2026-11-13T15:24:53+00:00"
+    }
+  }
+}
