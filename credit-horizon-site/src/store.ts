@@ -1,14 +1,15 @@
 // Données de la plateforme. Point de départ : le contenu du rapport EMSI (aucune donnée inventée).
 import seed from "./seed.json";
 import { levelFromScore } from "./logic/scoring";
+import { analyzeDossier } from "./logic/dossier-analysis";
 
-const KEY = "credit-horizon-v2";
+const KEY = "credit-horizon-v3";
 export type Row = Record<string, any>;
 export const BASELINE_DATE = "2026-11-01";
 export const ORIGIN = "Rapport EMSI · nov. 2026";
 
 export interface State {
-  version: 2;
+  version: 3;
   risks: Row[];
   history: Row[];
   controls: Row[];
@@ -23,20 +24,30 @@ export interface State {
 
 export const SEED: any = seed;
 
+// Jeu de démonstration : contenu du rapport + données fictives de la première version
+// (anomalies, dossiers TPE, avancement, statuts des contrôles, historique des cotations).
 export function baseline(): State {
   const s: any = seed;
+  const now = new Date().toISOString().slice(0, 10);
+  const history: Row[] = [];
+  for (const r of s.risks)
+    (s.history[r.id] || []).forEach(([p, g]: number[], i: number) =>
+      history.push({ risk_id: r.id, probability: p, gravity: g, score: p * g, recorded_at: `${s.history_months[i]}-01` }),
+    );
   return {
-    version: 2,
-    risks: s.risks.map((r: Row) => ({ ...r, origin: ORIGIN, updated_at: BASELINE_DATE })),
-    history: s.risks.map((r: Row) => ({ risk_id: r.id, probability: r.probability, gravity: r.gravity, score: r.probability * r.gravity, recorded_at: BASELINE_DATE })),
-    // Le rapport PROPOSE ces contrôles : aucun n'est encore déployé.
-    controls: s.controls.map((c: Row) => ({ ...c, status: "Proposé", last_review: "", origin: ORIGIN })),
-    components: s.coso_components.map((c: Row) => ({ ...c, origin: ORIGIN })),
-    principles: s.coso_principles.map((p: Row) => ({ ...p, origin: ORIGIN })),
-    recommendations: s.recommendations.map((r: Row) => ({ ...r, status: "À lancer", origin: ORIGIN })),
-    actions: s.actions.map((a: Row) => ({ ...a, status: "À faire", progress: 0, origin: ORIGIN })),
-    anomalies: [],
-    dossiers: [],
+    version: 3,
+    risks: s.risks.map((r: Row) => ({ ...r, is_demo: true, updated_at: BASELINE_DATE })),
+    history,
+    controls: s.controls.map((c: Row) => ({ ...c, last_review: "", is_demo: true })),
+    components: s.coso_components.map((c: Row) => ({ ...c, is_demo: true })),
+    principles: s.coso_principles.map((p: Row) => ({ ...p, is_demo: true })),
+    recommendations: s.recommendations.map((r: Row) => ({ ...r, is_demo: true })),
+    actions: s.actions.map((a: Row) => ({ ...a, is_demo: true })),
+    anomalies: s.anomalies.map((a: Row) => ({ ...a, declared_by: "Données de démonstration", is_demo: true })),
+    dossiers: s.dossiers.map((d: Row) => {
+      const analysis = analyzeDossier(d as any);
+      return { ...d, analysis, status: analysis.status, created_by: "Données de démonstration", created_at: now, is_demo: true };
+    }),
     audit: [],
   };
 }
@@ -44,7 +55,7 @@ export function baseline(): State {
 function loadLocal(): State {
   try {
     const p = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (p && p.version === 2 && Array.isArray(p.risks)) return p;
+    if (p && p.version === 3 && Array.isArray(p.risks)) return p;
   } catch {
     /* stockage indisponible */
   }
@@ -75,7 +86,7 @@ export function save() {
 export function replaceState(json: string): boolean {
   try {
     const p = JSON.parse(json);
-    if (p && p.version === 2 && Array.isArray(p.risks)) {
+    if (p && p.version === 3 && Array.isArray(p.risks)) {
       Object.assign(state, p);
       try {
         localStorage.setItem(KEY, json);

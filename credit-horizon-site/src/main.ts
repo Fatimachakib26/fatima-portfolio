@@ -580,7 +580,7 @@ function pAdmin() {
   } else {
     body = panel("Exports", `<div class="exports">${[["exp-risks", "Registre des risques", "CSV"], ["exp-controls", "Fiches de contrôle", "CSV"], ["exp-coso", "Diagnostic COSO", "CSV"], ["exp-actions", "Plan d'action", "CSV"], ["exp-recos", "Recommandations", "CSV"], ["exp-anoms", "Anomalies", "CSV"], ["exp-marts", "Portefeuille de référence", "CSV"], ["exp-json", "Sauvegarde complète", "JSON"]]
       .map(([a, l, f]) => `<button class="exp" data-act="${a}"><b>${l}</b><span>${f}</span></button>`).join("")}</div>`) +
-      (can("team.manage") ? panel("Restauration", `<p class="small">Importer une sauvegarde remplace toutes les données de l'équipe. Revenir au référentiel recharge le contenu du rapport et efface les saisies.</p><div class="dlg-a left"><label class="btn ghost file">Importer une sauvegarde<input type="file" id="imp" accept="application/json" hidden></label>${btn("Revenir au référentiel du rapport", "reset", "", "ghost danger-t")}</div>`) : "");
+      (can("team.manage") ? panel("Restauration", `<p class="small">Importer une sauvegarde remplace toutes les données de l'équipe. Restaurer recharge les données de démonstration et efface les saisies.</p><div class="dlg-a left"><label class="btn ghost file">Importer une sauvegarde<input type="file" id="imp" accept="application/json" hidden></label>${btn("Restaurer les données de démonstration", "reset", "", "ghost danger-t")}</div>`) : "");
   }
   const items: [string, string][] = [];
   if (can("team.manage")) items.push(["team", "Équipe et rôles"]);
@@ -598,10 +598,36 @@ const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pP
 const MARK = `<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9"/><path d="M8 27c4-8.5 8-12.5 12-12.5S28 18.5 32 27" fill="none" stroke-width="2.6" stroke-linecap="round"/><path d="M7 31h26" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 const route = () => (PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "overview");
 
+const TREE: [string, [string, string][]][] = [
+  ["Pilotage", [["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"]]],
+  ["Risques", [["risks", "Registre des risques"], ["dossiers", "Dossiers TPE"]]],
+  ["Contrôle interne", [["controls", "Contrôles et COSO"], ["framework", "Référentiel"]]],
+  ["Suivi", [["actions", "Plan d'action"]]],
+  ["Outils", [["advisor", "Risk Advisor"], ["admin", "Administration"]]],
+];
+type MenuItem = [string, string, string?] | null; // [libellé, action ou #page, raccourci]
+function menus(): [string, MenuItem[]][] {
+  return [
+    ["Fichier", [
+      ["Exporter le registre des risques (CSV)", "exp-risks"], ["Exporter le plan d'action (CSV)", "exp-actions"], ["Exporter les anomalies (CSV)", "exp-anoms"], null,
+      ["Sauvegarde complète (JSON)", "exp-json"], ...(can("team.manage") ? [["Restaurer les données de démonstration", "reset"] as MenuItem] : []),
+    ]],
+    ["Affichage", NAV.map(([k, l], i) => [l, `#${k}`, `Alt+${i + 1}`] as MenuItem)],
+    ["Risques", [
+      ...(can("risks.write") ? [["Nouveau risque…", "risk-new"] as MenuItem] : []), ["Registre", "view:table"], ["Matrice probabilité × gravité", "view:matrix"], null,
+      ...(can("dossiers.write") ? [["Nouveau dossier TPE…", "dos-new"] as MenuItem] : []), ["Liste des dossiers", "#dossiers"],
+    ]],
+    ["Contrôle", [["Fiches de contrôle", "goto:controls:fiches"], ["Diagnostic COSO 2013", "goto:controls:coso"], null, ["Charte d'appétence", "goto:framework:charte"], ["Matrice RACI", "goto:framework:raci"]]],
+    ["Suivi", [["Plan d'action", "goto:actions:plan"], ["Recommandations", "goto:actions:recos"], ["Anomalies", "goto:actions:anoms"], ...(can("anom.create") ? [null, ["Déclarer une anomalie…", "anom-new"] as MenuItem] : [])]],
+    ["Outils", [["Risk Advisor", "#advisor"], ["Portefeuille de référence", "#portfolio"], ["Administration", "#admin"]]],
+    ["Aide", [["Raccourcis clavier", "help-keys"], ["À propos de Crédit Horizon", "help-about"]]],
+  ];
+}
+
 function render() {
   const app = document.getElementById("app")!;
   if (!session.ready) {
-    app.innerHTML = `<div class="boot">${MARK}<p>Ouverture de votre espace…</p></div>`;
+    app.innerHTML = `<div class="boot">${MARK}<p>Démarrage de Crédit Horizon…</p></div>`;
     return;
   }
   const cur = route();
@@ -609,17 +635,29 @@ function render() {
     actions: state.anomalies.filter((a) => a.status !== "Clôturée" && a.due_on && a.due_on < today()).length,
     dossiers: state.dossiers.filter((d) => d.analysis?.blocking).length,
   };
-  app.innerHTML = `<aside class="side" id="side"><div class="brand">${MARK}<div><b>Crédit Horizon</b><span>Risk Intelligence</span></div></div>
-    <nav aria-label="Navigation principale">${NAV.map(([k, l]) => `<a href="#${k}" class="${k === cur ? "on" : ""}" ${k === cur ? 'aria-current="page"' : ""}>${icon(k)}<span>${l}</span>${badge[k] ? `<em>${badge[k]}</em>` : ""}</a>`).join("")}</nav>
-    <div class="me"><div class="av">${esc((session.me?.name || "?").split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase())}</div><div><b>${esc(session.me?.name)}</b><span>${ROLES[session.role]}</span></div></div></aside>
-    <div class="main"><div class="topbar"><button class="icon-btn menu" data-act="menu" aria-label="Ouvrir le menu">${icon("menu")}</button><span class="crumb">${NAV.find((n) => n[0] === cur)![1]}</span>
-      <span class="sync ${session.me?.mode === "local" ? "" : sharedStore() ? "on" : ""}">${session.me?.mode === "local" ? "Copie locale · données sur cet appareil" : sharedStore() ? "Données partagées avec l'équipe" : "Données sur cet appareil"}</span></div>
-      <main id="content" tabindex="-1">${session.storeError ? note(esc(session.storeError), "bad") : ""}${session.role === "lecteur" && session.me?.mode === "claude" ? note(`${icon("lock")} Vous consultez la plateforme en lecture. L'administrateur peut vous attribuer un rôle.`, "lock") : ""}${PAGES[cur]()}</main>
-      <footer>Crédit Horizon Risk Intelligence · projet EMSI de Fatima Zahrae Chakib et Inass Mouichou · outil d'aide à la décision, sans décision automatique d'octroi</footer></div>`;
+  const label = NAV.find((n) => n[0] === cur)![1];
+  const syncTxt = session.me?.mode === "local" ? "Copie locale" : sharedStore() ? "Synchronisé avec l'équipe" : "Hors ligne";
+  app.innerHTML = `<div class="win">
+    <header class="titlebar"><button class="tb-menu" data-act="menu" aria-label="Ouvrir le navigateur">${icon("menu")}</button>${MARK}<b>Crédit Horizon</b><span class="tb-sub">Risk Intelligence — ${label}</span>
+      <span class="tb-user"><span class="av">${esc((session.me?.name || "?").split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase())}</span>${esc(session.me?.name)} · ${ROLES[session.role]}</span></header>
+    <nav class="menubar" aria-label="Menus">${menus().map(([m, items]) => `<details class="mnu"><summary>${m}</summary><div class="mnu-l" role="menu">${items.map((it) => it === null ? `<hr>` :
+      `<button role="menuitem" data-act="menu-go" data-go="${it[1]}"><span>${it[0]}</span>${it[2] ? `<kbd>${it[2]}</kbd>` : ""}</button>`).join("")}</div></details>`).join("")}</nav>
+    <div class="body">
+      <aside class="side" id="side" aria-label="Navigateur">${TREE.map(([g, items]) => `<div class="tg"><div class="tg-h">${g}</div>${items.map(([k, l]) => `<a href="#${k}" class="${k === cur ? "on" : ""}" ${k === cur ? 'aria-current="page"' : ""}>${icon(k)}<span>${l}</span>${badge[k] ? `<em>${badge[k]}</em>` : ""}</a>`).join("")}</div>`).join("")}
+        <div class="side-foot">Projet EMSI · Génie financier<br>F. Z. Chakib · I. Mouichou</div></aside>
+      <main id="content" tabindex="-1">${session.storeError ? note(esc(session.storeError), "bad") : ""}${session.role === "lecteur" && session.me?.mode === "claude" ? note(`${icon("lock")} Lecture seule : l'administrateur peut vous attribuer un rôle.`, "lock") : ""}${PAGES[cur]()}</main>
+    </div>
+    <footer class="statusbar"><span class="sb-ok">Prêt</span><span>${state.risks.length} risques · ${state.controls.length} contrôles · ${state.dossiers.length} dossiers · ${state.anomalies.filter((a) => a.status !== "Clôturée").length} anomalies ouvertes</span>
+      <span class="sb-demo">Données de démonstration</span><span class="sb-r">${ROLES[session.role]}</span><span class="sb-sync ${sharedStore() ? "on" : ""}">${syncTxt}</span><span>${new Date().toLocaleDateString("fr-FR")}</span></footer></div>`;
   if (cur === "risks") applyFilter();
   const c = document.getElementById("chat");
   if (c) c.scrollTop = c.scrollHeight;
   if (cur === "admin" && tab("admin", "team") === "team" && session.me?.mode === "claude") loadNames();
+}
+
+function infoBox(title: string, html: string) {
+  document.getElementById("modal")!.innerHTML = `<div class="scrim" data-act="close"></div><div class="dlg small" role="dialog" aria-modal="true"><div class="dlg-h"><h3>${title}</h3><button class="icon-btn" data-act="close" aria-label="Fermer">${icon("close")}</button></div>${html}<div class="dlg-a"><button class="btn primary" data-act="close">Fermer</button></div></div>`;
+  document.getElementById("modal")!.className = "open";
 }
 
 async function loadNames() {
@@ -723,6 +761,7 @@ function crud(kind: string, rows: Row[], fields: Field[], label: string, prefix:
 
 /* ================================================================ événements */
 document.addEventListener("click", (e) => {
+  if (!(e.target as HTMLElement).closest("details.mnu")) document.querySelectorAll("details.mnu[open]").forEach((d) => d.removeAttribute("open"));
   const el = (e.target as HTMLElement).closest<HTMLElement>("[data-act]");
   if (!el) {
     if (document.body.classList.contains("nav-open") && !(e.target as HTMLElement).closest("#side")) document.body.classList.remove("nav-open");
@@ -732,6 +771,23 @@ document.addEventListener("click", (e) => {
   const find = (rows: Row[]) => rows.find((r) => String(r.id) === id) || null;
   switch (act) {
     case "menu": return void document.body.classList.toggle("nav-open");
+    case "menu-go": {
+      document.querySelectorAll("details.mnu[open]").forEach((d) => d.removeAttribute("open"));
+      const go = el.dataset.go!;
+      if (go.startsWith("#")) { location.hash = go.slice(1); return; }
+      if (go.startsWith("view:")) { ui.view = go.slice(5); if (route() !== "risks") location.hash = "risks"; return render(); }
+      if (go.startsWith("goto:")) { const [, pg, tb] = go.split(":"); ui.tab[pg] = tb; if (route() !== pg) location.hash = pg; return render(); }
+      const fake = document.createElement("button");
+      fake.dataset.act = go;
+      document.body.appendChild(fake);
+      fake.click();
+      fake.remove();
+      return;
+    }
+    case "help-keys":
+      return infoBox("Raccourcis clavier", `<table><tbody>${NAV.map(([, l], i) => `<tr><td><kbd>Alt+${i + 1}</kbd></td><td>${l}</td></tr>`).join("")}<tr><td><kbd>Échap</kbd></td><td>Fermer une fenêtre ou un menu</td></tr><tr><td><kbd>Entrée</kbd></td><td>Ouvrir la fiche du risque sélectionné</td></tr></tbody></table>`);
+    case "help-about":
+      return infoBox("À propos", `<p><b>Crédit Horizon · Risk Intelligence</b><br>Gestion des risques financiers d'un organisme de financement des TPE : registre P × G, dossiers, contrôle interne COSO 2013, gouvernance, plan d'action et portefeuille de référence SBA.</p><p class="small">Projet EMSI Tanger · Génie financier, 5<sup>e</sup> année · Fatima Zahrae Chakib et Inass Mouichou. Outil d'aide à la décision, sans décision automatique d'octroi. Les anomalies, dossiers et avancements sont des données de démonstration.</p>`);
     case "close": return close();
     case "tab": ui.tab[el.dataset.page!] = id; return render();
     case "view": ui.view = id; if (route() !== "risks") location.hash = "risks"; return render();
@@ -822,12 +878,12 @@ document.addEventListener("click", (e) => {
       return render();
     }
     case "reset":
-      return confirmBox("Recharger le référentiel du rapport ? Toutes les saisies (dossiers, anomalies, mises à jour) seront effacées pour toute l'équipe.", () => {
+      return confirmBox("Restaurer les données de démonstration ? Toutes les saisies seront remplacées, pour toute l'équipe.", () => {
         resetBaseline();
         record("Réinitialisation", "Données", "*");
-        toast("Référentiel du rapport rechargé.");
+        toast("Données de démonstration restaurées.");
         render();
-      }, "Recharger");
+      }, "Restaurer");
     case "exp-risks": return download("registre-risques.csv", csv(snapshot().risks, [["id", "Identifiant"], ["title", "Risque"], ["category", "Catégorie"], ["event", "Événement"], ["causes", "Causes"], ["consequences", "Conséquences"], ["probability", "Probabilité"], ["gravity", "Gravité"], ["score", "Score"], ["level", "Criticité"], ["owner", "Responsable"], ["control_ids", "Contrôles"], ["coso_principles", "COSO"], ["recommendation", "Recommandation"]]));
     case "exp-controls": return download("controles.csv", csv(state.controls, [["id", "Id"], ["name", "Contrôle"], ["nature", "Type"], ["objective", "Objectif"], ["risk_ids", "Risques"], ["procedure", "Procédure"], ["owner", "Responsable"], ["frequency", "Fréquence"], ["evidence", "Preuve"], ["indicator", "Indicateur"], ["status", "Statut"], ["last_review", "Dernière revue"]]));
     case "exp-coso": return download("coso.csv", csv(state.principles, [["id", "Principe"], ["title", "Intitulé"], ["component_id", "Composante"], ["nature", "Nature"], ["assessment", "Appréciation"], ["diagnostic", "Diagnostic"], ["risk_ids", "Risques"]]));
@@ -841,7 +897,14 @@ document.addEventListener("click", (e) => {
 
 document.addEventListener("keydown", (e) => {
   const t = e.target as HTMLElement;
-  if (e.key === "Escape" && document.getElementById("modal")!.className) close();
+  if (e.key === "Escape") {
+    if (document.getElementById("modal")!.className) close();
+    document.querySelectorAll("details.mnu[open]").forEach((d) => d.removeAttribute("open"));
+  }
+  if (e.altKey && /^[1-9]$/.test(e.key) && NAV[+e.key - 1]) {
+    e.preventDefault();
+    location.hash = NAV[+e.key - 1][0];
+  }
   if (e.key === "Enter" && !e.shiftKey && t.id === "askq") {
     e.preventDefault();
     ask((t as HTMLTextAreaElement).value);
@@ -925,6 +988,11 @@ document.addEventListener("change", (e) => {
     });
   }
 });
+
+document.addEventListener("toggle", (e) => {
+  const d = e.target as HTMLDetailsElement;
+  if (d.classList?.contains("mnu") && d.open) document.querySelectorAll("details.mnu[open]").forEach((x) => x !== d && x.removeAttribute("open"));
+}, true);
 
 window.addEventListener("hashchange", () => {
   document.body.classList.remove("nav-open");
