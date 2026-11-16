@@ -113,7 +113,7 @@ const tab = (page: string, def: string) => ui.tab[page] ?? def;
 
 /* ================================================================ briques d'interface */
 const head = (title: string, lead: string, actions = "", eyebrow = "") =>
-  `<header class="ph"><div>${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ""}<h1>${title}</h1><p class="lead">${lead}</p></div>${actions ? `<div class="ph-a">${actions}</div>` : ""}</header>`;
+  `<header class="ph"><div class="ph-t"><div class="ph-i">${icon(route())}</div><div>${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ""}<h1>${title}</h1><p class="lead">${lead}</p></div></div>${actions ? `<div class="ph-a">${actions}</div>` : ""}</header>`;
 const panel = (title: string, body: string, opts: { aside?: string; cls?: string; sub?: string } = {}) =>
   `<section class="panel ${opts.cls ?? ""}">${title || opts.aside ? `<div class="panel-h"><div>${title ? `<h2>${title}</h2>` : ""}${opts.sub ? `<p>${opts.sub}</p>` : ""}</div>${opts.aside ?? ""}</div>` : ""}${body}</section>`;
 const metric = (label: string, value: string, note = "", tone = "") => `<div class="metric ${tone}"><span>${label}</span><strong>${value}</strong>${note ? `<small>${note}</small>` : ""}</div>`;
@@ -131,6 +131,49 @@ const meter = (v: number, max = 1, tone = "") => `<span class="meter ${tone}"><i
 const readonly = (t: string) => note(`${icon("lock")} ${t}`, "lock");
 
 /* ---------------------------------------------------------------- graphiques */
+const CAT_COLORS: Record<string, string> = { Crédit: "#2a78d6", Liquidité: "#ea6a35", Opérationnel: "#1fae74" };
+const LVL_COLORS: Record<string, string> = { Faible: "#16a34a", Modéré: "#eab308", Élevé: "#f97316", Critique: "#dc2626" };
+function donut(data: { label: string; value: number; color: string }[], unit = "risques") {
+  const total = data.reduce((a, d) => a + d.value, 0) || 1;
+  let a0 = -Math.PI / 2;
+  const R = 70, r = 44, cx = 90, cy = 90;
+  const p = (rad: number, a: number) => `${(cx + rad * Math.cos(a)).toFixed(2)},${(cy + rad * Math.sin(a)).toFixed(2)}`;
+  const arcs = data.map((d) => {
+    const a1 = a0 + (d.value / total) * Math.PI * 2, large = a1 - a0 > Math.PI ? 1 : 0, mid = (a0 + a1) / 2;
+    const out = `<path d="M${p(R, a0)} A${R},${R} 0 ${large} 1 ${p(R, a1 - 0.0001)} L${p(r, a1 - 0.0001)} A${r},${r} 0 ${large} 0 ${p(r, a0)} Z" fill="${d.color}" class="seg-arc"><title>${esc(d.label)} : ${d.value}</title></path>
+      <text x="${(cx + 57 * Math.cos(mid)).toFixed(1)}" y="${(cy + 57 * Math.sin(mid) + 4).toFixed(1)}" text-anchor="middle" class="svg-in">${d.value}</text>`;
+    a0 = a1;
+    return out;
+  });
+  return `<div class="chart-row"><svg viewBox="0 0 180 180" class="donut" role="img" aria-label="${esc(data.map((d) => `${d.label} ${d.value}`).join(", "))}">${arcs.join("")}<text x="90" y="90" text-anchor="middle" class="svg-big">${total}</text><text x="90" y="107" text-anchor="middle" class="svg-s">${unit}</text></svg>
+    <ul class="legend">${data.map((d) => `<li><i style="background:${d.color}"></i>${esc(d.label)} <b>${d.value}</b></li>`).join("")}</ul></div>`;
+}
+function bars(data: { label: string; value: number; color: string }[]) {
+  const max = Math.max(1, ...data.map((d) => d.value));
+  const W = 300, H = 170, bw = 46, gap = (W - data.length * bw) / (data.length + 1);
+  return `<svg viewBox="0 0 ${W} ${H + 24}" class="chart" role="img" aria-label="${esc(data.map((d) => `${d.label} ${d.value}`).join(", "))}">
+    ${[0, 0.5, 1].map((t) => `<line x1="0" x2="${W}" y1="${H - t * (H - 20)}" y2="${H - t * (H - 20)}" class="gl"/>`).join("")}
+    ${data.map((d, i) => {
+      const h = (d.value / max) * (H - 20), x = gap + i * (bw + gap);
+      return `<rect x="${x}" y="${H - h}" width="${bw}" height="${Math.max(h, 0)}" rx="4" fill="${d.color}"><title>${d.label} : ${d.value}</title></rect>
+        <text x="${x + bw / 2}" y="${H - h - 6}" text-anchor="middle" class="svg-v">${d.value}</text><text x="${x + bw / 2}" y="${H + 17}" text-anchor="middle" class="svg-s">${d.label}</text>`;
+    }).join("")}</svg>`;
+}
+function lines(points: { label: string; avg: number; max: number }[]) {
+  const W = 320, H = 160, L = 26, n = points.length;
+  const X = (i: number) => L + (n <= 1 ? 0 : (i * (W - L - 10)) / (n - 1));
+  const Y = (v: number) => H - (v / 25) * (H - 10);
+  const path = (k: "avg" | "max") => points.map((q, i) => `${i ? "L" : "M"}${X(i).toFixed(1)},${Y(q[k]).toFixed(1)}`).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H + 40}" class="chart" role="img" aria-label="Évolution des scores de risque">
+    ${[0, 5, 10, 15, 20, 25].map((v) => `<line x1="${L}" x2="${W}" y1="${Y(v)}" y2="${Y(v)}" class="gl"/><text x="${L - 5}" y="${Y(v) + 4}" text-anchor="end" class="svg-s">${v}</text>`).join("")}
+    <path d="${path("max")}" fill="none" stroke="#2a78d6" stroke-width="2"/><path d="${path("avg")}" fill="none" stroke="#0f9f6e" stroke-width="2"/>
+    ${points.map((q, i) => `<circle cx="${X(i)}" cy="${Y(q.max)}" r="4" fill="#2a78d6"><title>${q.label} – maximum ${q.max}</title></circle><circle cx="${X(i)}" cy="${Y(q.avg)}" r="4" fill="#0f9f6e"><title>${q.label} – moyenne ${q.avg}</title></circle>
+      <text x="${X(i)}" y="${H + 16}" text-anchor="middle" class="svg-s">${q.label}</text>`).join("")}
+    <g transform="translate(${L + 40},${H + 34})"><rect width="14" height="3" y="-4" fill="#2a78d6"/><text x="18" class="svg-s">Score maximal</text><rect x="120" width="14" height="3" y="-4" fill="#0f9f6e"/><text x="138" class="svg-s">Score moyen</text></g></svg>`;
+}
+const kpi = (l: string, v: string, h: string, t = "") => `<div class="kpi ${t}"><span>${l}</span><b>${v}</b><small>${h}</small></div>`;
+const ind = (l: string, v: number) => `<div class="ind"><div><span>${l}</span><b>${v} %</b></div><div class="bar"><i style="width:${Math.max(0, Math.min(100, v))}%"></i></div></div>`;
+
 function columns(data: { label: string; value: number; note?: string; muted?: boolean }[], fmt: (v: number) => string, max?: number) {
   const m = max ?? Math.max(...data.map((d) => d.value), 0.0001);
   return `<div class="cols" role="img" aria-label="${esc(data.map((d) => `${d.label} ${fmt(d.value)}`).join(", "))}">${data
@@ -202,34 +245,57 @@ const AGE_FR: Record<string, string> = {
 /* ================================================================ pages */
 function pOverview() {
   const s = snapshot(), k = computeKpis(s as any), r = s.risks;
+  const cats = Object.keys(CAT_COLORS).map((c) => ({ label: c, value: r.filter((x) => x.category === c).length, color: CAT_COLORS[c] })).filter((d) => d.value);
+  const lv = (["Faible", "Modéré", "Élevé", "Critique"] as Level[]).map((l) => ({ label: l, value: r.filter((x) => x.level === l).length, color: LVL_COLORS[l] }));
+  const months = Array.from(new Set(s.history.map((h) => String(h.recorded_at).slice(0, 7)))).sort();
+  const MO = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+  const evo = months.map((m) => {
+    const last: Record<string, number> = {};
+    s.history.filter((h) => String(h.recorded_at).slice(0, 7) <= m).forEach((h) => (last[h.risk_id] = h.score));
+    const v = Object.entries(last).filter(([id]) => r.some((x) => x.id === id)).map(([, x]) => x);
+    return { label: MO[Number(m.slice(5)) - 1], avg: v.length ? +(v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : 0, max: v.length ? Math.max(...v) : 0 };
+  });
   const top = [...r].sort((a, b) => b.score - a.score || a.id.localeCompare(b.id)).slice(0, 5);
-  const p1 = s.actions.filter((a) => a.priority === "P1" && a.status !== "Terminé");
-  const openAn = s.anomalies.filter((a) => a.status !== "Clôturée");
-  const late = openAn.filter((a) => a.due_on && a.due_on < today());
-  const blocked = s.dossiers.filter((d) => d.analysis?.blocking);
-  const todo = [
-    ...late.map((a) => [`Anomalie ${a.id} en retard`, esc(String(a.nature).slice(0, 90)), "#actions", "bad"]),
-    ...blocked.map((d) => [`Dossier ${d.id} suspendu`, `${esc(d.company?.name)} · ${d.analysis.completeness.missingDocs.length} pièce(s) manquante(s)`, "#dossiers", "warn"]),
-    ...p1.slice(0, 5).map((a) => [`${a.id} · priorité 1`, `${esc(a.title)} — ${esc(a.owner)}`, "#actions", ""]),
-  ];
-  const live = s.controls.filter((c) => ["Opérationnel", "Efficace"].includes(c.status)).length;
-  return head("Vue d'ensemble", "Exposition aux risques, état du dispositif de contrôle et actions à mener.", "", new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })) +
-    `<div class="metrics">
-      ${metric("Risques critiques", `${k.critical}<em>/ ${k.total}</em>`, `${k.high} élevés · score moyen ${k.avgScore.toFixed(1).replace(".", ",")}`, k.critical ? "bad" : "")}
-      ${metric("Contrôles en service", `${live}<em>/ ${k.totalControls}</em>`, live ? `${k.coveredRisks}/${k.total} risques couverts` : "aucun contrôle encore déployé", live ? "" : "warn")}
-      ${metric("Plan d'action", `${k.actionProgress} %`, `${k.pendingActions} actions ouvertes dont ${p1.length} P1`)}
-      ${metric("Anomalies ouvertes", `${k.openAnomalies}`, late.length ? `${late.length} en retard` : "aucune en retard", late.length ? "bad" : "")}
-      ${(() => { const e = evaluate(state.portfolio as Segment[]); return metric("Pertes attendues 12 mois", mmad(e.el12), `provisions IFRS 9 ${mmad(e.provision)} (${pct(e.coverage, 2)})`, "warn"); })()}
+  const pend = s.actions.filter((a) => a.status !== "Terminé").slice(0, 6);
+  const closure = s.anomalies.length ? Math.round((k.closedAnomalies / s.anomalies.length) * 100) : 0;
+  const e = evaluate(state.portfolio as Segment[]);
+  const sev = evaluate(state.portfolio as Segment[], { pdMult: 2, lgdAdd: 0.1, sector: "", sectorMult: 1, singleDefault: 0 });
+  const segMax = Math.max(...e.rows.map((x) => x.provision), 1);
+  return head("Dashboard exécutif", "Vue consolidée de l'exposition aux risques, du dispositif de contrôle interne et de l'avancement des actions correctives.", `<a class="btn em" href="#advisor">Analyse IA de la situation →</a>`) +
+    `<div class="kpis">
+      ${kpi("Risques recensés", `${k.total}`, `Score moyen ${k.avgScore.toFixed(1).replace(".", ",")} / 25`)}
+      ${kpi("Risques critiques", `${k.critical}`, `${k.high} risques élevés`, "red")}
+      ${kpi("Contrôles opérationnels", `${k.operationalControls}/${k.totalControls}`, `${k.coveredRisks}/${k.total} risques couverts`, "green")}
+      ${kpi("Actions en attente", `${k.pendingActions}`, `Avancement moyen ${k.actionProgress} %`, "amber")}
+      ${kpi("Anomalies ouvertes", `${k.openAnomalies}`, `${k.overdueAnomalies} en retard`, k.overdueAnomalies ? "red" : "")}
+      ${kpi("Maturité COSO", `${k.avgMaturity.toFixed(1).replace(".", ",")}/5`, `${k.deficientPrinciples}/17 principes déficients`, "amber")}
+      ${kpi("Pertes attendues 12 mois", `${mmad(e.el12).replace(" M MAD", "")}<em> M MAD</em>`, `provisions IFRS 9 ${mmad(e.provision)}`, "blue")}
     </div>
-    <div class="grid g-7-5">
-      ${panel("Risques prioritaires", table(["", "Risque", "Criticité", "Traitement attendu"], top.map((x) => [`<span class="ref">${x.id}</span>`, `<a href="#risks" data-act="sel" data-id="${x.id}" class="lk">${esc(x.title)}</a>`, level(x.level, x.score), `<small>${LEVEL_TREATMENT[x.level as Level]}</small>`])), { aside: `<a class="more" href="#risks">Registre</a>` })}
-      ${panel("Cartographie", matrix(r, true), { aside: `<button class="more" data-act="view" data-id="matrix">Agrandir</button>` })}
+    <div class="g3">
+      ${panel("Répartition par catégorie", donut(cats))}
+      ${panel("Répartition par niveau de criticité", `<p class="small top0">1–4 Faible · 5–9 Modéré · 10–15 Élevé · 16–25 Critique</p>${bars(lv)}`)}
+      ${panel("Évolution des risques", `<p class="small top0">Dernière cotation P × G connue en fin de mois</p>${lines(evo)}`)}
     </div>
-    <div class="grid g-7-5">
-      ${panel("À traiter", todo.length ? `<ul class="todo">${todo.map(([t, d, h, tone]) => `<li class="${tone}"><a href="${h}"><b>${t}</b><span>${d}</span></a></li>`).join("")}</ul>` : `<div class="empty">Rien d'urgent : aucune anomalie en retard, aucun dossier suspendu, aucune action prioritaire ouverte.</div>`)}
-      ${panel("Repère de marché", `<p class="small">Taux de défaut par année d'octroi · prêts garantis SBA 7(a) aux petites entreprises</p>
+    <div class="g2w">
+      ${panel("Top 5 des risques prioritaires", table(["#", "Risque", "Catégorie", "P", "G", "Criticité", "Responsable"], top.map((x, i) => [
+        `<b class="mute-t">${i + 1}</b>`, `<a href="#risks" data-act="sel" data-id="${x.id}" class="lk"><b>${x.id}</b> · ${esc(x.title)}</a>`, `<span class="dot" style="background:${CAT_COLORS[x.category] ?? "#94a3b8"}"></span>${esc(x.category)}`, x.probability, x.gravity, `<span class="pill ${LVL[x.level as Level]}">${x.level} · ${x.score}</span>`, `<small>${esc(x.owner)}</small>`])) +
+        `<a class="lnk" href="#risks">Registre complet →</a>`)}
+      ${panel("Cartographie synthétique", matrix(r, true) + `<div class="legend inline">${Object.entries(LVL_COLORS).map(([l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join("")}</div><button class="lnk" data-act="view" data-id="matrix">Ouvrir →</button>`)}
+    </div>
+    <div class="g2w">
+      ${panel("Risque de crédit · provisions IFRS 9 par secteur", `<div class="hbars">${[...e.rows].sort((a, b) => b.provision - a.provision).map((x) => `<div class="hb"><span title="${esc(x.sector)}">${esc(x.sector)}</span><div class="bar"><i style="width:${(x.provision / segMax) * 100}%"></i></div><b>${mmad(x.provision)}</b></div>`).join("")}</div>
+        <p class="small">Portefeuille fictif de ${mmad(e.ead)} · couverture ${pct(e.coverage, 2)} · en récession sévère (PD × 2, LGD + 10 pts) : <b>${mmad(sev.provision)}</b>.</p>
+        <button class="lnk" data-act="menu-go" data-go="goto:credit:stress">Stress test →</button>`)}
+      ${panel("Repère de marché", `<p class="small top0">Taux de défaut par année d'octroi · prêts SBA 7(a) aux petites entreprises</p>
         ${columns(T.by_cohort.map((c: Row) => ({ label: `${String(c.cohort_fy).slice(2)}`, value: c.default_rate, muted: c.cohort_fy >= 2018 })), (v) => pct(v, 1))}
-        <p class="small">Défaut médian <b>${O.median_months_to_default.toFixed(0)} mois</b> après l'octroi ; ${pct(O.share_defaults_within_24m, 0)} des pertes seulement dans les 24 premiers mois.</p>`, { aside: `<a class="more" href="#portfolio">Analyse</a>` })}
+        <p class="small">PD annuelle de référence <b>${pct(BASE_PD, 2)}</b> · LGD <b>${pct(BASE_LGD, 0)}</b> · défaut médian ${O.median_months_to_default.toFixed(0)} mois après l'octroi.</p><a class="lnk" href="#portfolio">Analyse →</a>`)}
+    </div>
+    <div class="g2">
+      ${panel("Indicateurs de contrôle interne", ind("Couverture des risques par au moins un contrôle", Math.round((k.coveredRisks / Math.max(1, k.total)) * 100)) +
+        ind("Contrôles opérationnels ou efficaces", Math.round((k.operationalControls / Math.max(1, k.totalControls)) * 100)) + ind("Taux de clôture des anomalies", closure) +
+        ind("Avancement du plan d'action", k.actionProgress) + ind("Principes COSO non déficients", Math.round(((17 - k.deficientPrinciples) / 17) * 100)) +
+        `<p class="small">Dossiers TPE suspendus (règle de blocage C01) : ${k.dossiersBlocked}/${k.dossiers}</p>`)}
+      ${panel("Actions correctives en attente", `<ul class="alist">${pend.map((a) => `<li><span class="prio ${String(a.priority).toLowerCase()}">${esc(a.priority)}</span><div><b>${a.id}</b> · ${esc(a.title)}<small>${esc(a.owner)} · ${esc(a.due)}</small></div><div class="mini"><div class="bar"><i style="width:${a.progress}%"></i></div><small>${a.progress} %</small></div></li>`).join("")}</ul><a class="lnk" href="#actions">Plan d'action →</a>`)}
     </div>`;
 }
 
@@ -685,7 +751,7 @@ function pAdmin() {
 
 /* ================================================================ rendu */
 const NAV: [string, string][] = [
-  ["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"], ["risks", "Risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"],
+  ["overview", "Dashboard exécutif"], ["portfolio", "Portefeuille de référence"], ["risks", "Registre des risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"],
   ["controls", "Contrôle interne"], ["actions", "Plan d'action"], ["framework", "Référentiel"], ["advisor", "Risk Advisor"], ["admin", "Administration"],
 ];
 const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pPortfolio, risks: pRisks, credit: pCredit, dossiers: pDossiers, controls: pControls, actions: pActions, framework: pFramework, advisor: pAdvisor, admin: pAdmin };
@@ -693,30 +759,11 @@ const MARK = `<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect wid
 const route = () => (PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "overview");
 
 const TREE: [string, [string, string][]][] = [
-  ["Pilotage", [["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"]]],
+  ["Pilotage", [["overview", "Dashboard exécutif"], ["portfolio", "Portefeuille de référence"]]],
   ["Risques", [["risks", "Registre des risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"]]],
-  ["Contrôle interne", [["controls", "Contrôles et COSO"], ["framework", "Référentiel"]]],
-  ["Suivi", [["actions", "Plan d'action"]]],
-  ["Outils", [["advisor", "Risk Advisor"], ["admin", "Administration"]]],
+  ["Contrôle interne", [["controls", "Contrôles et COSO"], ["framework", "Appétence et gouvernance"], ["actions", "Suivi et plan d'action"]]],
+  ["Intelligence", [["advisor", "Risk Advisor IA"], ["admin", "Rapports et administration"]]],
 ];
-type MenuItem = [string, string, string?] | null; // [libellé, action ou #page, raccourci]
-function menus(): [string, MenuItem[]][] {
-  return [
-    ["Fichier", [
-      ["Exporter le registre des risques (CSV)", "exp-risks"], ["Exporter le plan d'action (CSV)", "exp-actions"], ["Exporter les anomalies (CSV)", "exp-anoms"], null,
-      ["Sauvegarde complète (JSON)", "exp-json"], ...(can("team.manage") ? [["Restaurer les données de démonstration", "reset"] as MenuItem] : []),
-    ]],
-    ["Affichage", NAV.map(([k, l], i) => [l, `#${k}`, `Alt+${i + 1}`] as MenuItem)],
-    ["Risques", [
-      ...(can("risks.write") ? [["Nouveau risque…", "risk-new"] as MenuItem] : []), ["Registre", "view:table"], ["Matrice probabilité × gravité", "view:matrix"], null, ["Pertes attendues et provisions", "goto:credit:mesure"], ["Stress test", "goto:credit:stress"], ["Paramètres PD · LGD", "goto:credit:params"], null,
-      ...(can("dossiers.write") ? [["Nouveau dossier TPE…", "dos-new"] as MenuItem] : []), ["Liste des dossiers", "#dossiers"],
-    ]],
-    ["Contrôle", [["Fiches de contrôle", "goto:controls:fiches"], ["Diagnostic COSO 2013", "goto:controls:coso"], null, ["Charte d'appétence", "goto:framework:charte"], ["Matrice RACI", "goto:framework:raci"]]],
-    ["Suivi", [["Plan d'action", "goto:actions:plan"], ["Recommandations", "goto:actions:recos"], ["Anomalies", "goto:actions:anoms"], ...(can("anom.create") ? [null, ["Déclarer une anomalie…", "anom-new"] as MenuItem] : [])]],
-    ["Outils", [["Risk Advisor", "#advisor"], ["Portefeuille de référence", "#portfolio"], ["Administration", "#admin"]]],
-    ["Aide", [["Raccourcis clavier", "help-keys"], ["À propos de Crédit Horizon", "help-about"]]],
-  ];
-}
 
 function render() {
   const app = document.getElementById("app")!;
@@ -731,18 +778,19 @@ function render() {
   };
   const label = NAV.find((n) => n[0] === cur)![1];
   const syncTxt = session.me?.mode === "local" ? "Copie locale" : sharedStore() ? "Synchronisé avec l'équipe" : "Hors ligne";
-  app.innerHTML = `<div class="win">
-    <header class="titlebar"><button class="tb-menu" data-act="menu" aria-label="Ouvrir le navigateur">${icon("menu")}</button>${MARK}<b>Crédit Horizon</b><span class="tb-sub">Risk Intelligence — ${label}</span>
-      <span class="tb-user"><span class="av">${esc((session.me?.name || "?").split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase())}</span>${esc(session.me?.name)} · ${ROLES[session.role]}</span></header>
-    <nav class="menubar" aria-label="Menus">${menus().map(([m, items]) => `<details class="mnu"><summary>${m}</summary><div class="mnu-l" role="menu">${items.map((it) => it === null ? `<hr>` :
-      `<button role="menuitem" data-act="menu-go" data-go="${it[1]}"><span>${it[0]}</span>${it[2] ? `<kbd>${it[2]}</kbd>` : ""}</button>`).join("")}</div></details>`).join("")}</nav>
-    <div class="body">
-      <aside class="side" id="side" aria-label="Navigateur">${TREE.map(([g, items]) => `<div class="tg"><div class="tg-h">${g}</div>${items.map(([k, l]) => `<a href="#${k}" class="${k === cur ? "on" : ""}" ${k === cur ? 'aria-current="page"' : ""}>${icon(k)}<span>${l}</span>${badge[k] ? `<em>${badge[k]}</em>` : ""}</a>`).join("")}</div>`).join("")}
-        <div class="side-foot">Projet EMSI · Génie financier<br>F. Z. Chakib · I. Mouichou</div></aside>
+  const initials = esc((session.me?.name || "?").split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase());
+  app.innerHTML = `<div class="shell">
+    <aside class="side" id="side" aria-label="Navigation">
+      <div class="logo">${MARK}<div><b>CRÉDIT HORIZON</b><small>RISK INTELLIGENCE</small></div></div>
+      <nav>${TREE.map(([g, items]) => `<div class="ng">${g}</div>${items.map(([k, l]) => `<a href="#${k}" class="${k === cur ? "on" : ""}" ${k === cur ? 'aria-current="page"' : ""}>${icon(k)}<span>${l}</span>${badge[k] ? `<em>${badge[k]}</em>` : ""}</a>`).join("")}`).join("")}</nav>
+      <div class="me"><span class="av">${initials}</span><div><b>${esc(session.me?.name)}</b><small>${ROLES[session.role]}</small></div></div>
+    </aside>
+    <div class="main">
+      <header class="top"><button class="burger" data-act="menu" aria-label="Ouvrir la navigation">${icon("menu")}</button>${MARK}<b>CRÉDIT HORIZON</b><span>${label}</span></header>
+      <div class="demo-bar"><span><b>Environnement de démonstration</b> – cas académique fictif EMSI. Les éléments marqués « Démo » sont des données de démonstration.</span><span class="sync ${sharedStore() ? "on" : ""}">${syncTxt}</span></div>
       <main id="content" tabindex="-1">${session.storeError ? note(esc(session.storeError), "bad") : ""}${session.role === "lecteur" && session.me?.mode === "claude" ? note(`${icon("lock")} Lecture seule : l'administrateur peut vous attribuer un rôle.`, "lock") : ""}${PAGES[cur]()}</main>
-    </div>
-    <footer class="statusbar"><span class="sb-ok">Prêt</span><span>${state.risks.length} risques · ${state.controls.length} contrôles · ${state.dossiers.length} dossiers · ${state.anomalies.filter((a) => a.status !== "Clôturée").length} anomalies ouvertes</span>
-      <span class="sb-demo">Données de démonstration</span><span class="sb-r">${ROLES[session.role]}</span><span class="sb-sync ${sharedStore() ? "on" : ""}">${syncTxt}</span><span>${new Date().toLocaleDateString("fr-FR")}</span></footer></div>`;
+      <footer class="foot">CRÉDIT HORIZON RISK INTELLIGENCE · Projet EMSI – F. Z. Chakib et I. Mouichou · Aide à la décision : aucune décision d'octroi automatique</footer>
+    </div></div>`;
   if (cur === "risks") applyFilter();
   const c = document.getElementById("chat");
   if (c) c.scrollTop = c.scrollHeight;
