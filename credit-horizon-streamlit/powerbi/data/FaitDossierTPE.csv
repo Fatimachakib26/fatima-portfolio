@@ -1,0 +1,3 @@
+﻿DossierID;Entreprise;Secteur;Ville;Produit;Montant;DureeMois;Completude;NbIncoherences;NbVigilance;Suspendu;Statut
+TPE-2026-002;Rapid Livraisons Nord;Transport / logistique urbaine;Tétouan;Crédit de fonctionnement;300000;60;56;5;5;True;Incomplet – présentation suspendue
+TPE-2026-001;Atelier Menara Bois;Artisanat / menuiserie;Tanger;Crédit d'équipement;250000;48;100;0;0;False;Complet – transmissible pour avis risques

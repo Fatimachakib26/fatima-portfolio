@@ -1,0 +1,1 @@
+{ "name": "credit-horizon-site", "private": true, "scripts": { "build": "node build.mjs" }, "devDependencies": { "esbuild": "0.24.2", "typescript": "5.7.2" } }

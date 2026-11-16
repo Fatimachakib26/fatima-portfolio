@@ -1,0 +1,61 @@
+// =====================================================================
+// CRÉDIT HORIZON RISK INTELLIGENCE – Mesures DAX pour Power BI
+// À créer dans une table de mesures vide (Accueil > Entrer des données > « Mesures »)
+// =====================================================================
+
+// ---------- Registre des risques
+Nb Risques = COUNTROWS ( DimRisque )
+Nb Risques Critiques = CALCULATE ( [Nb Risques], DimRisque[Niveau] = "Critique" )
+Nb Risques Eleves = CALCULATE ( [Nb Risques], DimRisque[Niveau] = "Élevé" )
+Score Moyen = AVERAGE ( DimRisque[Score] )
+Score Max = MAX ( DimRisque[Score] )
+Part Risques Critiques = DIVIDE ( [Nb Risques Critiques], [Nb Risques] )
+
+// Couleur conditionnelle (Mise en forme > Couleur > Valeur du champ)
+Couleur Niveau =
+SWITCH (
+    SELECTEDVALUE ( DimRisque[Niveau] ),
+    "Critique", "#DC2626",
+    "Élevé", "#F97316",
+    "Modéré", "#EAB308",
+    "Faible", "#16A34A",
+    "#94A3B8"
+)
+
+// ---------- Couverture par les contrôles
+Nb Controles = COUNTROWS ( DimControle )
+Nb Controles Operationnels = CALCULATE ( [Nb Controles], DimControle[Statut] IN { "Opérationnel", "Efficace" } )
+Risques Couverts = CALCULATE ( DISTINCTCOUNT ( PontRisqueControle[RisqueID] ) )
+Taux Couverture = DIVIDE ( [Risques Couverts], [Nb Risques] )
+Nb Controles par Risque = CALCULATE ( COUNTROWS ( PontRisqueControle ) )
+Risque en Dependance = IF ( [Nb Controles par Risque] = 1, "Dépendance (1 contrôle)", IF ( [Nb Controles par Risque] = 0, "Non couvert", "Couvert" ) )
+
+// ---------- COSO 2013
+Nb Principes Deficients = CALCULATE ( COUNTROWS ( DimPrincipeCOSO ), DimPrincipeCOSO[Appreciation] = "Déficient" )
+Maturite Moyenne COSO = AVERAGE ( DimComposanteCOSO[Maturite] )
+Taux Principes Non Deficients = DIVIDE ( 17 - [Nb Principes Deficients], 17 )
+
+// ---------- Plan d'action
+Nb Actions = COUNTROWS ( FaitAction )
+Actions En Attente = CALCULATE ( [Nb Actions], FaitAction[Statut] <> "Terminé" )
+Avancement Moyen = DIVIDE ( AVERAGE ( FaitAction[Avancement] ), 100 )
+Actions P1 Ouvertes = CALCULATE ( [Actions En Attente], FaitAction[Priorite] = "P1" )
+
+// ---------- Anomalies (contrôle C04)
+Nb Anomalies = COUNTROWS ( FaitAnomalie )
+Anomalies Ouvertes = CALCULATE ( [Nb Anomalies], FaitAnomalie[Statut] <> "Clôturée" )
+Anomalies En Retard = CALCULATE ( [Nb Anomalies], FaitAnomalie[EnRetard] = TRUE () )
+Taux Cloture Anomalies = DIVIDE ( CALCULATE ( [Nb Anomalies], FaitAnomalie[Statut] = "Clôturée" ), [Nb Anomalies] )
+Anomalies Niveau 3 = CALCULATE ( [Anomalies Ouvertes], FaitAnomalie[NiveauEscalade] = 3 )
+
+// ---------- Évolution des cotations
+Score Moyen Historique = AVERAGE ( FaitCotation[Score] )
+Derniere Cotation =
+VAR d = MAX ( FaitCotation[Date] )
+RETURN CALCULATE ( AVERAGE ( FaitCotation[Score] ), FaitCotation[Date] = d )
+
+// ---------- Dossiers TPE (aide à l'analyse – aucune décision d'octroi)
+Nb Dossiers = COUNTROWS ( FaitDossierTPE )
+Dossiers Suspendus = CALCULATE ( [Nb Dossiers], FaitDossierTPE[Suspendu] = TRUE () )
+Completude Moyenne = DIVIDE ( AVERAGE ( FaitDossierTPE[Completude] ), 100 )
+Montant Demande Total = SUM ( FaitDossierTPE[Montant] )
