@@ -7,6 +7,7 @@ import { offlineAnswer } from "./logic/offline-advisor";
 import { buildContext, ADVISOR_RULES } from "./logic/ai-context";
 import { md } from "./markdown";
 import { evaluate, riskParams, SECTORS, BASE_PD, BASE_LGD, NO_STRESS, ANALYST_ROLE, termBand, type Segment, type Stress } from "./logic/credit";
+import { CONCEPTS, COURSES, MEMO, QUIZ, EXERCISES, TYPOLOGY, CHAIN, THREE_LINES, FUNCTIONS, type Concept } from "./logic/course";
 import marts from "../../data-pipeline/data/marts/sba_marts.json";
 
 /* ================================================================ rôles et droits */
@@ -68,6 +69,7 @@ const ids = (v: unknown) => splitIds(v).map((x) => `<span class="ref">${esc(x)}<
 const I: Record<string, string> = {
   overview: "M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z",
   portfolio: "M3 3v18h18M7 15l4-4 3 3 6-6",
+  learn: "M2 8l10-5 10 5-10 5zM6 10v5c0 2 3 3.5 6 3.5s6-1.5 6-3.5v-5M22 8v6",
   risks: "M12 3 2 20h20zM12 10v4M12 17h.01",
   credit: "M4 19a9 9 0 1 1 16 0M12 14l4.5-4.5M12 14h.01",
   dossiers: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5",
@@ -108,7 +110,7 @@ function record(action: string, entity: string, id: string, details = "") {
 }
 
 /* ================================================================ état d'interface */
-const ui: any = { stress: { ...NO_STRESS }, sel: null, view: "table", filter: "", cat: "", dossier: null, draft: null, tab: {}, chat: [] as Row[], busy: false, ai: false, names: {} };
+const ui: any = { quiz: { filter: "all", i: 0, show: false }, resid: false, stress: { ...NO_STRESS }, sel: null, view: "table", filter: "", cat: "", dossier: null, draft: null, tab: {}, chat: [] as Row[], busy: false, ai: false, names: {} };
 const tab = (page: string, def: string) => ui.tab[page] ?? def;
 
 /* ================================================================ briques d'interface */
@@ -383,7 +385,11 @@ const RISK_FIELDS: Field[] = [
   { k: "control_ids", l: "Contrôles associés", hint: "Identifiants séparés par des virgules, ex. C01, C04" },
   { k: "coso_principles", l: "Principes COSO", hint: "Ex. P10, P12" },
   { k: "recommendation", l: "Recommandation", t: "textarea" },
+  { k: "treatment", l: "Stratégie de traitement", t: "select", o: ["Réduire", "Éviter", "Transférer", "Accepter", "Réduire et transférer (garanties)", "Réduire et transférer (diversifier les ressources)"] },
+  { k: "res_probability", l: "Probabilité résiduelle visée", t: "range", min: 1, max: 5, hint: "Après mise en service des contrôles" },
+  { k: "res_gravity", l: "Gravité résiduelle visée", t: "range", min: 1, max: 5 },
 ];
+const resid = (x: Row) => (x.res_probability && x.res_gravity ? Number(x.res_probability) * Number(x.res_gravity) : null);
 
 function pRisks() {
   const all = snapshot().risks.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
@@ -394,10 +400,11 @@ function pRisks() {
     .filter((x) => !ui.cat || x.category === ui.cat)
     .map((x) => `<tr class="row ${sel?.id === x.id ? "on" : ""}" data-act="sel" data-id="${x.id}" tabindex="0" data-text="${esc([x.id, x.title, x.event, x.causes, x.consequences, x.owner, x.level].join(" ").toLowerCase())}">
       <td><span class="ref">${x.id}</span></td><td><b>${esc(x.title)}</b><small>${esc(x.category)} · ${esc(x.owner)}</small></td>
-      <td class="n">${x.probability}</td><td class="n">${x.gravity}</td><td>${level(x.level, x.score)}</td><td class="ids">${ids(x.control_ids)}</td></tr>`).join("");
-  const view = ui.view === "matrix" ? panel("", matrix(all)) : panel("", `<div class="toolbar"><input id="q" type="search" placeholder="Rechercher un risque, une cause, un responsable" value="${esc(ui.filter)}" aria-label="Rechercher">
+      <td class="n">${x.probability}</td><td class="n">${x.gravity}</td><td>${level(x.level, x.score)}</td><td>${resid(x) ? level(levelFromScore(resid(x)!), resid(x)!) : "–"}</td><td class="ids">${ids(x.control_ids)}</td></tr>`).join("");
+  const view = ui.view === "matrix" ? panel("", `<div class="toolbar"><div class="seg sm" role="group" aria-label="Niveau de risque"><button class="${ui.resid ? "" : "on"}" data-act="resid" data-id="0">Risque inhérent</button><button class="${ui.resid ? "on" : ""}" data-act="resid" data-id="1">Risque résiduel visé</button></div><span class="count">${ui.resid ? "Après mise en service des contrôles (hypothèse)" : "Avant tout dispositif de maîtrise"}</span></div>` +
+      matrix(ui.resid ? all.map((x) => ({ ...x, probability: x.res_probability ?? x.probability, gravity: x.res_gravity ?? x.gravity })) : all)) : panel("", `<div class="toolbar"><input id="q" type="search" placeholder="Rechercher un risque, une cause, un responsable" value="${esc(ui.filter)}" aria-label="Rechercher">
       <select id="cat" aria-label="Catégorie"><option value="">Toutes catégories</option>${cats.map((c) => `<option ${c === ui.cat ? "selected" : ""}>${esc(c)}</option>`).join("")}</select><span class="count" id="qn"></span></div>
-      <div class="tw"><table id="rt" class="hover"><thead><tr><th></th><th>Risque</th><th class="n">P</th><th class="n">G</th><th>Criticité</th><th>Contrôles</th></tr></thead><tbody>${rows}</tbody></table></div>`);
+      <div class="tw"><table id="rt" class="hover"><thead><tr><th></th><th>Risque</th><th class="n">P</th><th class="n">G</th><th>Inhérent</th><th>Résiduel visé</th><th>Contrôles</th></tr></thead><tbody>${rows}</tbody></table></div>`);
   return head("Risques", "Registre coté par probabilité × gravité. Criticité : 1–4 faible, 5–9 modéré, 10–15 élevé, 16–25 critique.",
     `<div class="seg" role="group" aria-label="Affichage"><button class="${ui.view !== "matrix" ? "on" : ""}" data-act="view" data-id="table">Registre</button><button class="${ui.view === "matrix" ? "on" : ""}" data-act="view" data-id="matrix">Matrice</button></div>
      <button class="btn ghost" data-act="exp-risks">${icon("down")} CSV</button>${w ? btn(`${icon("plus")} Nouveau risque`, "risk-new", "", "primary") : ""}`) +
@@ -415,6 +422,8 @@ function riskDetail(x: Row, w: boolean) {
     <p class="treat">${LEVEL_TREATMENT[x.level as Level]}</p>
     <dl class="kv stack"><dt>Événement redouté</dt><dd>${esc(x.event)}</dd><dt>Causes</dt><dd>${esc(x.causes) || "–"}</dd><dt>Conséquences</dt><dd>${esc(x.consequences) || "–"}</dd>
       <dt>Justification</dt><dd>${esc(x.justification) || "–"}</dd><dt>Responsable</dt><dd>${esc(x.owner)}</dd>
+      <dt>Traitement</dt><dd>${esc(x.treatment) || "–"}</dd>
+      <dt>Risque résiduel visé</dt><dd>${resid(x) ? `${level(levelFromScore(resid(x)!), resid(x)!)} <small>P ${x.res_probability} × G ${x.res_gravity}, une fois les contrôles en service (hypothèse)</small>` : "–"}</dd>
       <dt>Contrôles</dt><dd>${ctrls.map((c) => `<div class="li"><span class="ref">${c.id}</span> ${esc(c.name)} ${status(c.status)}</div>`).join("") || "Aucun contrôle associé"}</dd>
       <dt>Recommandation</dt><dd>${esc(rec?.action ?? x.recommendation) || "–"}</dd>
       <dt>Actions</dt><dd>${acts.map((a) => `<div class="li"><span class="ref">${a.id}</span> ${esc(a.title)} ${status(a.status)}</div>`).join("") || "–"}</dd>
@@ -476,7 +485,8 @@ function pCredit() {
         <div class="fld"><label for="st_single">Défaut d'une grande contrepartie (MAD)</label><input id="st_single" type="number" data-st="singleDefault" min="0" step="500000" value="${s.singleDefault || ""}" placeholder="0"></div>
       </div><div class="dlg-a left">${[["Récession modérée", "1.5|0.05||1|0"], ["Récession sévère", "2|0.1||1|0"], ["Crise du BTP", "1|0|Construction|2.5|0"], ["Défaut d'un client de 5 M MAD", "1|0||1|5000000"], ["Aucun choc", "1|0||1|0"]].map(([l, v]) => btn(l, "stress-preset", `data-v="${v}"`, "ghost sm")).join("")}</div>`,
       { sub: "Mesurer l'impact d'un défaut ou d'une dégradation sur le portefeuille et ajuster les provisions." }) +
-      panel("Impact sur les provisions", `<div id="stress-res">${stressResult()}</div>`);
+      panel("Impact sur les provisions", `<div id="stress-res">${stressResult()}</div>`) +
+      note(`<div><b>Lien avec le cours.</b> Les provisions de base couvrent la <b>perte attendue</b> (EL = PD × LGD × EAD). La dotation supplémentaire d'un scénario sévère illustre la <b>perte inattendue</b>, qui relève des fonds propres. Une récession est un <b>risque systématique</b> (non diversifiable) ; le défaut d'un seul client est un <b>risque spécifique</b>.</div>`, "ok");
   } else if (t === "params") {
     const rows = (tbl: string, keyLabel: (r: Row) => string) => (T[tbl] as Row[]).filter((x) => x.resolved >= 100).map((x) => [esc(keyLabel(x)), n0(x.loans), pct(x.default_rate, 2), `<b>${pctp(x.pd_annual)}</b>`, pct(x.lgd, 1)]);
     body = `<div class="grid g-1-1">${panel("Par secteur", table(["Secteur", "Prêts", "PD vie du prêt", "PD 12 mois", "LGD"], rows("by_sector", (x) => x.sector), { num: [1, 2, 3, 4] }), { sub: "Secteurs d'au moins 100 prêts dénoués." })}
@@ -689,6 +699,16 @@ function pFramework() {
       <div class="grid g-1-1">${panel("Principes (article 3)", `<ol class="plain">${SEED.charter_principles.map((p: string) => `<li>${esc(p)}</li>`).join("")}</ol>`)}
       ${panel("Escalade (article 11)", SEED.escalation.map((e: Row) => `<div class="esc"><span class="n${e.level}">N${e.level}</span><div><b>${esc(e.title.replace(/^Niveau \d – /, ""))}</b><p class="small">${esc(e.text)}</p></div></div>`).join(""))}</div>` +
       panel("Appétence par catégorie", table(["Catégorie", "Appétence", "Limites et situations inacceptables"], SEED.appetite_by_category.map((c: Row) => [`<b>${esc(c.category)}</b>`, esc(c.appetite), esc(c.limits)])));
+  } else if (t === "typo") {
+    body = panel("Typologie du cours appliquée à Crédit Horizon", table(["Risque (cours)", "Définition", "Exposition de Crédit Horizon", "Niveau", "Dans le projet"], TYPOLOGY.map((x) => [`<b>${esc(x.type)}</b>`, `<small>${esc(x.course)}</small>`, esc(x.exposure), `<span class="st ${x.level === "Directe" ? "bad" : x.level === "Indirecte" ? "warn" : "mute"}">${x.level}</span>`, `<small>${esc(x.where)}</small>`])), { sub: "Gestion des risques, chapitre 2 : marché, crédit, liquidité, opérationnel." }) +
+      panel("Interdépendance : l'effet domino chez Crédit Horizon", `<ol class="domino">${CHAIN.map((c) => `<li><span class="ref">${c.id}</span>${esc(c.text)}</li>`).join("")}</ol>
+        <p class="small">Comme dans le cours (taux → marché → crédit → liquidité), un risque en entraîne un autre : un risque opérationnel et de crédit à l'octroi finit en risque de liquidité. D'où l'intérêt de traiter R01 et R02 tôt.</p>`) +
+      `<div class="grid g-1-1">${panel("Risque spécifique", `<p>Propre à un emprunteur : la perte d'un gros client, un incendie, le départ du dirigeant d'une TPE.</p><p class="small">Réduit par la <b>diversification</b> du portefeuille (contrôle C07). Exemple chiffré : défaut d'un client de 5 M MAD dans le stress test.</p>`)}
+        ${panel("Risque systématique", `<p>Touche tout le portefeuille en même temps : récession, hausse générale des taux, crise sectorielle.</p><p class="small">Non diversifiable : on le mesure par le <b>stress test</b> (récession sévère : provisions de 21,25 à 37,81 M MAD).</p>`)}</div>`;
+  } else if (t === "lignes") {
+    body = panel("Le modèle des Trois Lignes appliqué à Crédit Horizon", table(["Ligne", "Rôle (IIA)", "Acteurs de Crédit Horizon", "Contrôles et outils"], THREE_LINES.map((l) => [`<b>${esc(l.line)}</b>`, esc(l.role), esc(l.ch), `<small>${esc(l.controls)}</small>`])), { sub: "1re ligne : fait · 2e ligne : surveille · 3e ligne : assure en toute indépendance." }) +
+      panel("Quatre fonctions à ne pas confondre", table(["Fonction", "Finalité", "Question principale", "Exemple chez Crédit Horizon"], FUNCTIONS.map((f) => [`<b>${esc(f.name)}</b>`, esc(f.goal), `<small>${esc(f.question)}</small>`, esc(f.ch)])), { sub: "Contrôle interne, chapitre 1 : faire fonctionner le contrôle n'est pas l'évaluer." }) +
+      panel("Séparation des fonctions (AEEC)", `<div class="aeec">${[["Autorisation", "Instance délégataire : direction générale ou comité de crédit (C02)"], ["Exécution", "Chargé d'affaires : constitue le dossier, puis décaissement par la finance"], ["Enregistrement", "Fonction finance : comptabilise le crédit et les échéances"], ["Contrôle", "Fonction risques (avis indépendant, C01) et contrôle interne / audit (C03)"]].map(([a, b]) => `<div><b>${a}</b><span>${b}</span></div>`).join("")}</div>`, { sub: "Aucune personne ne doit tenir les quatre maillons d'une même opération : c'est ce que vérifie la matrice RACI." });
   } else {
     const actors = SEED.raci_actors, acts = SEED.raci_activities;
     const blocks = ["Constitution", "Analyse / contrôle", "Autorisation"];
@@ -700,8 +720,80 @@ function pFramework() {
         { sub: "R réalise · A valide, responsabilité finale · C consulté · I informé" }) +
       panel("Délégations d'autorisation", table(["Décision", "Réalise", "Valide", "Est informé"], SEED.delegations.map((d: Row) => [`<b>${esc(d.decision)}</b>`, `<small>${esc(d.realise)}</small>`, `<small>${esc(d.valide)}</small>`, `<small>${esc(d.informe)}</small>`])));
   }
-  return head("Référentiel", "Charte d'appétence au risque, matrice RACI et délégations d'autorisation.", "") +
-    tabs("framework", [["charte", "Charte d'appétence"], ["raci", "Gouvernance RACI"]], t) + body;
+  return head("Appétence et gouvernance", "Charte d'appétence au risque, matrice RACI, délégations, modèle des Trois Lignes et typologie des risques du cours.", "") +
+    tabs("framework", [["charte", "Charte d'appétence"], ["raci", "Gouvernance RACI"], ["lignes", "Trois Lignes"], ["typo", "Typologie des risques"]], t) + body;
+}
+
+/* ---------------------------------------------------------------- cours et révision */
+const goLink = (link?: string) => {
+  if (!link) return "";
+  const [pg, tb] = link.split(":");
+  return tb ? `<button class="lnk" data-act="menu-go" data-go="goto:${pg}:${tb}">Voir dans la plateforme →</button>` : `<a class="lnk" href="#${pg}">Voir dans la plateforme →</a>`;
+};
+const conceptCard = (c: Concept) => `<article class="cc"><header><span class="tag">${COURSES[c.course]} · ch. ${c.chap}</span><h3>${esc(c.title)}</h3></header>
+  <p>${esc(c.def)}</p><div class="key"><b>À retenir</b>${esc(c.key)}</div><div class="proj"><b>Dans Crédit Horizon</b>${esc(c.project)}</div>${goLink(c.link)}</article>`;
+const QKEY = "credit-horizon-quiz";
+function quizKnown(): Record<string, boolean> {
+  try { return JSON.parse(localStorage.getItem(QKEY) || "{}"); } catch { return {}; }
+}
+function quizSave(k: Record<string, boolean>) {
+  try { localStorage.setItem(QKEY, JSON.stringify(k)); } catch { /* stockage indisponible : la séance continue sans mémoire */ }
+}
+function quizList() {
+  const f = ui.quiz.filter as string;
+  return QUIZ.map((q, i) => ({ ...q, i })).filter((q) => f === "all" || q.course === f);
+}
+function pLearn() {
+  const t = tab("learn", "projet");
+  let body = "";
+  if (t === "projet") {
+    const s = snapshot(), k = computeKpis(s as any), e = evaluate(state.portfolio as Segment[]);
+    const sev = evaluate(state.portfolio as Segment[], { pdMult: 2, lgdAdd: 0.1, sector: "", sectorMult: 1, singleDefault: 0 });
+    const prev = state.controls.filter((c) => /Préventif/.test(c.nature)).length;
+    const flow: [string, string, string][] = [
+      ["Objectifs", "Croître en volume tout en restant prudent", "framework"],
+      ["Risques", "8 risques identifiés, cotés P × G (R01 à R08)", "risks"],
+      ["Mesure", "PD, LGD, EAD → pertes attendues et provisions", "credit"],
+      ["Contrôles", "8 contrôles (C01 à C08) : préventifs et détectifs", "controls"],
+      ["Acteurs", "RACI et Trois Lignes : qui fait, qui surveille, qui assure", "framework"],
+      ["Surveillance", "Anomalies, indicateurs, dashboard", "actions"],
+      ["Amélioration", "Recommandations et plan d'action", "actions"],
+    ];
+    body = `<div class="story">
+        <p><b>1. Le problème.</b> Crédit Horizon finance des TPE et veut croître vite. Ses dossiers sont parfois incomplets, ses décisions hétérogènes et ses anomalies mal suivies : la croissance menace la prudence.</p>
+        <p><b>2. La question.</b> Comment concilier croissance et prudence grâce à la gestion des risques et au contrôle interne ?</p>
+        <p><b>3. La méthode.</b> Le cours de gestion des risques sert à identifier, coter et mesurer les risques ; le cours de contrôle interne sert à concevoir les contrôles (COSO) et à répartir les responsabilités (RACI, Trois Lignes).</p>
+        <p><b>4. La réponse.</b> Une charte d'appétence, 8 contrôles, des recommandations chiffrées et un suivi continu, réunis dans cette plateforme.</p></div>` +
+      panel("Le fil rouge du projet", `<ol class="flow">${flow.map(([a, b, l]) => `<li><a href="#${l}"><b>${a}</b><span>${b}</span></a></li>`).join("")}</ol>`, { sub: "C'est la logique du cours de contrôle interne : Objectifs → Risques → Contrôles → Acteurs → Surveillance → Amélioration." }) +
+      panel("Les chiffres à retenir", `<div class="kpis">
+        ${kpi("Risques", `${k.total}`, `${k.critical} critiques : R03 (20) et R07 (16)`, "red")}
+        ${kpi("Contrôles", `${state.controls.length}`, `${prev} préventifs, les autres détectifs`, "green")}
+        ${kpi("Principes COSO", "17", `${k.deficientPrinciples} déficients · maturité ${k.avgMaturity.toFixed(1).replace(".", ",")}/5`, "amber")}
+        ${kpi("Pertes attendues", mmad(e.el12), "EL = PD × LGD × EAD, à 12 mois", "blue")}
+        ${kpi("Provisions IFRS 9", mmad(e.provision), `${mmad(sev.provision)} en récession sévère`)}
+      </div>`) +
+      panel("Les deux cours dans le projet", table(["Notion du cours", "À retenir", "Où la retrouver"], CONCEPTS.filter((c) => ["processus", "criticite", "el", "interdep", "residuel", "traitement", "ci-objectifs", "ci-5", "ci-activites", "ci-3lignes"].includes(c.id)).map((c) => [`<b>${esc(c.title)}</b><small>${COURSES[c.course]}, ch. ${c.chap}</small>`, esc(c.key), goLink(c.link)])));
+  } else if (t === "gr" || t === "ci") {
+    const course = t === "gr" ? "GR" : "CI";
+    body = ([1, 2] as const).map((ch) => `<h2 class="sec">${COURSES[course]} · chapitre ${ch}</h2><div class="cards">${CONCEPTS.filter((c) => c.course === course && c.chap === ch).map(conceptCard).join("")}</div>`).join("");
+  } else if (t === "memo") {
+    body = panel("Moyens mnémotechniques et formules", `<div class="memo">${MEMO.map((m) => `<div><span>${esc(m.label)}</span><b>${esc(m.mnemo)}</b><small>${esc(m.detail)}</small></div>`).join("")}</div>`, { sub: "À relire la veille de l'examen : une ligne par notion." });
+  } else if (t === "quiz") {
+    const list = quizList(), known = quizKnown();
+    const i = Math.min(ui.quiz.i, list.length - 1), q = list[i];
+    const ok = list.filter((x) => known[x.i]).length;
+    body = `<div class="quiz-top"><div class="seg">${[["all", "Tout"], ["GR", "Gestion des risques"], ["CI", "Contrôle interne"]].map(([k, l]) => `<button class="${ui.quiz.filter === k ? "on" : ""}" data-act="quiz-filter" data-id="${k}">${l}</button>`).join("")}</div>
+      <span class="count">${ok} / ${list.length} maîtrisées</span><div class="bar qb"><i style="width:${(ok / list.length) * 100}%"></i></div>${btn("Recommencer", "quiz-reset", "", "ghost sm")}</div>
+      <section class="flash ${known[q.i] ? "known" : ""}"><p class="eyebrow">Question ${i + 1} / ${list.length} · ${COURSES[q.course]}, chapitre ${q.chap}</p><h2>${esc(q.q)}</h2>
+        ${ui.quiz.show ? `<div class="ans">${esc(q.a)}</div><div class="dlg-a left">${btn("À revoir", "quiz-ko", "", "ghost")}${btn("Je savais", "quiz-ok", "", "primary")}</div>` : `<div class="dlg-a left">${btn("Voir la réponse", "quiz-show", "", "primary")}</div>`}
+      </section>
+      <div class="dlg-a">${btn("← Précédente", "quiz-prev", i === 0 ? "disabled" : "", "ghost")}${btn("Suivante →", "quiz-next", i >= list.length - 1 ? "disabled" : "", "ghost")}</div>
+      <p class="small">Les 30 questions d'auto-évaluation des deux polycopiés. Répondez à voix haute avant de retourner la carte : c'est ce qui fait retenir. Votre progression reste sur cet appareil.</p>`;
+  } else {
+    body = (["GR", "CI"] as const).map((c) => `<h2 class="sec">${COURSES[c]}</h2>` + EXERCISES.filter((x) => x.course === c).map((x) => `<details class="exo"><summary><b>${esc(x.title)}</b><span class="tag">ch. ${x.chap}</span></summary><p class="small">${esc(x.statement)}</p><ul>${x.solution.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></details>`).join("")).join("");
+  }
+  return head("Cours et révision", "Les notions des deux cours (gestion des risques et contrôle interne), leur application dans Crédit Horizon, des moyens mnémotechniques, un quiz et les exercices corrigés.", "") +
+    tabs("learn", [["projet", "Le projet en une page"], ["gr", "Gestion des risques", CONCEPTS.filter((c) => c.course === "GR").length], ["ci", "Contrôle interne", CONCEPTS.filter((c) => c.course === "CI").length], ["memo", "Mémo"], ["quiz", "Quiz", QUIZ.length], ["exos", "Exercices corrigés", EXERCISES.length]], t) + body;
 }
 
 /* ---------------------------------------------------------------- assistant */
@@ -711,6 +803,7 @@ const PROMPTS = [
   ["Recommandations", "Propose des recommandations pour les risques critiques et élevés au format RISQUE → LACUNE COSO → ACTION CORRECTIVE → RESPONSABLE → INDICATEUR DE SUIVI."],
   ["Contrôles à mettre en service", "Quels risques sont insuffisamment couverts et quels contrôles faut-il mettre en service en priorité ?"],
   ["Lire les données de défaut", "Que nous apprennent les données de défaut du portefeuille de référence pour la cotation de R03, R04 et R01 ?"],
+  ["Réviser le cours", "Interroge-moi sur 5 notions des cours de gestion des risques et de contrôle interne appliquées à Crédit Horizon : pose une question à la fois, attends ma réponse, puis corrige-moi."],
   ["Préparer le comité des risques", "Prépare l'ordre du jour et les points de décision d'un comité des risques à partir des données de la plateforme."],
 ];
 function pAdvisor() {
@@ -752,9 +845,9 @@ function pAdmin() {
 /* ================================================================ rendu */
 const NAV: [string, string][] = [
   ["overview", "Dashboard exécutif"], ["portfolio", "Portefeuille de référence"], ["risks", "Registre des risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"],
-  ["controls", "Contrôle interne"], ["actions", "Plan d'action"], ["framework", "Référentiel"], ["advisor", "Risk Advisor"], ["admin", "Administration"],
+  ["controls", "Contrôle interne"], ["actions", "Plan d'action"], ["framework", "Référentiel"], ["advisor", "Risk Advisor"], ["learn", "Cours et révision"], ["admin", "Administration"],
 ];
-const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pPortfolio, risks: pRisks, credit: pCredit, dossiers: pDossiers, controls: pControls, actions: pActions, framework: pFramework, advisor: pAdvisor, admin: pAdmin };
+const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pPortfolio, risks: pRisks, credit: pCredit, dossiers: pDossiers, controls: pControls, actions: pActions, framework: pFramework, advisor: pAdvisor, learn: pLearn, admin: pAdmin };
 const MARK = `<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9"/><path d="M8 27c4-8.5 8-12.5 12-12.5S28 18.5 32 27" fill="none" stroke-width="2.6" stroke-linecap="round"/><path d="M7 31h26" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 const route = () => (PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "overview");
 
@@ -762,7 +855,7 @@ const TREE: [string, [string, string][]][] = [
   ["Pilotage", [["overview", "Dashboard exécutif"], ["portfolio", "Portefeuille de référence"]]],
   ["Risques", [["risks", "Registre des risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"]]],
   ["Contrôle interne", [["controls", "Contrôles et COSO"], ["framework", "Appétence et gouvernance"], ["actions", "Suivi et plan d'action"]]],
-  ["Intelligence", [["advisor", "Risk Advisor IA"], ["admin", "Rapports et administration"]]],
+  ["Intelligence", [["advisor", "Risk Advisor IA"], ["learn", "Cours et révision"], ["admin", "Rapports et administration"]]],
 ];
 
 function render() {
@@ -836,7 +929,11 @@ PD annuelle de référence ${(BASE_PD * 100).toFixed(2)} % (taux d'incidence : d
 ## Mesure du risque de crédit du portefeuille de Crédit Horizon (portefeuille FICTIF de démonstration, en MAD)
 ${(() => { const e = evaluate(state.portfolio as Segment[]); return `Encours ${Math.round(e.ead)} MAD, pertes attendues 12 mois ${Math.round(e.el12)} MAD, provisions IFRS 9 ${Math.round(e.provision)} MAD (couverture ${(e.coverage * 100).toFixed(2)} %), part des 3 premiers secteurs ${(e.top3 * 100).toFixed(0)} %, HHI ${e.hhi.toFixed(3)}.
 Segments : ${e.rows.map((r) => `${r.sector} EAD ${Math.round(r.ead)} PD12 ${(r.pd * 100).toFixed(2)} % LGD ${(r.lgd * 100).toFixed(0)} % EL12 ${Math.round(r.el12)} stade2 ${r.stage2} % stade3 ${r.stage3} % provision ${Math.round(r.provision)}`).join(" ; ")}.`; })()}
-Posture : l'analyste risque crédit répond à « Quel est le risque ? » et comment le maîtriser ; il ne décide pas de l'octroi.`;
+Posture : l'analyste risque crédit répond à « Quel est le risque ? » et comment le maîtriser ; il ne décide pas de l'octroi.
+
+## Notions des cours (Pr Z. ELMENZHI) à utiliser pour expliquer et réviser
+${CONCEPTS.map((c) => `- ${c.title} (${COURSES[c.course]}, ch. ${c.chap}) : ${c.def} À retenir : ${c.key} Application : ${c.project}`).join("\n")}
+Risque résiduel visé et traitement : ${state.risks.map((r) => `${r.id} ${r.treatment ?? "–"} résiduel P${r.res_probability ?? "?"}×G${r.res_gravity ?? "?"}`).join(" ; ")}.`;
 }
 
 async function ask(q: string) {
@@ -961,6 +1058,19 @@ document.addEventListener("click", (e) => {
       });
     case "seg-new": return crud("seg", state.portfolio, SEG_FIELDS, "Segment", "S", 2, "", null, { sector: SECTORS[0], collateral: 50, term: 60, stage2: 5, stage3: 2 });
     case "seg-edit": return crud("seg", state.portfolio, SEG_FIELDS, "Segment", "S", 2, "", find(state.portfolio));
+    case "quiz-filter": ui.quiz = { filter: id, i: 0, show: false }; return render();
+    case "quiz-show": ui.quiz.show = true; return render();
+    case "quiz-prev": ui.quiz.i = Math.max(0, ui.quiz.i - 1); ui.quiz.show = false; return render();
+    case "quiz-next": ui.quiz.i = Math.min(quizList().length - 1, ui.quiz.i + 1); ui.quiz.show = false; return render();
+    case "quiz-ok": case "quiz-ko": {
+      const list = quizList(), k = quizKnown();
+      k[list[Math.min(ui.quiz.i, list.length - 1)].i] = act === "quiz-ok";
+      quizSave(k);
+      ui.quiz.i = Math.min(list.length - 1, ui.quiz.i + 1); ui.quiz.show = false;
+      return render();
+    }
+    case "quiz-reset": quizSave({}); ui.quiz.i = 0; ui.quiz.show = false; return render();
+    case "resid": ui.resid = id === "1"; return render();
     case "stress-preset": {
       const [pdMult, lgdAdd, sector, sectorMult, single] = el.dataset.v!.split("|");
       ui.stress = { pdMult: +pdMult, lgdAdd: +lgdAdd, sector, sectorMult: +sectorMult, singleDefault: +single };

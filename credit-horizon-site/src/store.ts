@@ -3,6 +3,7 @@ import seed from "./seed.json";
 import { levelFromScore } from "./logic/scoring";
 import { analyzeDossier } from "./logic/dossier-analysis";
 import { DEMO_PORTFOLIO } from "./logic/credit";
+import { RESIDUAL } from "./logic/course";
 
 const KEY = "credit-horizon-v3";
 export type Row = Record<string, any>;
@@ -38,7 +39,7 @@ export function baseline(): State {
     );
   return {
     version: 3,
-    risks: s.risks.map((r: Row) => ({ ...r, is_demo: true, updated_at: BASELINE_DATE })),
+    risks: s.risks.map((r: Row) => ({ ...RESIDUAL[r.id], ...r, is_demo: true, updated_at: BASELINE_DATE })),
     history,
     controls: s.controls.map((c: Row) => ({ ...c, last_review: "", is_demo: true })),
     components: s.coso_components.map((c: Row) => ({ ...c, is_demo: true })),
@@ -57,6 +58,7 @@ export function baseline(): State {
 
 function migrate(p: any): State {
   if (!Array.isArray(p.portfolio)) p.portfolio = DEMO_PORTFOLIO.map((x) => ({ ...x, is_demo: true }));
+  for (const r of p.risks ?? []) if (r.treatment === undefined && RESIDUAL[r.id]) Object.assign(r, RESIDUAL[r.id]);
   return p;
 }
 
