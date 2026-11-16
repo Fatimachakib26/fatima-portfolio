@@ -724,6 +724,126 @@ function pFramework() {
     tabs("framework", [["charte", "Charte d'appétence"], ["raci", "Gouvernance RACI"], ["lignes", "Trois Lignes"], ["typo", "Typologie des risques"]], t) + body;
 }
 
+/* ---------------------------------------------------------------- carte mentale et schémas */
+const ARROW = (id: string, color = "currentColor") => `<defs><marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${color}"/></marker></defs>`;
+const svgText = (x: number, y: number, t: string, o: { a?: string; w?: number; s?: number; c?: string } = {}) =>
+  `<text x="${x}" y="${y}" text-anchor="${o.a ?? "middle"}" font-size="${o.s ?? 12}" font-weight="${o.w ?? 400}" fill="${o.c ?? "currentColor"}">${esc(t)}</text>`;
+const box = (x: number, y: number, w: number, h: number, color: string, lines: string[], o: { bold0?: boolean; r?: number; op?: number } = {}) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.r ?? 10}" style="fill:var(--surface)"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.r ?? 10}" fill="${color}" fill-opacity="${o.op ?? 0.14}" stroke="${color}" stroke-width="1.5"/>` +
+  lines.map((l, i) => svgText(x + w / 2, y + h / 2 + (i - (lines.length - 1) / 2) * 15 + 4, l, { w: i === 0 && o.bold0 !== false ? 700 : 400, s: i === 0 ? 12.5 : 11.5 })).join("");
+
+function mindMap() {
+  const e = evaluate(state.portfolio as Segment[]);
+  const sev = evaluate(state.portfolio as Segment[], { pdMult: 2, lgdAdd: 0.1, sector: "", sectorMult: 1, singleDefault: 0 });
+  const k = computeKpis(snapshot() as any);
+  const B: { t: string; c: string; href: string; side: -1 | 1; y: number; leaves: string[] }[] = [
+    { t: "1. Le problème", c: "#dc2626", href: "#learn", side: -1, y: 90, leaves: ["Dossiers incomplets", "Décisions hétérogènes", "Anomalies mal suivies", "Croissance contre prudence"] },
+    { t: "2. Les risques", c: "#ea580c", href: "#risks", side: -1, y: 280, leaves: ["Crédit : R01 à R04", "Liquidité : R05, R06", "Opérationnel : R07, R08", "Critiques : R03 (20), R07 (16)"] },
+    { t: "3. La mesure", c: "#2a78d6", href: "#credit", side: -1, y: 470, leaves: ["Criticité = P × G", "EL = PD × LGD × EAD", `EL 12 mois : ${mmad(e.el12)}`, `Stress : ${mmad(sev.provision)}`] },
+    { t: "4. Les contrôles", c: "#0f9f6e", href: "#controls", side: 1, y: 90, leaves: ["Préventifs : C01, C02, C03", "Détectifs : C04 à C08", "COSO : 5 composantes", `17 principes, ${k.deficientPrinciples} déficients`] },
+    { t: "5. Les acteurs", c: "#7c3aed", href: "#framework", side: 1, y: 280, leaves: ["1re ligne : commercial", "2e ligne : analyste risque", "3e ligne : audit interne", "RACI et délégations"] },
+    { t: "6. Le pilotage", c: "#0891b2", href: "#actions", side: 1, y: 470, leaves: ["Anomalies (C04)", "Plan d'action A01 à A10", "Indicateurs de suivi", "Dashboard exécutif"] },
+  ];
+  const cx = 500, cy = 280;
+  const out = B.map((b) => {
+    const bx = cx + b.side * 225, x0 = bx - 82;
+    const sx = cx + b.side * 92;
+    const curve = `<path d="M${sx},${cy} C${sx + b.side * 60},${cy} ${x0 + (b.side < 0 ? 164 : 0) - b.side * 60},${b.y} ${x0 + (b.side < 0 ? 164 : 0)},${b.y}" fill="none" stroke="${b.c}" stroke-width="2.5"/>`;
+    const lx = b.side > 0 ? bx + 98 : bx - 98;
+    const leaves = b.leaves.map((l, i) => {
+      const ly = b.y - 36 + i * 24;
+      return `<line x1="${b.side > 0 ? bx + 82 : bx - 82}" y1="${b.y}" x2="${lx}" y2="${ly - 4}" stroke="${b.c}" stroke-opacity=".55"/>` + svgText(lx + b.side * 6, ly, l, { a: b.side > 0 ? "start" : "end", s: 12 });
+    }).join("");
+    return curve + `<a href="${b.href}">${box(x0, b.y - 20, 164, 40, b.c, [b.t], { op: 0.18 })}</a>` + leaves;
+  }).join("");
+  return `<figure class="fig"><svg viewBox="0 0 1000 560" role="img" aria-label="Carte mentale du projet Crédit Horizon : problème, risques, mesure, contrôles, acteurs, pilotage">
+    ${out}<a href="#overview">${box(cx - 92, cy - 30, 184, 60, "#0a4d38", ["Crédit Horizon", "croître sans perdre la prudence"], { op: 0.9, r: 30 }).replace(/fill="currentColor"/g, 'fill="#ffffff"')}</a></svg>
+    <figcaption>La carte mentale du projet : à gauche, ce qui menace (le problème, les risques et leur mesure) ; à droite, la réponse (contrôles, acteurs, pilotage). Cliquez sur une branche pour ouvrir la page correspondante.</figcaption></figure>`;
+}
+
+function bowTie() {
+  const red = "#dc2626", green = "#0f9f6e", blue = "#2a78d6", grey = "#64748b";
+  const causes = ["Objectifs de volume", "Critères hétérogènes (R02)", "Dossiers incomplets (R01)"];
+  const prev = ["C01 complétude", "C02 double validation", "C03 séparation"];
+  const det = ["C05 suivi des retards", "C06 revue du portefeuille", "C07 concentration"];
+  const cons = ["Pertes sur créances", "Hausse des provisions", "Tension de trésorerie (R05)"];
+  const ys = [60, 140, 220];
+  return `<figure class="fig"><svg viewBox="0 0 1000 300" role="img" aria-label="Nœud papillon du risque R03 : les contrôles préventifs agissent sur les causes avant l'événement, les contrôles détectifs et correctifs sur les conséquences après">
+    ${ARROW("bt", grey)}
+    ${svgText(250, 22, "AVANT l'événement : contrôles préventifs", { w: 700, s: 12, c: green })}${svgText(750, 22, "APRÈS : contrôles détectifs et correctifs", { w: 700, s: 12, c: blue })}
+    ${ys.map((y, i) => `<line x1="190" y1="${y}" x2="418" y2="140" stroke="${grey}" stroke-width="1.6" marker-end="url(#bt)"/><line x1="582" y1="140" x2="808" y2="${y}" stroke="${grey}" stroke-width="1.6" marker-end="url(#bt)"/>`).join("")}
+    ${causes.map((t, i) => box(10, ys[i] - 22, 180, 44, grey, [t], { bold0: false })).join("")}
+    ${prev.map((t, i) => box(225, ys[i] + (140 - ys[i]) * 0.482 - 15, 150, 30, green, [t], { op: 0.22 })).join("")}
+    <circle cx="500" cy="140" r="80" fill="${red}" fill-opacity=".14" stroke="${red}" stroke-width="2"/>
+    ${svgText(500, 120, "ÉVÉNEMENT", { w: 700, s: 11, c: red })}${svgText(500, 140, "R03 Dégradation", { w: 700, s: 13 })}${svgText(500, 157, "du portefeuille", { w: 700, s: 13 })}${svgText(500, 177, "P 4 × G 5 = 20", { s: 11.5 })}
+    ${det.map((t, i) => box(625, 140 + (ys[i] - 140) * 0.553 - 15, 164, 30, blue, [t], { op: 0.22 })).join("")}
+    ${cons.map((t, i) => box(810, ys[i] - 22, 180, 44, grey, [t], { bold0: false })).join("")}
+    ${svgText(100, 285, "CAUSES", { w: 700, s: 11, c: grey })}${svgText(900, 285, "CONSÉQUENCES", { w: 700, s: 11, c: grey })}</svg>
+    <figcaption>Le « nœud papillon » de R03, le risque central. Cause → événement → conséquence (cours de gestion des risques, ch. 1) : les contrôles préventifs (C01 à C03) coupent les causes avant que le portefeuille se dégrade ; les contrôles détectifs et correctifs (C05 à C07) limitent les conséquences ensuite (cours de contrôle interne, ch. 1).</figcaption></figure>`;
+}
+
+function dossierFlow() {
+  const steps: [string, string, string, string][] = [
+    ["Constitution", "chargé d'affaires", "1re ligne", "#7c3aed"],
+    ["C01 Complétude", "fonction risques", "2e ligne", "#0f9f6e"],
+    ["Avis de risque", "PD, LGD, EL", "2e ligne", "#0f9f6e"],
+    ["C02 Décision", "instance délégataire", "gouvernance", "#0a4d38"],
+    ["Décaissement", "fonction finance", "1re ligne", "#7c3aed"],
+    ["Suivi", "C05 retards", "C04 anomalies", "#0891b2"],
+  ];
+  const labels = ["dossier", "complet", "avis motivé", "autorisé", "échéances"];
+  const W = 140, G = 26, Y = 70, H = 76;
+  const x = (i: number) => 10 + i * (W + G);
+  return `<figure class="fig"><svg viewBox="0 0 1000 230" role="img" aria-label="Parcours d'un dossier TPE : constitution, contrôle de complétude, avis de risque, décision, décaissement, suivi ; un dossier incomplet est renvoyé">
+    ${ARROW("df")}${ARROW("dfr", "#dc2626")}
+    ${steps.map(([a, b, c, col], i) => box(x(i), Y, W, H, col, [a, b, c]) + (i < steps.length - 1 ? `<line x1="${x(i) + W}" y1="${Y + H / 2}" x2="${x(i + 1) - 2}" y2="${Y + H / 2}" stroke="currentColor" stroke-width="1.6" marker-end="url(#df)"/>${svgText(x(i) + W + G / 2, Y - 8, labels[i], { s: 11 })}` : "")).join("")}
+    <path d="M${x(1) + W / 2},${Y + H} V${Y + H + 44} H${x(0) + W / 2} V${Y + H + 4}" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#dfr)"/>
+    ${svgText((x(0) + x(1) + W) / 2, Y + H + 62, "incomplet : retour avec motif, décision bloquée (R01)", { s: 11.5, c: "#dc2626", w: 600 })}
+    <path d="M${x(5) + W / 2},${Y} V${Y - 34} H${x(2) + W / 2} V${Y - 4}" fill="none" stroke="#0891b2" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#df)"/>
+    ${svgText((x(2) + x(5)) / 2 + W / 2, Y - 40, "retards et anomalies : réévaluer le risque (R04, C06)", { s: 11.5, c: "#0891b2", w: 600 })}</svg>
+    <figcaption>Le parcours d'un dossier TPE. Aucun acteur ne tient toute la chaîne : le commercial constitue, la fonction risques vérifie et donne un avis, l'instance délégataire décide (séparation des fonctions, C03). La plateforme ne prend jamais la décision.</figcaption></figure>`;
+}
+
+function elDiagram() {
+  const e = evaluate(state.portfolio as Segment[]);
+  const sev = evaluate(state.portfolio as Segment[], { pdMult: 2, lgdAdd: 0.1, sector: "", sectorMult: 1, singleDefault: 0 });
+  const wpd = e.rows.reduce((a, x) => a + x.pd * x.ead, 0) / (e.ead || 1), wlgd = e.rows.reduce((a, x) => a + x.lgd * x.ead, 0) / (e.ead || 1);
+  const blue = "#2a78d6", amber = "#d97706", red = "#dc2626";
+  return `<figure class="fig"><svg viewBox="0 0 1000 250" role="img" aria-label="De la PD aux provisions : PD fois LGD fois EAD donne la perte attendue couverte par les provisions ; un choc crée une perte inattendue couverte par les fonds propres">
+    ${ARROW("el")}
+    ${box(10, 34, 150, 68, blue, ["PD", "probabilité de défaut", pct(wpd, 2)])}${svgText(178, 74, "×", { s: 20, w: 700 })}
+    ${box(196, 34, 150, 68, blue, ["LGD", "perte en cas de défaut", pct(wlgd, 0)])}${svgText(364, 74, "×", { s: 20, w: 700 })}
+    ${box(382, 34, 150, 68, blue, ["EAD", "exposition au défaut", mmad(e.ead)])}
+    <line x1="532" y1="68" x2="590" y2="68" stroke="currentColor" stroke-width="1.6" marker-end="url(#el)"/>${svgText(561, 60, "=", { s: 14, w: 700 })}
+    ${box(594, 40, 170, 56, amber, ["Perte attendue", `${mmad(e.el12)} à 12 mois`])}
+    <line x1="764" y1="68" x2="818" y2="68" stroke="currentColor" stroke-width="1.6" marker-end="url(#el)"/>${svgText(791, 60, "couverte", { s: 10.5 })}
+    ${box(822, 40, 168, 56, amber, ["Provisions IFRS 9", mmad(e.provision)])}
+    ${svgText(906, 118, "stade 1 : EL 12 mois", { s: 11 })}${svgText(906, 133, "stade 2 : EL sur la vie", { s: 11 })}${svgText(906, 148, "stade 3 : LGD × encours", { s: 11 })}
+    ${box(196, 170, 336, 56, red, ["Choc systématique (récession sévère)", "PD × 2, LGD + 10 points"])}
+    <line x1="532" y1="198" x2="590" y2="198" stroke="currentColor" stroke-width="1.6" marker-end="url(#el)"/>
+    ${box(594, 170, 170, 56, red, ["Perte inattendue", `+${mmad(sev.provision - e.provision)}`])}
+    <line x1="764" y1="198" x2="818" y2="198" stroke="currentColor" stroke-width="1.6" marker-end="url(#el)"/>${svgText(791, 190, "couverte", { s: 10.5 })}
+    ${box(822, 170, 168, 56, red, ["Fonds propres", "capacité d'absorption"])}
+    ${svgText(100, 205, "Stress test", { w: 700, s: 12, c: red })}</svg>
+    <figcaption>La mesure du risque de crédit. La perte attendue (EL = PD × LGD × EAD) est un coût normal du métier, couvert par les provisions ; la perte inattendue, révélée par le stress test, doit être absorbée par les fonds propres (cours de gestion des risques, ch. 1, section 8). Portefeuille fictif.</figcaption></figure>`;
+}
+
+function controlLoop() {
+  const st: [string, string, string][] = [
+    ["Objectifs", "croissance prudente", "#0a4d38"], ["Risques", "R01 à R08, P × G", "#ea580c"], ["Contrôles", "C01 à C08", "#0f9f6e"],
+    ["Acteurs", "RACI, Trois Lignes", "#7c3aed"], ["Surveillance", "anomalies, indicateurs", "#0891b2"], ["Amélioration", "recommandations, plan", "#2a78d6"],
+  ];
+  const cx = 500, cy = 170, R = 128;
+  const pos = st.map((_, i) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / st.length; return [cx + R * 1.9 * Math.cos(a), cy + R * Math.sin(a)]; });
+  return `<figure class="fig"><svg viewBox="0 0 1000 340" role="img" aria-label="La boucle du contrôle interne : objectifs, risques, contrôles, acteurs, surveillance, amélioration, puis retour aux risques">
+    ${ARROW("cl")}
+    ${pos.map(([x, y], i) => { const [x2, y2] = pos[(i + 1) % pos.length]; const dx = x2 - x, dy = y2 - y, L = Math.hypot(dx, dy); const k1 = 82 / L, k2 = (L - 84) / L;
+      return `<line x1="${(x + dx * k1).toFixed(1)}" y1="${(y + dy * k1 * 0.5).toFixed(1)}" x2="${(x + dx * k2).toFixed(1)}" y2="${(y + dy * (1 - (1 - k2) * 0.5)).toFixed(1)}" stroke="currentColor" stroke-width="1.6" marker-end="url(#cl)"/>`; }).join("")}
+    ${st.map(([a, b, c], i) => box(pos[i][0] - 80, pos[i][1] - 24, 160, 48, c, [a, b])).join("")}
+    ${svgText(cx, cy - 4, "Assurance", { w: 700, s: 14 })}${svgText(cx, cy + 14, "raisonnable", { w: 700, s: 14 })}</svg>
+    <figcaption>La logique des deux chapitres de contrôle interne, appliquée au projet. C'est une boucle, pas une liste : l'amélioration renvoie à une nouvelle évaluation des risques. Le résultat n'est jamais une garantie, seulement une assurance raisonnable.</figcaption></figure>`;
+}
+
 /* ---------------------------------------------------------------- cours et révision */
 const goLink = (link?: string) => {
   if (!link) return "";
@@ -776,6 +896,12 @@ function pLearn() {
   } else if (t === "gr" || t === "ci") {
     const course = t === "gr" ? "GR" : "CI";
     body = ([1, 2] as const).map((ch) => `<h2 class="sec">${COURSES[course]} · chapitre ${ch}</h2><div class="cards">${CONCEPTS.filter((c) => c.course === course && c.chap === ch).map(conceptCard).join("")}</div>`).join("");
+  } else if (t === "schemas") {
+    body = panel("Carte mentale du projet", mindMap(), { sub: "Toute l'histoire du projet sur une seule image : à mémoriser en premier." }) +
+      panel("Schéma 1 · Où agissent les contrôles ?", bowTie()) +
+      panel("Schéma 2 · Le parcours d'un dossier TPE", dossierFlow()) +
+      panel("Schéma 3 · De la probabilité de défaut aux provisions", elDiagram()) +
+      panel("Schéma 4 · La boucle du contrôle interne", controlLoop());
   } else if (t === "memo") {
     body = panel("Moyens mnémotechniques et formules", `<div class="memo">${MEMO.map((m) => `<div><span>${esc(m.label)}</span><b>${esc(m.mnemo)}</b><small>${esc(m.detail)}</small></div>`).join("")}</div>`, { sub: "À relire la veille de l'examen : une ligne par notion." });
   } else if (t === "quiz") {
@@ -793,7 +919,7 @@ function pLearn() {
     body = (["GR", "CI"] as const).map((c) => `<h2 class="sec">${COURSES[c]}</h2>` + EXERCISES.filter((x) => x.course === c).map((x) => `<details class="exo"><summary><b>${esc(x.title)}</b><span class="tag">ch. ${x.chap}</span></summary><p class="small">${esc(x.statement)}</p><ul>${x.solution.map((s) => `<li>${esc(s)}</li>`).join("")}</ul></details>`).join("")).join("");
   }
   return head("Cours et révision", "Les notions des deux cours (gestion des risques et contrôle interne), leur application dans Crédit Horizon, des moyens mnémotechniques, un quiz et les exercices corrigés.", "") +
-    tabs("learn", [["projet", "Le projet en une page"], ["gr", "Gestion des risques", CONCEPTS.filter((c) => c.course === "GR").length], ["ci", "Contrôle interne", CONCEPTS.filter((c) => c.course === "CI").length], ["memo", "Mémo"], ["quiz", "Quiz", QUIZ.length], ["exos", "Exercices corrigés", EXERCISES.length]], t) + body;
+    tabs("learn", [["projet", "Le projet en une page"], ["schemas", "Carte mentale et schémas"], ["gr", "Gestion des risques", CONCEPTS.filter((c) => c.course === "GR").length], ["ci", "Contrôle interne", CONCEPTS.filter((c) => c.course === "CI").length], ["memo", "Mémo"], ["quiz", "Quiz", QUIZ.length], ["exos", "Exercices corrigés", EXERCISES.length]], t) + body;
 }
 
 /* ---------------------------------------------------------------- assistant */

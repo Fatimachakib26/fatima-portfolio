@@ -641,3 +641,9 @@ details.exo li { margin: 4px 0; }
 .cc header .tag { justify-self: start; }
 .tw .lnk { white-space: nowrap; margin-top: 0; }
 .seg button.on { background: var(--g800); color: #fff; }
+.fig { margin: 0; }
+.fig svg { width: 100%; height: auto; display: block; color: var(--ink); }
+.fig svg a { cursor: pointer; }
+.fig svg a:hover rect { stroke-width: 3; }
+.fig figcaption { font-size: 12.5px; color: var(--ink-3); margin-top: 8px; max-width: 110ch; }
+.fig svg a { color: var(--ink); }

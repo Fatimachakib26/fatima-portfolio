@@ -1,7 +1,7 @@
 const fs = require('fs');
 const C = JSON.parse(fs.readFileSync(__dirname + '/course.json'));
 const K = JSON.parse(fs.readFileSync(__dirname + '/calc.json'));
-const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType, AlignmentType, HeadingLevel, LevelFormat, BorderStyle, Footer, PageNumber, PageBreak } = require('docx');
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType, AlignmentType, HeadingLevel, LevelFormat, BorderStyle, Footer, PageNumber, PageBreak, ImageRun } = require('docx');
 const F = 'Calibri', W = 9638;
 const fr = (v, d = 2) => v.toFixed(d).replace('.', ',');
 const runs = (t, o = {}) => t.split(/(\*\*[^*]+\*\*)/).filter(Boolean).map((s) => s.startsWith('**') ? new TextRun({ text: s.slice(2, -2), bold: true, ...o }) : new TextRun({ text: s, ...o }));
@@ -24,6 +24,9 @@ function card(c) {
   return [new Paragraph({ children: [new TextRun({ text: c.title, bold: true, size: 25, color: '0A4D38' })], spacing: { before: 200, after: 70 }, keepNext: true, keepLines: true }),
     new Table({ width: { size: W, type: WidthType.DXA }, columnWidths: [1900, W - 1900], rows: [row('Définition', c.def, 'F8FAFC', '475569'), row('À retenir', c.key, 'FEF3C7', '92400E'), row('Dans le projet', c.project, 'ECFDF5', '0F7A58')] })];
 }
+const FIGS = JSON.parse(fs.readFileSync(__dirname + '/docfig.json'));
+const figBlock = (f, i) => [H2(f.title), new Paragraph({ alignment: AlignmentType.CENTER, keepNext: true, children: [new ImageRun({ type: 'png', data: fs.readFileSync(__dirname + `/docfig-${i}.png`), transformation: { width: 640, height: Math.round(640 * f.h / f.w) } })] }),
+  new Paragraph({ children: [new TextRun({ text: f.caption, italics: true, size: 19, color: '475569' })], spacing: { after: 160 } })];
 const el = K.base, sev = K.scen['Récession sévère'];
 const mm = (v) => fr(v / 1e6, 2) + ' M MAD';
 const children = [
@@ -63,6 +66,9 @@ const children = [
     ['R05', 'Tension de trésorerie (décaissements accélérés)', 'Liquidité', '3 × 4 = 12', 'Réduire'], ['R06', 'Inadéquation échéances des crédits / ressources', 'Liquidité', '2 × 5 = 10', 'Réduire et transférer'],
     ['R07', 'Décision hors délégation, contournement du circuit', 'Opérationnel', '4 × 4 = 16', 'Réduire'], ['R08', 'Anomalies non remontées, données de mauvaise qualité', 'Opérationnel', '4 × 3 = 12', 'Réduire']], [9, 45, 16, 14, 16]),
 
+  H1('1 bis. Carte mentale et schémas'),
+  P('Commencez par ces images : elles résument tout le projet. Les mêmes figures sont interactives dans la plateforme (Cours et révision, onglet « Carte mentale et schémas »).'),
+  ...FIGS.flatMap(figBlock),
   H1('2. Gestion des risques financiers'),
   ...[1, 2].flatMap((ch) => [H2(`Chapitre ${ch} — ${ch === 1 ? 'Cadre conceptuel des risques financiers' : 'Typologie approfondie des risques financiers'}`), ...C.CONCEPTS.filter((c) => c.course === 'GR' && c.chap === ch).flatMap(card)]),
   H2('Typologie du cours appliquée à Crédit Horizon'),
