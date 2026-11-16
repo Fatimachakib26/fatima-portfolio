@@ -6,11 +6,12 @@ import { analyzeDossier, CHECKLIST, PRODUCTS, GUARANTEE_TYPES, isRequired } from
 import { offlineAnswer } from "./logic/offline-advisor";
 import { buildContext, ADVISOR_RULES } from "./logic/ai-context";
 import { md } from "./markdown";
+import { evaluate, riskParams, SECTORS, BASE_PD, BASE_LGD, NO_STRESS, ANALYST_ROLE, termBand, type Segment, type Stress } from "./logic/credit";
 import marts from "../../data-pipeline/data/marts/sba_marts.json";
 
 /* ================================================================ rôles et droits */
 const ROLES: Record<string, string> = {
-  admin: "Administrateur", direction: "Direction générale", risques: "Fonction risques",
+  admin: "Administrateur", direction: "Direction générale", risques: "Analyste risque crédit",
   commercial: "Chargé d'affaires", controle: "Contrôle interne", lecteur: "Lecture seule",
 };
 const PERMS: Record<string, string[]> = {
@@ -48,6 +49,7 @@ const nf = new Intl.NumberFormat("fr-FR");
 const n0 = (v: number) => nf.format(Math.round(v));
 const pct = (v: number | null | undefined, d = 1) => (v == null || isNaN(v) ? "–" : `${(v * 100).toFixed(d).replace(".", ",")} %`);
 const usd = (v: number) => (v >= 1e9 ? `${(v / 1e9).toFixed(1).replace(".", ",")} Md$` : v >= 1e6 ? `${(v / 1e6).toFixed(1).replace(".", ",")} M$` : v >= 1e3 ? `${n0(v / 1e3)} k$` : `${n0(v)} $`);
+const mmad = (v: number) => `${(v / 1e6).toFixed(v >= 1e7 ? 1 : 2).replace(".", ",")} M MAD`;
 const mad = (v: unknown) => (v === "" || v == null || isNaN(Number(v)) ? "–" : `${n0(Number(v))} MAD`);
 const today = () => new Date().toISOString().slice(0, 10);
 const fdate = (s: string) => (s ? new Date(s).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "–");
@@ -67,6 +69,7 @@ const I: Record<string, string> = {
   overview: "M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z",
   portfolio: "M3 3v18h18M7 15l4-4 3 3 6-6",
   risks: "M12 3 2 20h20zM12 10v4M12 17h.01",
+  credit: "M4 19a9 9 0 1 1 16 0M12 14l4.5-4.5M12 14h.01",
   dossiers: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5",
   controls: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6zM9 12l2 2 4-4",
   actions: "M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01",
@@ -105,7 +108,7 @@ function record(action: string, entity: string, id: string, details = "") {
 }
 
 /* ================================================================ état d'interface */
-const ui: any = { sel: null, view: "table", filter: "", cat: "", dossier: null, draft: null, tab: {}, chat: [] as Row[], busy: false, ai: false, names: {} };
+const ui: any = { stress: { ...NO_STRESS }, sel: null, view: "table", filter: "", cat: "", dossier: null, draft: null, tab: {}, chat: [] as Row[], busy: false, ai: false, names: {} };
 const tab = (page: string, def: string) => ui.tab[page] ?? def;
 
 /* ================================================================ briques d'interface */
@@ -216,7 +219,7 @@ function pOverview() {
       ${metric("Contrôles en service", `${live}<em>/ ${k.totalControls}</em>`, live ? `${k.coveredRisks}/${k.total} risques couverts` : "aucun contrôle encore déployé", live ? "" : "warn")}
       ${metric("Plan d'action", `${k.actionProgress} %`, `${k.pendingActions} actions ouvertes dont ${p1.length} P1`)}
       ${metric("Anomalies ouvertes", `${k.openAnomalies}`, late.length ? `${late.length} en retard` : "aucune en retard", late.length ? "bad" : "")}
-      ${metric("Défaut de référence", pct(O.default_rate), `prêts TPE SBA ${O.cohorts}`)}
+      ${(() => { const e = evaluate(state.portfolio as Segment[]); return metric("Pertes attendues 12 mois", mmad(e.el12), `provisions IFRS 9 ${mmad(e.provision)} (${pct(e.coverage, 2)})`, "warn"); })()}
     </div>
     <div class="grid g-7-5">
       ${panel("Risques prioritaires", table(["", "Risque", "Criticité", "Traitement attendu"], top.map((x) => [`<span class="ref">${x.id}</span>`, `<a href="#risks" data-act="sel" data-id="${x.id}" class="lk">${esc(x.title)}</a>`, level(x.level, x.score), `<small>${LEVEL_TREATMENT[x.level as Level]}</small>`])), { aside: `<a class="more" href="#risks">Registre</a>` })}
@@ -353,6 +356,85 @@ function riskDetail(x: Row, w: boolean) {
     <div class="dlg-a">${w ? `${btn("Supprimer", "risk-del", `data-id="${x.id}"`, "ghost danger-t")}${btn("Modifier", "risk-edit", `data-id="${x.id}"`, "ghost")}` : ""}${btn(`${icon("advisor")} Analyser`, "ask", `data-q="Analyse le risque ${x.id} : explique sa cotation, son rattachement COSO, les repères du portefeuille de référence et propose une recommandation complète."`, "primary")}</div></aside>`;
 }
 
+/* ---------------------------------------------------------------- risque de crédit */
+const SEG_FIELDS: Field[] = [
+  { k: "sector", l: "Secteur", t: "select", o: SECTORS, full: true },
+  { k: "ead", l: "Encours exposé au défaut – EAD (MAD)", t: "number", req: true },
+  { k: "term", l: "Durée moyenne (mois)", t: "number", req: true },
+  { k: "collateral", l: "Part garantie par une sûreté réelle (%)", t: "range", min: 0, max: 100 },
+  { k: "stage2", l: "Encours en stade 2 – risque dégradé (%)", t: "range", min: 0, max: 50 },
+  { k: "stage3", l: "Encours en stade 3 – en défaut (%)", t: "range", min: 0, max: 30 },
+];
+const pctp = (v: number) => pct(v, 2);
+
+function stressResult() {
+  const b = evaluate(state.portfolio as Segment[]);
+  const st = evaluate(state.portfolio as Segment[], ui.stress as Stress);
+  const d = st.provision - b.provision;
+  return `<div class="metrics four">${metric("Provisions de base", mmad(b.provision), `couverture ${pctp(b.coverage)} de l'encours`)}${metric("Provisions sous stress", mmad(st.provision), `couverture ${pctp(st.coverage)}`, "bad")}${metric("Dotation supplémentaire", mmad(d), `${d >= 0 ? "+" : ""}${pct(d / (b.provision || 1), 0)} par rapport à la base`, d > 0 ? "warn" : "")}${metric("Pertes attendues 12 mois", mmad(st.el12), `base ${mmad(b.el12)}`)}</div>` +
+    table(["Secteur", "Encours", "PD 12 mois base → stress", "LGD base → stress", "Provision base", "Provision stress", "Écart"], st.rows.map((r, i) => {
+      const r0 = b.rows[i];
+      return [esc(r.sector), mmad(r.ead), `${pctp(r0.pd)} → <b>${pctp(r.pd)}</b>`, `${pct(r0.lgd, 0)} → <b>${pct(r.lgd, 0)}</b>`, mmad(r0.provision), mmad(r.provision), `<b class="${r.provision > r0.provision ? "bad-t" : ""}">${mmad(r.provision - r0.provision)}</b>`];
+    }).concat(st.singleLoss ? [[`<b>Défaut d'une contrepartie</b>`, mmad(ui.stress.singleDefault), "100 %", pct(Math.min(1, BASE_LGD + ui.stress.lgdAdd), 0), "–", mmad(st.singleLoss), `<b class="bad-t">${mmad(st.singleLoss)}</b>`]] : []), { num: [1, 4, 5, 6] });
+}
+
+function pCredit() {
+  const t = tab("credit", "mesure");
+  const w = can("risks.write");
+  const r = evaluate(state.portfolio as Segment[]);
+  const wpd = r.rows.reduce((a, x) => a + x.pd * x.ead, 0) / (r.ead || 1);
+  const wlgd = r.rows.reduce((a, x) => a + x.lgd * x.ead, 0) / (r.ead || 1);
+  let body = "";
+  if (t === "mesure") {
+    body = (w ? "" : readonly("Lecture seule : le portefeuille est tenu par l'analyste risque crédit.")) +
+      `<div class="metrics">${metric("Encours exposé (EAD)", mmad(r.ead), `${state.portfolio.length} segments sectoriels`)}${metric("PD 12 mois pondérée", pctp(wpd), `référence SBA ${pctp(BASE_PD)}`)}${metric("LGD pondérée", pct(wlgd, 1), `référence SBA ${pct(BASE_LGD, 1)}`)}${metric("Pertes attendues 12 mois", mmad(r.el12), `EL = PD × LGD × EAD`)}${metric("Provisions IFRS 9", mmad(r.provision), `couverture ${pctp(r.coverage)} de l'encours`, "warn")}</div>` +
+      panel("Pertes attendues et provisions par segment", table(["Secteur", "Encours (EAD)", "Garanti", "Durée", "PD 12 mois", "LGD", "Pertes attendues 12 mois", "Stade 2", "Stade 3", "Provision IFRS 9", ""], r.rows.map((x) => [
+        esc(x.sector), mmad(x.ead), `${x.collateral} %`, `${x.term} mois`, pctp(x.pd), pct(x.lgd, 0), mmad(x.el12), `${x.stage2} %`, `${x.stage3} %`, `<b>${mmad(x.provision)}</b>`,
+        w ? `${btn("Modifier", "seg-edit", `data-id="${x.id}"`, "ghost sm")}` : ""]).concat([[`<b>Total</b>`, `<b>${mmad(r.ead)}</b>`, "", "", `<b>${pctp(wpd)}</b>`, `<b>${pct(wlgd, 0)}</b>`, `<b>${mmad(r.el12)}</b>`, "", "", `<b>${mmad(r.provision)}</b>`, ""]]), { num: [1, 2, 3, 4, 5, 6, 7, 8, 9] }),
+        { aside: w ? `${btn(`${icon("plus")} Segment`, "seg-new", "", "ghost")}` : "", sub: "Stade 1 : pertes attendues à 12 mois · stade 2 : pertes sur la durée de vie · stade 3 : LGD × encours en défaut (IFRS 9)." }) +
+      `<div class="grid g-1-1">${panel("Concentration du portefeuille", `<dl class="kv compact"><dt>Part des 3 premiers secteurs</dt><dd>${pct(r.top3, 0)}</dd><dt>Indice de Herfindahl (HHI)</dt><dd>${r.hhi.toFixed(3).replace(".", ",")}</dd><dt>Repère SBA : 3 premiers secteurs</dt><dd>${pct(O.top3_sector_share, 0)}</dd></dl>
+        <p class="small">Plus le HHI est élevé, plus le portefeuille dépend de peu de secteurs. Suivi par le contrôle C07, lien avec le risque R03.</p>`)}
+      ${panel("Méthode", `<ol class="steps"><li><b>PD à 12 mois</b><span>PD de référence SBA (${pctp(BASE_PD)}, taux d'incidence : défauts ÷ années d'exposition) × facteurs relatifs du secteur, de la garantie et de la durée.</span></li>
+        <li><b>LGD</b><span>Perte rapportée au montant initial des prêts en défaut (${pct(BASE_LGD, 0)} en moyenne), ajustée du secteur et de la garantie.</span></li>
+        <li><b>EAD</b><span>Encours saisi par segment, en MAD.</span></li><li><b>Provisions</b><span>Modèle en trois stades d'IFRS 9 appliqué aux parts saisies en stade 2 et 3.</span></li></ol>
+        <p class="small">Repères externes calibrés sur des données américaines : à remplacer par l'historique de Crédit Horizon dès qu'il existe. Portefeuille de 500 M MAD fictif, à titre de démonstration.</p>`)}</div>`;
+  } else if (t === "stress") {
+    const s = ui.stress as Stress;
+    const rng = (k: string, label: string, min: number, max: number, step: number, v: number, fmt: string) =>
+      `<div class="fld"><label for="st_${k}">${label} : <output id="o_${k}">${fmt}</output></label><input id="st_${k}" type="range" data-st="${k}" min="${min}" max="${max}" step="${step}" value="${v}"></div>`;
+    body = panel("Scénario", `<div class="form f3">
+        ${rng("pdMult", "Multiplicateur de PD du portefeuille", 1, 3, 0.1, s.pdMult, `× ${s.pdMult.toFixed(1).replace(".", ",")}`)}
+        ${rng("lgdAdd", "Hausse de la LGD", 0, 0.3, 0.01, s.lgdAdd, `+ ${Math.round(s.lgdAdd * 100)} pts`)}
+        <div class="fld"><label for="st_sector">Secteur en crise</label><select id="st_sector" data-st="sector"><option value="">Aucun</option>${(state.portfolio as Segment[]).map((x) => `<option ${x.sector === s.sector ? "selected" : ""}>${esc(x.sector)}</option>`).join("")}</select></div>
+        ${rng("sectorMult", "Multiplicateur de PD du secteur en crise", 1, 5, 0.5, s.sectorMult, `× ${s.sectorMult.toFixed(1).replace(".", ",")}`)}
+        <div class="fld"><label for="st_single">Défaut d'une grande contrepartie (MAD)</label><input id="st_single" type="number" data-st="singleDefault" min="0" step="500000" value="${s.singleDefault || ""}" placeholder="0"></div>
+      </div><div class="dlg-a left">${[["Récession modérée", "1.5|0.05||1|0"], ["Récession sévère", "2|0.1||1|0"], ["Crise du BTP", "1|0|Construction|2.5|0"], ["Défaut d'un client de 5 M MAD", "1|0||1|5000000"], ["Aucun choc", "1|0||1|0"]].map(([l, v]) => btn(l, "stress-preset", `data-v="${v}"`, "ghost sm")).join("")}</div>`,
+      { sub: "Mesurer l'impact d'un défaut ou d'une dégradation sur le portefeuille et ajuster les provisions." }) +
+      panel("Impact sur les provisions", `<div id="stress-res">${stressResult()}</div>`);
+  } else if (t === "params") {
+    const rows = (tbl: string, keyLabel: (r: Row) => string) => (T[tbl] as Row[]).filter((x) => x.resolved >= 100).map((x) => [esc(keyLabel(x)), n0(x.loans), pct(x.default_rate, 2), `<b>${pctp(x.pd_annual)}</b>`, pct(x.lgd, 1)]);
+    body = `<div class="grid g-1-1">${panel("Par secteur", table(["Secteur", "Prêts", "PD vie du prêt", "PD 12 mois", "LGD"], rows("by_sector", (x) => x.sector), { num: [1, 2, 3, 4] }), { sub: "Secteurs d'au moins 100 prêts dénoués." })}
+      <div>${panel("Par garantie", table(["Garantie réelle", "Prêts", "PD vie", "PD 12 mois", "LGD"], rows("by_collateral", (x) => (x.collateral ? "Oui" : "Non")), { num: [1, 2, 3, 4] }))}
+      ${panel("Par durée", table(["Durée", "Prêts", "PD vie", "PD 12 mois", "LGD"], rows("by_term", (x) => x.term_band), { num: [1, 2, 3, 4] }))}
+      ${panel("Par montant (USD)", table(["Montant", "Prêts", "PD vie", "PD 12 mois", "LGD"], rows("by_size", (x) => x.size_band), { num: [1, 2, 3, 4] }))}</div></div>` +
+      panel("Définitions", `<dl class="kv"><dt>PD 12 mois</dt><dd>1 − e<sup>−λ</sup>, où λ = nombre de défauts ÷ années d'exposition au risque de tous les prêts décaissés (taux d'incidence actuariel). Total : ${n0(O.defaults)} défauts pour ${n0(O.exposure_years)} années d'exposition.</dd>
+        <dt>PD vie du prêt</dt><dd>Prêts passés en perte ÷ prêts dénoués.</dd><dt>LGD</dt><dd>Montant passé en perte ÷ montant initial des prêts passés en perte. L'encours au moment du défaut n'étant pas publié, cette LGD est une approximation.</dd>
+        <dt>Source</dt><dd>${esc(M.source.publisher)}, ${esc(LOANS.name)}, situation au ${fdate(O.as_of)} (voir Portefeuille de référence).</dd></dl>`);
+  } else {
+    const where: Record<string, string> = {
+      "Mission principale": "Registre des risques et module Risque de crédit", Orientation: "Charte d'appétence et plan d'action", Approche: "Dossiers TPE (individuel) et mesure du portefeuille (global)",
+      "Analyse financière": "Ratios du dossier TPE", Garanties: "Dossier TPE et facteur garantie de la PD", "Probabilité de défaut (PD)": "Paramètres PD calibrés sur 545 751 prêts",
+      "Suivi des impayés": "Registre des anomalies et contrôle C05", "Analyse du portefeuille": "Concentration (HHI) et secteurs", "Provisions et pertes attendues": "Pertes attendues et provisions IFRS 9",
+      Reporting: "Vue d'ensemble et exports", "Compétences clés": "PD, LGD, EAD, stades IFRS 9 dans ce module", "Exemple concret": "Stress test sur le portefeuille de 500 M MAD",
+    };
+    body = panel("Fiche de rôle : analyste risque crédit", table(["Critère", "Analyste risque crédit", "Dans Crédit Horizon"], ANALYST_ROLE.map(([k, v]) => [`<b>${esc(k)}</b>`, esc(v), `<small>${esc(where[k] ?? "")}</small>`]))) +
+      note(`<div><b>En résumé.</b> L'analyste risque crédit se demande « Quel est le risque ? », et comment le maîtriser. Il éclaire la décision par un avis indépendant ; il ne la prend pas : l'autorisation relève de l'instance délégataire (contrôle C02, matrice RACI).</div>`, "ok");
+  }
+  return head("Risque de crédit", "Mesure du risque de non-remboursement : PD, LGD, EAD, pertes attendues, provisions IFRS 9 et stress test.",
+    `<button class="btn ghost" data-act="exp-el">${icon("down")} CSV</button>`) +
+    tabs("credit", [["mesure", "Pertes attendues"], ["stress", "Stress test"], ["params", "Paramètres PD · LGD"], ["role", "Analyste risque crédit"]], t) + body;
+}
+
 /* ---------------------------------------------------------------- dossiers */
 const EMPTY_D = () => ({
   company: { name: "", legal_form: "SARL", rc_number: "", ice: "", creation_date: "", sector: "", activity: "", city: "", manager_name: "", employees: "", name_on_documents: "" },
@@ -391,7 +473,7 @@ function dossierEditor(w: boolean) {
     `<div class="grid g-7-5 top"><div class="form-col">
       ${panel("Entreprise", `<div class="form f3">${T_("company", "name", "Raison sociale *")}${S_("company", "legal_form", "Forme juridique", ["SARL", "SARLAU", "SA", "SNC", "Entreprise individuelle", "Auto-entrepreneur", "Coopérative"])}${T_("company", "creation_date", "Date de création", "date")}
         ${T_("company", "rc_number", "Registre de commerce")}${T_("company", "ice", "ICE")}${T_("company", "city", "Ville")}${T_("company", "manager_name", "Dirigeant")}${T_("company", "employees", "Effectif", "number")}${T_("company", "name_on_documents", "Raison sociale sur les pièces", "text", "Sert au contrôle de concordance")}</div>`)}
-      ${panel("Activité et financement", `<div class="form f3">${T_("company", "sector", "Secteur d'activité")}${S_("request", "product", "Produit", PRODUCTS)}${T_("request", "amount", "Montant demandé (MAD) *", "number")}
+      ${panel("Activité et financement", `<div class="form f3">${T_("company", "sector", "Secteur d'activité")}${S_("company", "risk_sector", "Secteur de référence (risque)", ["", ...SECTORS])}${S_("request", "product", "Produit", PRODUCTS)}${T_("request", "amount", "Montant demandé (MAD) *", "number")}
         ${T_("request", "duration_months", "Durée (mois) *", "number")}${T_("company", "activity", "Activité")}${T_("request", "purpose", "Objet du financement")}</div>`)}
       ${panel("Données financières (MAD)", `<div class="form f4">${T_("financials", "fiscal_year", "Exercice")}${T_("financials", "revenue_n", "Chiffre d'affaires N", "number")}${T_("financials", "revenue_n1", "Chiffre d'affaires N-1", "number")}
         ${T_("financials", "revenue_bank", "CA selon relevés bancaires", "number")}${T_("financials", "net_result", "Résultat net", "number")}${T_("financials", "equity", "Fonds propres", "number")}
@@ -400,6 +482,17 @@ function dossierEditor(w: boolean) {
       ${panel("Garanties", `<div class="form f3">${S_("guarantees", "type", "Nature", GUARANTEE_TYPES)}${T_("guarantees", "value", "Valeur estimée (MAD)", "number")}${T_("guarantees", "description", "Description")}</div>`)}
       ${panel("Observations de l'analyste", `<textarea data-d="observations" aria-label="Observations" ${w ? "" : "disabled"} placeholder="Éléments vérifiés, points à confirmer, appréciation motivée">${esc(d.observations)}</textarea>`)}
     </div><div class="sticky" id="analysis">${analysisPanel()}</div></div>`;
+}
+
+function dossierRisk() {
+  const d = ui.draft;
+  const amount = Number(d.request.amount), months = Number(d.request.duration_months), sector = d.company.risk_sector;
+  if (!sector || !(amount > 0) || !(months > 0)) return `<h3>Mesure du risque</h3><p class="small">Renseignez le secteur de référence, le montant et la durée pour estimer PD, LGD et pertes attendues.</p>`;
+  const g = d.guarantees.type && d.guarantees.type !== "Aucune" ? Math.min(1, (Number(d.guarantees.value) || 0) / amount || 1) : 0;
+  const p = riskParams({ sector, months, collateralShare: g });
+  return `<h3>Mesure du risque <span>repères SBA, indicatifs</span></h3><dl class="kv compact"><dt>PD à 12 mois</dt><dd>${pct(p.pd, 2)}</dd><dt>PD sur ${months} mois</dt><dd>${pct(p.pdLife, 1)}</dd><dt>LGD</dt><dd>${pct(p.lgd, 0)}</dd>
+    <dt>Perte attendue à 12 mois</dt><dd>${mad(amount * p.pd * p.lgd)}</dd><dt>Perte attendue sur la durée</dt><dd>${mad(amount * p.pdLife * p.lgd)}</dd></dl>
+    <p class="small">${p.factors.map((f) => `${esc(f.label)} : ${f.value < 0.5 ? pct(f.value, 2) : "× " + f.value.toFixed(2).replace(".", ",")}`).join(" · ")}. Durée ${termBand(months)}.</p>`;
 }
 
 function analysisPanel() {
@@ -411,6 +504,7 @@ function analysisPanel() {
     <div class="comp"><span>Complétude</span>${meter(a.completeness.rate, 100, a.completeness.rate === 100 ? "ok" : "")}<b>${a.completeness.present}/${a.completeness.required}</b></div>
     ${items("Pièces manquantes", a.completeness.missingDocs.map((m) => ({ message: m, severity: "alerte" })))}${items("Incohérences", a.inconsistencies)}${items("Points de vigilance", a.vigilance)}${items("Informations à compléter", a.missingInfo)}
     ${a.ratios.length ? `<h3>Ratios <span>seuils indicatifs</span></h3><dl class="kv compact">${a.ratios.map((r) => `<dt>${esc(r.label)}</dt><dd>${esc(r.value)}</dd>`).join("")}</dl>` : ""}
+    ${dossierRisk()}
     <h3>Synthèse</h3><p class="small">${esc(a.synthesis)}</p>
     <div class="dlg-a">${ui.dossier && can("dossiers.write") ? btn("Supprimer", "dos-del", "", "ghost danger-t") : ""}${ui.dossier && can("anom.create") && a.blocking ? btn("Inscrire l'anomalie", "dos-anom", "", "ghost") : ""}${ui.dossier ? btn(`${icon("advisor")} Synthèse`, "ask", `data-q="Analyse le dossier ${ui.dossier} : complétude, incohérences, vigilance, risques du registre concernés et diligences avant l'avis de la fonction risques."`, "ghost") : ""}</div></section>`;
 }
@@ -591,16 +685,16 @@ function pAdmin() {
 
 /* ================================================================ rendu */
 const NAV: [string, string][] = [
-  ["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"], ["risks", "Risques"], ["dossiers", "Dossiers TPE"],
+  ["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"], ["risks", "Risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"],
   ["controls", "Contrôle interne"], ["actions", "Plan d'action"], ["framework", "Référentiel"], ["advisor", "Risk Advisor"], ["admin", "Administration"],
 ];
-const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pPortfolio, risks: pRisks, dossiers: pDossiers, controls: pControls, actions: pActions, framework: pFramework, advisor: pAdvisor, admin: pAdmin };
+const PAGES: Record<string, () => string> = { overview: pOverview, portfolio: pPortfolio, risks: pRisks, credit: pCredit, dossiers: pDossiers, controls: pControls, actions: pActions, framework: pFramework, advisor: pAdvisor, admin: pAdmin };
 const MARK = `<svg class="mark" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9"/><path d="M8 27c4-8.5 8-12.5 12-12.5S28 18.5 32 27" fill="none" stroke-width="2.6" stroke-linecap="round"/><path d="M7 31h26" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 const route = () => (PAGES[location.hash.slice(1)] ? location.hash.slice(1) : "overview");
 
 const TREE: [string, [string, string][]][] = [
   ["Pilotage", [["overview", "Vue d'ensemble"], ["portfolio", "Portefeuille de référence"]]],
-  ["Risques", [["risks", "Registre des risques"], ["dossiers", "Dossiers TPE"]]],
+  ["Risques", [["risks", "Registre des risques"], ["credit", "Risque de crédit"], ["dossiers", "Dossiers TPE"]]],
   ["Contrôle interne", [["controls", "Contrôles et COSO"], ["framework", "Référentiel"]]],
   ["Suivi", [["actions", "Plan d'action"]]],
   ["Outils", [["advisor", "Risk Advisor"], ["admin", "Administration"]]],
@@ -614,7 +708,7 @@ function menus(): [string, MenuItem[]][] {
     ]],
     ["Affichage", NAV.map(([k, l], i) => [l, `#${k}`, `Alt+${i + 1}`] as MenuItem)],
     ["Risques", [
-      ...(can("risks.write") ? [["Nouveau risque…", "risk-new"] as MenuItem] : []), ["Registre", "view:table"], ["Matrice probabilité × gravité", "view:matrix"], null,
+      ...(can("risks.write") ? [["Nouveau risque…", "risk-new"] as MenuItem] : []), ["Registre", "view:table"], ["Matrice probabilité × gravité", "view:matrix"], null, ["Pertes attendues et provisions", "goto:credit:mesure"], ["Stress test", "goto:credit:stress"], ["Paramètres PD · LGD", "goto:credit:params"], null,
       ...(can("dossiers.write") ? [["Nouveau dossier TPE…", "dos-new"] as MenuItem] : []), ["Liste des dossiers", "#dossiers"],
     ]],
     ["Contrôle", [["Fiches de contrôle", "goto:controls:fiches"], ["Diagnostic COSO 2013", "goto:controls:coso"], null, ["Charte d'appétence", "goto:framework:charte"], ["Matrice RACI", "goto:framework:raci"]]],
@@ -688,7 +782,13 @@ Prêts décaissés ${O.loans_funded}, dénoués ${O.loans_resolved}, défauts ${
 Par cohorte : ${T.by_cohort.map((c: Row) => `FY${c.cohort_fy} ${(c.default_rate * 100).toFixed(1)} %`).join(", ")}.
 Par secteur : ${T.by_sector.slice(0, 12).map((r: Row) => `${r.sector} ${(r.default_rate * 100).toFixed(1)} %`).join(" ; ")}.
 Par ancienneté : ${T.by_business_age.map((r: Row) => `${AGE_FR[r.business_age] ?? r.business_age} ${(r.default_rate * 100).toFixed(1)} %`).join(" ; ")}.
-Garantie réelle : ${T.by_collateral.map((r: Row) => `${r.collateral ? "avec" : "sans"} ${(r.default_rate * 100).toFixed(1)} %`).join(", ")}.`;
+Garantie réelle : ${T.by_collateral.map((r: Row) => `${r.collateral ? "avec" : "sans"} ${(r.default_rate * 100).toFixed(1)} %`).join(", ")}.
+PD annuelle de référence ${(BASE_PD * 100).toFixed(2)} % (taux d'incidence : défauts / années d'exposition), LGD de référence ${(BASE_LGD * 100).toFixed(1)} % (proxy rapporté au montant initial).
+
+## Mesure du risque de crédit du portefeuille de Crédit Horizon (portefeuille FICTIF de démonstration, en MAD)
+${(() => { const e = evaluate(state.portfolio as Segment[]); return `Encours ${Math.round(e.ead)} MAD, pertes attendues 12 mois ${Math.round(e.el12)} MAD, provisions IFRS 9 ${Math.round(e.provision)} MAD (couverture ${(e.coverage * 100).toFixed(2)} %), part des 3 premiers secteurs ${(e.top3 * 100).toFixed(0)} %, HHI ${e.hhi.toFixed(3)}.
+Segments : ${e.rows.map((r) => `${r.sector} EAD ${Math.round(r.ead)} PD12 ${(r.pd * 100).toFixed(2)} % LGD ${(r.lgd * 100).toFixed(0)} % EL12 ${Math.round(r.el12)} stade2 ${r.stage2} % stade3 ${r.stage3} % provision ${Math.round(r.provision)}`).join(" ; ")}.`; })()}
+Posture : l'analyste risque crédit répond à « Quel est le risque ? » et comment le maîtriser ; il ne décide pas de l'octroi.`;
 }
 
 async function ask(q: string) {
@@ -738,7 +838,7 @@ function crud(kind: string, rows: Row[], fields: Field[], label: string, prefix:
   modal(row ? `${label} ${row.id}` : `Nouveau : ${label.toLowerCase()}`, fields, row ? { ...row } : defaults, (v) => {
     const err = validate(fields, v);
     if (err) return err;
-    for (const f of fields) if (f.t === "range") v[f.k] = Number(v[f.k]);
+    for (const f of fields) if (f.t === "range" || f.t === "number") v[f.k] = Number(v[f.k]);
     if (row) {
       const before = { ...row };
       Object.assign(row, v, { updated_at: today() });
@@ -811,6 +911,14 @@ document.addEventListener("click", (e) => {
         record("Suppression", "Contrôle", id);
         render();
       });
+    case "seg-new": return crud("seg", state.portfolio, SEG_FIELDS, "Segment", "S", 2, "", null, { sector: SECTORS[0], collateral: 50, term: 60, stage2: 5, stage3: 2 });
+    case "seg-edit": return crud("seg", state.portfolio, SEG_FIELDS, "Segment", "S", 2, "", find(state.portfolio));
+    case "stress-preset": {
+      const [pdMult, lgdAdd, sector, sectorMult, single] = el.dataset.v!.split("|");
+      ui.stress = { pdMult: +pdMult, lgdAdd: +lgdAdd, sector, sectorMult: +sectorMult, singleDefault: +single };
+      return render();
+    }
+    case "exp-el": return download("pertes-attendues.csv", csv(evaluate(state.portfolio as Segment[]).rows as any, [["sector", "Secteur"], ["ead", "Encours MAD"], ["collateral", "% garanti"], ["term", "Durée (mois)"], ["pd", "PD 12 mois"], ["lgd", "LGD"], ["el12", "Pertes attendues 12 mois"], ["stage2", "% stade 2"], ["stage3", "% stade 3"], ["provision", "Provision IFRS 9"]]));
     case "act-new": return crud("act", state.actions, ACT_FIELDS, "Action", "A", 2, "", null, { priority: "P2", status: "À faire", progress: 0 });
     case "act-edit": return crud("act", state.actions, ACT_FIELDS, "Action", "A", 2, "", find(state.actions));
     case "rec-new": return crud("rec", state.recommendations, REC_FIELDS, "Recommandation", "REC", 2, "", null, { status: "À lancer", basis: "Constat" });
@@ -936,6 +1044,14 @@ document.addEventListener("input", (e) => {
     ui.filter = t.value;
     return applyFilter();
   }
+  if (t.dataset.st) {
+    const k = t.dataset.st;
+    ui.stress[k] = k === "sector" ? t.value : Number(t.value) || 0;
+    const o = document.getElementById(`o_${k}`);
+    if (o) o.textContent = k === "lgdAdd" ? `+ ${Math.round(ui.stress.lgdAdd * 100)} pts` : `× ${Number(t.value).toFixed(1).replace(".", ",")}`;
+    document.getElementById("stress-res")!.innerHTML = stressResult();
+    return;
+  }
   if (t.id === "people") {
     clearTimeout(peopleT);
     peopleT = setTimeout(async () => {
@@ -958,6 +1074,11 @@ document.addEventListener("change", (e) => {
   if (t.id === "cat") {
     ui.cat = t.value;
     return render();
+  }
+  if (t.dataset.st === "sector") {
+    ui.stress.sector = t.value;
+    document.getElementById("stress-res")!.innerHTML = stressResult();
+    return;
   }
   if (t.dataset.d && ui.draft) {
     const [part, key] = t.dataset.d.split(".");

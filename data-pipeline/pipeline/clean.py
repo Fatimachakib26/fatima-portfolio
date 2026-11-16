@@ -128,7 +128,12 @@ def run() -> dict:
     df["Defaulted"] = np.where(df["Population"] == "Dénoué", (df["LoanStatus"] == "CHGOFF").astype(int), np.nan)
     df["MonthsToChargeOff"] = ((df["ChargeOffDate"] - df["ApprovalDate"]).dt.days / 30.4375).round(1)
     df["LossRate"] = np.where(co.loc[df.index], df["GrossChargeOffAmount"] / df["GrossApproval"], np.nan)
-    step("R09", "Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai et taux de perte", len(df), len(df))
+    # Années d'exposition au risque (pour une PD annuelle par taux d'incidence) :
+    # du décaissement (ou de l'approbation) jusqu'au remboursement, au passage en perte, ou à la date de situation.
+    start = df["FirstDisbursementDate"].fillna(df["ApprovalDate"])
+    end = df["PaidInFullDate"].where(df["LoanStatus"] == "PIF").fillna(df["ChargeOffDate"].where(df["LoanStatus"] == "CHGOFF")).fillna(df["AsOfDate"])
+    df["ExposureYears"] = np.where(df["Population"] == "Non décaissé", 0.0, ((end - start).dt.days / 365.25).clip(lower=1 / 12))
+    step("R09", "Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai, taux de perte et années d'exposition", len(df), len(df))
 
     rej = pd.concat(rejects, ignore_index=True)
     n_rej = len(rej)

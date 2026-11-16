@@ -4,11 +4,15 @@ Définitions (identiques partout) :
 - Prêts dénoués      = prêts remboursés (PIF) + prêts passés en perte (CHGOFF)
 - Taux de défaut     = prêts passés en perte / prêts dénoués
 - Taux de perte      = montant passé en perte / montant approuvé des prêts dénoués
+- PD annuelle        = 1 − exp(−λ), λ = défauts / années d'exposition (taux d'incidence actuariel, tous prêts décaissés)
+- LGD (proxy)        = montant passé en perte / montant initial des prêts passés en perte
+                       (rapportée au montant initial : l'encours au moment du défaut n'est pas publié)
 """
 from __future__ import annotations
 
 import json
 
+import numpy as np
 import pandas as pd
 
 from .config import MARTS, RAW, SIZE_BANDS, TERM_BANDS
@@ -17,13 +21,16 @@ from .config import MARTS, RAW, SIZE_BANDS, TERM_BANDS
 def agg(df: pd.DataFrame, by: str | list[str]) -> pd.DataFrame:
     funded = df[df["Population"] != "Non décaissé"]
     res = funded[funded["Population"] == "Dénoué"]
-    g_all = funded.groupby(by).agg(loans=("GrossApproval", "size"), approved_usd=("GrossApproval", "sum"))
+    g_all = funded.groupby(by).agg(loans=("GrossApproval", "size"), approved_usd=("GrossApproval", "sum"), exposure_years=("ExposureYears", "sum"))
+    g_def = funded[funded["Defaulted"] == 1].groupby(by).agg(defaulted_usd=("GrossApproval", "sum"))
     g_res = res.groupby(by).agg(resolved=("Defaulted", "size"), defaults=("Defaulted", "sum"),
                                 resolved_usd=("GrossApproval", "sum"), chargeoff_usd=("GrossChargeOffAmount", "sum"),
                                 median_months_to_default=("MonthsToChargeOff", "median"))
-    out = g_all.join(g_res, how="left").fillna({"resolved": 0, "defaults": 0, "resolved_usd": 0, "chargeoff_usd": 0})
+    out = g_all.join(g_res, how="left").join(g_def, how="left").fillna({"resolved": 0, "defaults": 0, "resolved_usd": 0, "chargeoff_usd": 0, "defaulted_usd": 0})
     out["default_rate"] = (out["defaults"] / out["resolved"]).where(out["resolved"] > 0)
     out["loss_rate"] = (out["chargeoff_usd"] / out["resolved_usd"]).where(out["resolved_usd"] > 0)
+    out["pd_annual"] = (1 - np.exp(-out["defaults"] / out["exposure_years"])).where(out["exposure_years"] > 0)
+    out["lgd"] = (out["chargeoff_usd"] / out["defaulted_usd"]).where(out["defaulted_usd"] > 0)
     out = out.reset_index()
     for c in ["loans", "resolved", "defaults"]:
         out[c] = out[c].astype(int)
@@ -48,6 +55,9 @@ def run(df: pd.DataFrame) -> dict:
         "median_months_to_default": float(co["MonthsToChargeOff"].median()),
         "share_defaults_within_24m": float((co["MonthsToChargeOff"] <= 24).mean()),
         "lenders": int(funded["LocationID"].nunique()), "states": int(funded["BorrState"].nunique()),
+        "exposure_years": float(funded["ExposureYears"].sum()),
+        "pd_annual": float(1 - np.exp(-len(co) / funded["ExposureYears"].sum())),
+        "lgd": float(co["GrossChargeOffAmount"].sum() / co["GrossApproval"].sum()),
     }
 
     tables = {

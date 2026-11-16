@@ -43,10 +43,21 @@ class Pipeline(unittest.TestCase):
             self.assertEqual(sum(r["defaults"] for r in rows), o["defaults"], t)
         self.assertAlmostEqual(sum(r["share"] for r in MARTS["tables"]["time_to_default"]), 1.0, places=4)  # parts arrondies à 6 décimales dans le JSON
 
+    def test_pd_and_lgd(self):
+        o = MARTS["overview"]
+        # λ = défauts / années d'exposition ; PD = 1 − e^(−λ)
+        import math
+        self.assertAlmostEqual(o["pd_annual"], 1 - math.exp(-o["defaults"] / o["exposure_years"]), places=9)
+        self.assertTrue(0 < o["pd_annual"] < o["default_rate"])  # la PD annuelle est inférieure à la PD sur la vie du prêt
+        self.assertTrue(0 < o["lgd"] < 1)
+        for r in MARTS["tables"]["by_sector"]:
+            if r["defaults"]:
+                self.assertTrue(0 <= r["lgd"] <= 1, r["sector"])
+
     def test_rates_are_probabilities(self):
         for t, rows in MARTS["tables"].items():
             for r in rows:
-                for k in ("default_rate", "loss_rate"):
+                for k in ("default_rate", "loss_rate", "pd_annual", "lgd"):
                     if r.get(k) is not None:
                         self.assertTrue(0 <= r[k] <= 1, (t, r))
 

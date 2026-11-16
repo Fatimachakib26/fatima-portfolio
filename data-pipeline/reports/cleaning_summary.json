@@ -86,7 +86,7 @@
     },
     {
       "rule": "R09",
-      "description": "Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai et taux de perte",
+      "description": "Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai, taux de perte et années d'exposition",
       "rows_before": 544605,
       "rows_after": 544605,
       "affected": null,

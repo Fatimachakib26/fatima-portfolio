@@ -2,6 +2,7 @@
 import seed from "./seed.json";
 import { levelFromScore } from "./logic/scoring";
 import { analyzeDossier } from "./logic/dossier-analysis";
+import { DEMO_PORTFOLIO } from "./logic/credit";
 
 const KEY = "credit-horizon-v3";
 export type Row = Record<string, any>;
@@ -19,6 +20,7 @@ export interface State {
   actions: Row[];
   anomalies: Row[];
   dossiers: Row[];
+  portfolio: Row[];
   audit: Row[];
 }
 
@@ -48,14 +50,20 @@ export function baseline(): State {
       const analysis = analyzeDossier(d as any);
       return { ...d, analysis, status: analysis.status, created_by: "Données de démonstration", created_at: now, is_demo: true };
     }),
+    portfolio: DEMO_PORTFOLIO.map((x) => ({ ...x, is_demo: true })),
     audit: [],
   };
+}
+
+function migrate(p: any): State {
+  if (!Array.isArray(p.portfolio)) p.portfolio = DEMO_PORTFOLIO.map((x) => ({ ...x, is_demo: true }));
+  return p;
 }
 
 function loadLocal(): State {
   try {
     const p = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (p && p.version === 3 && Array.isArray(p.risks)) return p;
+    if (p && p.version === 3 && Array.isArray(p.risks)) return migrate(p);
   } catch {
     /* stockage indisponible */
   }
@@ -87,7 +95,7 @@ export function replaceState(json: string): boolean {
   try {
     const p = JSON.parse(json);
     if (p && p.version === 3 && Array.isArray(p.risks)) {
-      Object.assign(state, p);
+      Object.assign(state, migrate(p));
       try {
         localStorage.setItem(KEY, json);
       } catch {}

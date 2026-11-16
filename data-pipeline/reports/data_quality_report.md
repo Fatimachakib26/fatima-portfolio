@@ -20,7 +20,7 @@ Source : https://data.sba.gov/dataset/7a-504-foia · licence : U.S. Government W
 | R06 | Contrôle : garantie SBA ≤ montant approuvé | 544,615 | 544,615 |  |
 | R07 | Contrôle : un prêt soldé/passé en perte a une date cohérente, postérieure à l'approbation | 544,615 | 544,605 |  |
 | R08 | Suppression des données personnelles (nom, adresse, code postal de l'emprunteur) | 544,605 | 544,605 | BorrName, BorrStreet, BorrZip |
-| R09 | Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai et taux de perte | 544,605 | 544,605 |  |
+| R09 | Variables dérivées : secteur NAICS, tranches de montant et de durée, population d'analyse, défaut, délai, taux de perte et années d'exposition | 544,605 | 544,605 |  |
 
 ## Rejets par règle
 
