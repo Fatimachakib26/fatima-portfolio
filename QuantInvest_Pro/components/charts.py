@@ -149,7 +149,7 @@ def frontier_chart(cloud: pd.DataFrame | None, frontier: pd.DataFrame, portfolio
     _pct_axes(fig)
     fig.update_xaxes(range=[x_lo - px, x_hi + px])
     fig.update_yaxes(range=[y_lo - py, y_hi + py])
-    fig.update_layout(legend=dict(orientation="h", y=-0.15, yanchor="top", x=0, font=dict(size=11)))
+    fig.update_layout(legend=dict(orientation="h", y=-0.15, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
     return fig
 
 
@@ -234,9 +234,12 @@ def distribution_chart(r: pd.Series, var_hist: float, var_param: float, height: 
     x = np.linspace(r.min(), r.max(), 400)
     fig.add_trace(go.Scatter(x=x, y=norm.pdf(x, r.mean(), r.std()), mode="lines", name="Loi normale ajustée",
                              line=dict(color=COLORS["cyan"], width=2), hoverinfo="skip"))
-    for v, label, color in ((var_hist, "VaR historique", COLORS["down"]), (var_param, "VaR normale", COLORS["amber"])):
+    # étiquettes de part et d'autre de chaque ligne pour éviter qu'elles se chevauchent
+    left_first = var_hist >= var_param
+    for v, label, color, pos in ((var_hist, "VaR historique", COLORS["down"], "top left" if left_first else "top right"),
+                                 (var_param, "VaR normale", COLORS["amber"], "top right" if left_first else "top left")):
         fig.add_vline(x=-v, line=dict(color=color, dash="dash", width=1.5), annotation_text=label,
-                      annotation_font=dict(size=10, color=color))
+                      annotation_position=pos, annotation_font=dict(size=10, color=color))
     fig.update_xaxes(tickformat=".1%", title="Rendement journalier")
     fig.update_yaxes(title="Densité")
     return fig
@@ -279,7 +282,7 @@ def wealth_chart(returns: pd.DataFrame, benchmark: pd.Series | None = None, heig
     if crises:
         add_crisis_bands(fig, crises, returns.index)
     fig.update_layout(hovermode="x unified", yaxis_title=f"Valeur de {start_value:.0f} investis",
-                      legend=dict(orientation="h", y=-0.12, yanchor="top", x=0, font=dict(size=11)))
+                      legend=dict(orientation="h", y=-0.12, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
     return fig
 
 
@@ -305,7 +308,7 @@ def stacked_weights_chart(weights: pd.DataFrame, height: int = 340) -> go.Figure
                                  line=dict(width=0.5, color=colors[col]),
                                  hovertemplate=f"<b>{col}</b> : %{{y:.1%}}<extra></extra>"))
     fig.update_yaxes(tickformat=".0%", range=[0, 1], title="Poids")
-    fig.update_layout(hovermode="x unified", legend=dict(orientation="h", y=-0.12, yanchor="top", x=0))
+    fig.update_layout(hovermode="x unified", legend=dict(orientation="h", y=-0.12, yanchor="top", xanchor="left", x=0))
     return fig
 
 
@@ -319,7 +322,7 @@ def announced_vs_realized_chart(announced: pd.Series, realized: pd.Series, heigh
                              hovertemplate="%{x|%d/%m/%Y}<br>Réalisé : %{y:.2f}<extra></extra>"))
     fig.add_hline(y=0, line=dict(color=COLORS["muted"], width=1))
     fig.update_layout(hovermode="x unified", yaxis_title="Ratio de Sharpe",
-                      legend=dict(orientation="h", y=-0.12, yanchor="top", x=0))
+                      legend=dict(orientation="h", y=-0.12, yanchor="top", xanchor="left", x=0))
     return fig
 
 
@@ -349,7 +352,7 @@ def realized_frontier_chart(fr: pd.DataFrame, eq_est: tuple[float, float], eq_re
     fig.add_annotation(x=eq_real[1], y=eq_real[0], ax=eq_est[1], ay=eq_est[0], xref="x", yref="y", axref="x",
                        ayref="y", showarrow=True, arrowhead=2, arrowwidth=1.5, arrowcolor=COLORS["amber"])
     _pct_axes(fig, y="Rendement annualisé (moyenne × 252)")
-    fig.update_layout(legend=dict(orientation="h", y=-0.12, yanchor="top", x=0))
+    fig.update_layout(legend=dict(orientation="h", y=-0.12, yanchor="top", xanchor="left", x=0))
     return fig
 
 
@@ -364,6 +367,7 @@ def sensitivity_heatmap(grid: pd.DataFrame, ref: float, height: int = 380) -> go
         hovertemplate="Fenêtre : %{y}<br>Plafond : %{x}<br>Sharpe hors échantillon : %{text}<extra></extra>",
     ))
     fig.update_layout(height=height, margin=dict(l=10, r=10, t=30, b=10),
-                      xaxis_title="Plafond de poids par actif", yaxis_title="Fenêtre d'estimation",
+                      xaxis=dict(title="Plafond de poids par actif", type="category"),
+                      yaxis=dict(title="Fenêtre d'estimation", type="category"),
                       title=dict(text=f"Référence 1/N : Sharpe {ref:.2f}".replace(".", ","), font=dict(size=13)))
     return fig
