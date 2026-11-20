@@ -97,6 +97,13 @@ def load_market_data(params: AppParams) -> MarketBundle:
     return bundle
 
 
+def source_text(bundle: MarketBundle) -> str:
+    """Source complète, avec la date de téléchargement des données utilisées."""
+    from core.trace import SOURCE_YAHOO
+    stamp = bundle.raw.as_of
+    return SOURCE_YAHOO + (f", téléchargés le {stamp:%d/%m/%Y à %H:%M}" if stamp else "")
+
+
 def render_data_alerts(bundle: MarketBundle) -> None:
     """Bandeaux d'information sur la qualité et l'origine des données."""
     raw = bundle.raw

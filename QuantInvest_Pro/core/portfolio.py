@@ -69,29 +69,21 @@ def parametric_var(r: pd.Series, level: float = CONFIDENCE) -> float:
     return float(-(r.mean() + r.std(ddof=1) * norm.ppf(1 - level)))
 
 
+LEGACY_KEYS = {
+    "Rendement annualisé": "rendement_annualise", "Volatilité annualisée": "volatilite", "Sharpe": "sharpe",
+    "Sortino": "sortino", "Calmar": "calmar", "Drawdown maximal": "drawdown_max", "Rendement cumulé": "rendement_cumule",
+    "VaR 95 % historique": "var95_hist", "CVaR 95 %": "cvar95", "VaR 95 % paramétrique": "var95_param",
+}
+
+
 def performance_metrics(r: pd.Series, rf_annual: float, periods_per_year: int = 252) -> dict[str, float]:
-    r = r.dropna()
-    n = len(r)
-    rf_p = periodic_rf(rf_annual, periods_per_year)
-    excess = r - rf_p
-    std = r.std(ddof=1)
-    cum = float((1 + r).prod() - 1)
-    ann = (1 + cum) ** (periods_per_year / n) - 1
-    downside = np.sqrt(np.mean(np.minimum(excess, 0.0) ** 2)) * np.sqrt(periods_per_year)
-    mdd = max_drawdown(r)
-    return {
-        "Rendement annualisé": ann,
-        "Volatilité annualisée": std * np.sqrt(periods_per_year),
-        "Sharpe": excess.mean() / std * np.sqrt(periods_per_year) if std > 0 else np.nan,
-        "Sortino": excess.mean() * periods_per_year / downside if downside > 0 else np.nan,
-        "Calmar": ann / abs(mdd) if mdd < 0 else np.nan,
-        "Drawdown maximal": mdd,
-        "Rendement cumulé": cum,
-        "VaR 95 % historique": historical_var(r),
-        "CVaR 95 %": historical_cvar(r),
-        "VaR 95 % paramétrique": parametric_var(r),
-        "Observations": n,
-    }
+    """Indicateurs principaux (valeurs seules). Source unique : core.indicators.calculer_indicateurs."""
+    from core.indicators import calculer_indicateurs
+
+    res = calculer_indicateurs(r, None, rf_annual, periods_per_year)
+    out = {label: (res[k].valeur if k in res else np.nan) for label, k in LEGACY_KEYS.items()}
+    out["Observations"] = len(r.dropna())
+    return out
 
 
 def metrics_table(series: dict[str, pd.Series], rf_annual: float, periods_per_year: int = 252) -> pd.DataFrame:

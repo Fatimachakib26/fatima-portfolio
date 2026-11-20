@@ -13,7 +13,9 @@ from components import compute
 from components.charts import (PLOTLY_CONFIG, base100_chart, corr_heatmap, donut_chart, frontier_chart,
                                grouped_bars, sparkline, wealth_chart)
 from components.explain import explain
-from components.data_service import MarketBundle, render_data_alerts
+from components.data_service import MarketBundle, render_data_alerts, source_text
+from components.metric import afficher_metrique, metric_row
+from core.indicators import calculer_indicateurs, ecart_sharpe, sharpe_annonce
 from components.formatting import METRIC_HELP, format_metrics, num, pct
 from components.kpi_cards import KPI, banner, card_title, empty_state, kpi_row
 from components.navbar import render_navbar
@@ -71,6 +73,17 @@ if bundle.ok:
     except ValueError as exc:
         split_error = str(exc)
 
+IND, ANNONCE = {}, {}
+if res is not None:
+    SRC = source_text(bundle)
+    b_all = simple_returns(bundle.benchmark_prices) if bundle.benchmark else None
+    for _name, _p in res.portfolios.items():
+        IND[_name] = calculer_indicateurs(res.returns_test[_name], b_all, params.risk_free_rate,
+                                          bundle.periods_per_year, poids=_p.weights, source=SRC, sujet=_name,
+                                          nom_benchmark=bundle.benchmark or "SPY")
+        ANNONCE[_name] = sharpe_annonce(_p.weights, res.est.mu, res.est.cov, params.risk_free_rate, res.est.start,
+                                        res.est.end, res.est.n_obs, SRC, _name)
+
 if verdict is not None:
     v_col, k_col = st.columns([2.1, 1], gap="medium")
     badge = ('<span class="qi-badge sig">significatif</span>' if verdict.significant
@@ -83,16 +96,15 @@ if verdict is not None:
             </div>
         """)
     with k_col:
-        kpi_row([KPI("Meilleur Sharpe", verdict.best_sharpe, fmt="{:.2f}", icon="🏆",
-                     foot=f"{verdict.best_name} · période de test")])
-        st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
-        kpi_row([
-            KPI("Pire drawdown", verdict.worst_drawdown, icon="📉", foot=f"{verdict.worst_name} · période de test",
-                help=METRIC_HELP["Drawdown maximal"]),
-            KPI("Annoncé − réalisé", verdict.announced - verdict.realized, fmt="{:+.2f}", icon="🎭",
-                foot="Sharpe maximal · période de test",
-                help="Sharpe promis sur la période d'estimation moins Sharpe obtenu sur la période de test."),
-        ])
+        afficher_metrique(IND[verdict.best_name]["sharpe"], "v_best", "🏆",
+                          f"{verdict.best_name} · période de test", title="Meilleur Sharpe")
+        k1, k2 = st.columns(2)
+        with k1:
+            afficher_metrique(IND[verdict.worst_name]["drawdown_max"], "v_dd", "📉",
+                              f"{verdict.worst_name} · période de test", title="Pire drawdown")
+        with k2:
+            afficher_metrique(ecart_sharpe(ANNONCE[MAX_SHARPE], IND[MAX_SHARPE]["sharpe"]), "v_gap", "🎭",
+                              "Sharpe maximal · période de test", signed=True, title="Annoncé − réalisé")
 elif bundle.ok:
     banner("Le verdict hors échantillon n'est pas encore calculable : "
            + (split_error or "données insuffisantes")
@@ -213,20 +225,15 @@ retained = {"max_sharpe": MAX_SHARPE, "min_variance": MIN_VAR, "equal_weight": E
 m = res.metrics_test.loc[retained] if res is not None else None
 w_shown = res.portfolios[retained].weights if res is not None else None
 foot = f"{OPTIMIZATION_OBJECTIVES[params.objective]} · période de test"
-kpi_row([
-    KPI("Rendement annualisé", m["Rendement annualisé"] if m is not None else None, icon="📈",
-        help=METRIC_HELP["Rendement annualisé"], foot=foot, signed=True),
-    KPI("Volatilité annualisée", m["Volatilité annualisée"] if m is not None else None, icon="🌊",
-        help=METRIC_HELP["Volatilité annualisée"], foot=foot),
-    KPI("Ratio de Sharpe", m["Sharpe"] if m is not None else None, fmt="{:.2f}", icon="⚖️",
-        help=METRIC_HELP["Sharpe"], foot=foot),
-    KPI("Actifs retenus", float((w_shown > 0.005).sum()) if w_shown is not None else None, fmt="{:.0f}", icon="🧩",
-        foot=(f"poids > 0,5 % sur {len(bundle.assets)} · nombre effectif {num(effective_n(w_shown), 1)}"
-              if w_shown is not None else f"sur {len(params.tickers)} sélectionnés"),
-        help="Actifs détenus à plus de 0,5 % dans le portefeuille affiché. Nombre effectif de titres = 1 / Σw² : "
-             "nombre d'actifs « équivalents » réellement détenus."),
-    KPI("Performance cumulée", m["Rendement cumulé"] if m is not None else None, icon="🚀",
-        help=METRIC_HELP["Rendement cumulé"], foot=foot, signed=True),
+ind_r = IND.get(retained, {})
+metric_row([
+    dict(res=ind_r.get("rendement_annualise"), key="k_ann", icon="📈", foot=foot, signed=True, title="Rendement annualisé"),
+    dict(res=ind_r.get("volatilite"), key="k_vol", icon="🌊", foot=foot, title="Volatilité annualisée"),
+    dict(res=ind_r.get("sharpe"), key="k_sh", icon="⚖️", foot=foot, title="Ratio de Sharpe"),
+    dict(res=ind_r.get("nombre_effectif"), key="k_neff", icon="🧩",
+         foot=(f"{int((w_shown > 0.005).sum())} actifs > 0,5 % sur {len(bundle.assets)}" if w_shown is not None else ""),
+         title="Nombre effectif de titres"),
+    dict(res=ind_r.get("rendement_cumule"), key="k_cum", icon="🚀", foot=foot, signed=True, title="Performance cumulée"),
 ])
 
 # --------------------------------------------------------------------------- #
