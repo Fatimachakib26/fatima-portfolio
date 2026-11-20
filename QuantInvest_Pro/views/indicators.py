@@ -80,7 +80,8 @@ with st.container(border=True):
                          hovertemplate="%{y} : %{text}<extra></extra>"))
     if meta["unite"] == "pct":
         fig.update_xaxes(tickformat=".0%")
-    fig.update_layout(showlegend=False, margin=dict(l=10, r=60, t=10, b=10))
+    fig.update_traces(cliponaxis=False)
+    fig.update_layout(showlegend=False, margin=dict(l=10, r=90, t=10, b=10))
     st.plotly_chart(fig, width="stretch", config=PLOTLY_CONFIG)
 
 with st.container(border=True):

@@ -76,3 +76,16 @@ def test_attribution_sums_to_portfolio_return():
     r = buy_and_hold_returns(R.iloc[:300], w)
     np.testing.assert_allclose(attribution(R.iloc[:300], w).sum(axis=1), r, atol=1e-12)
     assert abs(cumulative_attribution(R.iloc[:300], w).iloc[-1].sum() - ((1 + r).prod() - 1)) < 1e-10
+
+
+def test_profile_missing_fields_and_fallback(tmp_path):
+    from core.fundamentals import get_profile
+    p = get_profile("ABC", fetcher=lambda t: {"longName": "Abc", "sector": "Technology", "currency": "USD"},
+                    cache_dir=tmp_path)
+    assert p["longName"] == "Abc" and p["trailingPE"] is None
+    def boom(t):
+        raise ConnectionError("hors ligne")
+    q = get_profile("ABC", fetcher=boom, cache_dir=tmp_path)          # repli sur la copie locale
+    assert q["longName"] == "Abc" and "Copie locale" in q["_source"]
+    r = get_profile("XYZ", fetcher=boom, cache_dir=tmp_path)          # ni réseau ni copie : pas de plantage
+    assert r["longName"] is None
