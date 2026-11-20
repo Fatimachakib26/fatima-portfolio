@@ -8,12 +8,14 @@ Rôle de ce fichier :
   2. initialiser l'état de session (paramètres utilisateur, statut des données) ;
   3. déclarer les 6 pages avec st.navigation (menu natif masqué) et afficher
      la sidebar personnalisée ;
-  4. exécuter la page sélectionnée.
+  4. charger les données de marché (cache + statut) ;
+  5. exécuter la page sélectionnée.
 """
 from __future__ import annotations
 
 import streamlit as st
 
+from components.data_service import load_market_data
 from components.sidebar import render_sidebar
 from components.theme import apply_theme
 from config import APP_NAME, LOGO_PATH, AppParams
@@ -46,4 +48,6 @@ PAGES = [
 
 current = st.navigation(PAGES, position="hidden")
 render_sidebar(PAGES)
+# Données chargées une fois par exécution (cache mémoire) et partagées par les pages
+st.session_state["market"] = load_market_data(st.session_state["params"])
 current.run()
