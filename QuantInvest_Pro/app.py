@@ -39,6 +39,7 @@ init_state()
 
 PAGES = [
     st.Page("pages/dashboard.py", title="Tableau de bord", icon=":material/space_dashboard:", default=True),
+    st.Page("pages/portfolios.py", title="Portefeuilles", icon=":material/folder_special:"),
     st.Page("pages/optimization.py", title="Optimisation Markowitz", icon=":material/hub:"),
     st.Page("pages/risk_analysis.py", title="Analyse du risque", icon=":material/shield:"),
     st.Page("pages/backtesting.py", title="Test rétrospectif", icon=":material/history:"),

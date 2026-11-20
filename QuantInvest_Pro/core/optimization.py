@@ -201,3 +201,53 @@ def check_optimizer(cov: pd.DataFrame, bound: float = 10.0) -> dict:
     diff = float((analytic - numeric.weights).abs().max())
     return {"analytique": analytic, "numerique": numeric.weights, "ecart_max": diff,
             "ok": diff < 1e-4 and numeric.converged}
+
+
+def risk_parity(cov: pd.DataFrame) -> pd.Series:
+    """Parité de risque (contributions égales au risque, ERC, sans vente à découvert).
+
+    On minimise ½ yᵀΣy − (1/n) Σ log yᵢ (y > 0), puis w = y / Σy : à l'optimum,
+    yᵢ (Σy)ᵢ = 1/n pour tout i, donc chaque actif contribue autant au risque.
+    """
+    from scipy.optimize import minimize as _min
+
+    S = cov.to_numpy()
+    n = len(S)
+    b = np.full(n, 1 / n)
+    y0 = 1 / np.sqrt(np.diag(S))
+    res = _min(lambda y: 0.5 * y @ S @ y - b @ np.log(y), y0, jac=lambda y: S @ y - b / y,
+               method="L-BFGS-B", bounds=[(1e-10, None)] * n, options={"ftol": 1e-15, "gtol": 1e-12, "maxiter": 5000})
+    w = res.x / res.x.sum()
+    return pd.Series(w, index=cov.index)
+
+
+def target_portfolio(mu: pd.Series, cov: pd.DataFrame, rf: float, lo: float, hi: float,
+                     target_return: float | None = None, target_vol: float | None = None) -> OptResult:
+    """Portefeuille de la frontière pour un rendement cible (variance minimale)
+    ou une volatilité cible (rendement maximal sous σ ≤ cible)."""
+    n = len(mu)
+    check_feasible(n, lo, hi)
+    m, S = mu.to_numpy(), cov.to_numpy()
+    if target_return is not None:
+        r_min = min_variance(mu, cov, lo, hi, rf).expected_return
+        r_max = max_feasible_return(m, lo, hi)
+        if not r_min - 1e-9 <= target_return <= r_max + 1e-9:
+            raise ValueError(f"Rendement cible hors de la frontière : choisir entre {r_min:.1%} et {r_max:.1%}.")
+        con = {"type": "eq", "fun": lambda w: w @ m - target_return, "jac": lambda w: m}
+        w, ok, msg = _solve(lambda w: w @ S @ w, lambda w: 2 * S @ w, n, lo, hi, [np.full(n, 1 / n)], (con,))
+    else:
+        v_min = min_variance(mu, cov, lo, hi, rf).volatility
+        if target_vol < v_min - 1e-9:
+            raise ValueError(f"Volatilité cible trop faible : le minimum atteignable est {v_min:.1%}.")
+        con = {"type": "ineq", "fun": lambda w: target_vol**2 - w @ S @ w, "jac": lambda w: -2 * S @ w}
+        cons = [{"type": "eq", "fun": lambda w: w.sum() - 1, "jac": lambda w: np.ones_like(w)}, con]
+        best = None
+        for x0 in [min_variance(mu, cov, lo, hi, rf).weights.to_numpy(), np.full(n, 1 / n)]:
+            r = minimize(lambda w: -(w @ m), x0, jac=lambda w: -m, method="SLSQP", bounds=[(lo, hi)] * n,
+                         constraints=cons, options={"ftol": 1e-12, "maxiter": 1000})
+            if r.success and (best is None or r.fun < best.fun):
+                best = r
+        if best is None:
+            raise ValueError("L'optimiseur n'a pas convergé pour cette volatilité cible.")
+        w, ok, msg = _clean(best.x, lo, hi), True, "Convergence atteinte"
+    return _result(w, mu.index, m, S, rf, ok, msg)
