@@ -251,3 +251,51 @@ def target_portfolio(mu: pd.Series, cov: pd.DataFrame, rf: float, lo: float, hi:
             raise ValueError("L'optimiseur n'a pas convergé pour cette volatilité cible.")
         w, ok, msg = _clean(best.x, lo, hi), True, "Convergence atteinte"
     return _result(w, mu.index, m, S, rf, ok, msg)
+
+
+def optimize_custom(mu: pd.Series, cov: pd.DataFrame, rf: float, objective: str, lower: pd.Series, upper: pd.Series,
+                    groups: dict[str, list[str]] | None = None, group_caps: dict[str, float] | None = None) -> OptResult:
+    """Variance minimale ou Sharpe maximal avec bornes PAR ACTIF et plafonds par groupe (secteur).
+    Lève ValueError avec un message clair si les contraintes sont impossibles."""
+    assets = list(mu.index)
+    lo, hi = lower.reindex(assets).to_numpy(float), upper.reindex(assets).to_numpy(float)
+    if (lo > hi + 1e-12).any():
+        bad = [a for a, l, h in zip(assets, lo, hi) if l > h]
+        raise ValueError(f"Minimum supérieur au maximum pour : {', '.join(bad)}.")
+    if lo.sum() > 1 + 1e-9:
+        raise ValueError(f"La somme des minimums ({lo.sum():.0%}) dépasse 100 %.")
+    if hi.sum() < 1 - 1e-9:
+        raise ValueError(f"La somme des maximums ({hi.sum():.0%}) est inférieure à 100 %.")
+    cons = []
+    for g, members in (groups or {}).items():
+        cap = (group_caps or {}).get(g)
+        if cap is None or cap >= 1:
+            continue
+        idx = [assets.index(a) for a in members if a in assets]
+        if lo[idx].sum() > cap + 1e-9:
+            raise ValueError(f"Secteur « {g} » : les minimums ({lo[idx].sum():.0%}) dépassent le plafond ({cap:.0%}).")
+        cons.append({"type": "ineq", "fun": lambda w, i=idx, c=cap: c - w[i].sum()})
+    if cons:  # capacité maximale : min(plafond, Σ max) par secteur + Σ max des actifs hors secteur plafonné
+        grouped = {a for m in (groups or {}).values() for a in m}
+        capacity = sum(min((group_caps or {}).get(g, 1.0), hi[[assets.index(a) for a in m if a in assets]].sum())
+                       for g, m in (groups or {}).items())
+        capacity += sum(h for a, h in zip(assets, hi) if a not in grouped)
+        if capacity < 1 - 1e-9:
+            raise ValueError("Les plafonds par secteur ne permettent pas d'investir 100 % du capital.")
+    m_, S = mu.to_numpy(), cov.to_numpy()
+    n = len(assets)
+    base = [{"type": "eq", "fun": lambda w: w.sum() - 1, "jac": lambda w: np.ones_like(w)}, *cons]
+    if objective == "min_variance":
+        fun, jac = (lambda w: w @ S @ w), (lambda w: 2 * S @ w)
+    else:
+        def fun(w):
+            return -(w @ m_ - rf) / np.sqrt(w @ S @ w)
+        jac = None
+    x0 = np.clip(np.full(n, 1 / n), lo, hi)
+    x0 = x0 / x0.sum()
+    res = minimize(fun, x0, jac=jac, method="SLSQP", bounds=list(zip(lo, hi)), constraints=base,
+                   options={"ftol": 1e-12, "maxiter": 2000})
+    w = np.clip(res.x, lo, hi)
+    ok = res.success and abs(w.sum() - 1) < 1e-6 and all(c["fun"](w) >= -1e-6 for c in cons)
+    w = w / w.sum()
+    return _result(w, mu.index, m_, S, rf, ok, "Convergence atteinte" if ok else f"Échec de l'optimiseur : {res.message}")

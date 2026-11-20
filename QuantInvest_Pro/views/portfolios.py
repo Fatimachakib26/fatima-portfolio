@@ -159,8 +159,27 @@ with tabs[2]:
     with st.container(border=True):
         section(f"Valeur de 100 investis — {sel.label}", "Achat au début de la période aux poids de la bibliothèque, puis conservation")
         comp = pd.DataFrame({name: r} | ({EQUAL: pr[EQUAL]} if name != EQUAL and EQUAL in pr else {}))
-        st.plotly_chart(wealth_chart(comp, bench_r.rename(bundle.benchmark) if (sel.show_bench and bench_r is not None and not is_ref) else None,
-                                     400, baseline=True), width="stretch", config=PLOTLY_CONFIG)
+        log_w = st.toggle("Échelle logarithmique", key="pf_log")
+        fig_w = wealth_chart(comp, bench_r.rename(bundle.benchmark) if (sel.show_bench and bench_r is not None and not is_ref) else None,
+                             400, baseline=True)
+        if log_w:
+            fig_w.update_yaxes(type="log")
+        fig_w.update_layout(dragmode="select", selectdirection="h")
+        ev_w = st.plotly_chart(fig_w, width="stretch", config=PLOTLY_CONFIG, on_select="rerun", selection_mode="box",
+                               key="pf_zone")
+        st.caption("Sélectionnez une zone de dates (cliquer-glisser horizontalement) pour recalculer les indicateurs sur cette période.")
+        boxes = ev_w.selection.get("box", []) if ev_w and ev_w.selection else []
+        if boxes and boxes[0].get("x"):
+            z0, z1 = pd.Timestamp(min(boxes[0]["x"])), pd.Timestamp(max(boxes[0]["x"]))
+            seg = r.loc[z0:z1]
+            if len(seg) >= 3:
+                zi = calculer_indicateurs(seg, bench_r, rf, ppy, source=SRC, sujet=f"{name} · zone sélectionnée",
+                                          nom_benchmark=bundle.benchmark or "SPY")
+                st.markdown(f"**Zone sélectionnée : {seg.index[0]:%d/%m/%Y} → {seg.index[-1]:%d/%m/%Y}**")
+                metric_row([dict(res=zi.get("rendement_cumule"), key="z_cum", icon="📈", signed=True),
+                            dict(res=zi.get("volatilite"), key="z_vol", icon="🌊"),
+                            dict(res=zi.get("sharpe"), key="z_sh", icon="⚖️"),
+                            dict(res=zi.get("drawdown_max"), key="z_dd", icon="📉")])
     if ppy == 252 and len(r) > 40:
         with st.container(border=True):
             section("Rendements mensuels et annuels", "Composés à partir des rendements quotidiens")

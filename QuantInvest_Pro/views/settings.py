@@ -17,10 +17,11 @@ from components.navbar import render_navbar
 from config import (ASSET_UNIVERSE, BENCHMARKS, COV_METHODS, FREQUENCIES,
                     OPTIMIZATION_OBJECTIVES, REBALANCING, AppParams)
 
-render_navbar("Paramètres & méthodologie", "Hypothèses de calcul, contraintes et références")
+render_navbar("Paramètres", "Actifs, période, contraintes et réglages des tests")
 p: AppParams = get_params()
 
-tab_params, tab_method, tab_course = st.tabs(["⚙️ Paramètres", "📐 Méthodologie", "📚 Références du cours"])
+(tab_params,) = st.tabs(["⚙️ Paramètres"])
+st.caption("La méthodologie, le contrôle de l'optimiseur et les références du cours sont dans la page « Sources et méthodologie ».")
 
 # --------------------------------------------------------------------------- #
 with tab_params, st.form("params_form", border=False):
@@ -92,79 +93,3 @@ if submitted:
         st.toast("Paramètres enregistrés", icon="✅")
         st.rerun()
 
-# --------------------------------------------------------------------------- #
-with tab_method:
-    m1, m2 = st.columns(2, gap="medium")
-    with m1, st.container(border=True):
-        card_title("1. Rendements")
-        st.markdown(r"Rendement simple : $r_t = \dfrac{P_t}{P_{t-1}} - 1$, avec $P$ = cours ajusté (dividendes, splits).")
-        st.markdown(r"Rendement du portefeuille : $r_{p,t} = \sum_i w_i\, r_{i,t} = w^\top r_t$. "
-                    "Les rendements simples s'agrègent linéairement entre actifs ; les log-rendements non.")
-        st.markdown(r"Annualisation ($N$ = 252, 52 ou 12) : $\mu = N\,\bar r$, $\;\Sigma = N\,\hat\Sigma$, $\;\sigma = \sqrt N\,\hat\sigma$.")
-    with m2, st.container(border=True):
-        card_title("2. Optimisation de Markowitz")
-        st.latex(r"\min_{w}\; w^\top \Sigma w \quad \text{s.c.}\quad \mathbf 1^\top w = 1,\;\; w_{\min}\le w_i \le w_{\max}")
-        st.latex(r"\max_{w}\; \frac{w^\top\mu - r_f}{\sqrt{w^\top\Sigma w}} \quad \text{(Sharpe maximal)}")
-        st.markdown("Résolution numérique par SciPy SLSQP ; frontière exacte : variance minimale pour chaque rendement cible.")
-    m3, m4 = st.columns(2, gap="medium")
-    with m3, st.container(border=True):
-        card_title("3. Mesures de performance et de risque")
-        st.markdown(r"- **Sharpe** : $\dfrac{\bar e}{\hat\sigma}\sqrt N$, $e_t = r_t - r_f$ ; **Sortino** : "
-                    r"$\dfrac{N\,\bar e}{\sqrt{N\cdot\overline{\min(e_t,0)^2}}}$ (écart-type de baisse sur tout l'échantillon).")
-        st.markdown(r"- **Calmar** : rendement annualisé (TCAM) / |drawdown maximal|.")
-        st.markdown(r"- **VaR 95 % historique** : $-q_{5\%}(r)$ ; **CVaR 95 %** : $-E[r \mid r \le q_{5\%}]$ ; "
-                    r"**VaR paramétrique** : $-(\bar r + \hat\sigma\, z_{0,05})$.")
-        st.markdown(r"- **Drawdown maximal** : $\min_t \left(\dfrac{V_t}{\max_{s\le t} V_s} - 1\right)$ ; "
-                    r"**contribution au risque** : $RC_i = w_i(\Sigma w)_i/\sigma_p$, $\sum_i RC_i = \sigma_p$.")
-    with m4, st.container(border=True):
-        card_title("4. Validation sans biais d'anticipation")
-        st.markdown("**Séparation simple** : μ et Σ estimés jusqu'à la date de séparation incluse, poids figés, "
-                    "évalués sur la période suivante.")
-        st.markdown("**Fenêtre glissante** : à la clôture de la séance $t$, estimation sur les séances "
-                    "$[t-W+1,\\,t]$ uniquement ; les poids s'appliquent au rendement de $t+1$ et dérivent ensuite "
-                    "avec les cours. Frais = points de base × $\\sum_i|\\Delta w_i|$, achat initial inclus.")
-        st.markdown("Hypothèses : exécution à la clôture, actions fractionnables, pas d'impôt, dividendes "
-                    "réinvestis via les cours ajustés. Test de Memmel (2003) pour comparer deux Sharpe ; "
-                    "intervalle de confiance par bootstrap (1 000 tirages, graine 42).")
-
-    with st.container(border=True):
-        card_title("5. Contrôle de l'optimiseur", "Variance minimale sans bornes : formule exacte contre SLSQP")
-        st.latex(r"w^* = \frac{\Sigma^{-1}\mathbf 1}{\mathbf 1^\top \Sigma^{-1}\mathbf 1}"
-                 r"\qquad\text{(lagrangien de } \min w^\top\Sigma w \text{ s.c. } \mathbf 1^\top w = 1)")
-        bundle = st.session_state.get("market")
-        if bundle is not None and bundle.ok:
-            from components import compute
-
-            est = compute.estimates(bundle.prices, p.split_date, bundle.periods_per_year, p.cov_method)
-            chk = compute.optimizer_check(est.cov)
-            cmp = pd.DataFrame({"Formule analytique": chk["analytique"], "SLSQP (bornes −1 000 % / +1 000 %)":
-                                chk["numerique"], "Écart": (chk["analytique"] - chk["numerique"]).abs()})
-            st.dataframe(cmp.map(lambda v: f"{v:.6f}".replace(".", ",")), width="stretch")
-            cls, icon = ("ok", "🟢") if chk["ok"] else ("ko", "🔴")
-            st.markdown(f'<span class="qi-check {cls}">{icon} Écart maximal : {chk["ecart_max"]:.2e} '
-                        f'(seuil 1e-04) — {"optimiseur validé" if chk["ok"] else "écart anormal"}</span>',
-                        unsafe_allow_html=True)
-            st.caption(f"Covariance estimée sur {est.start:%d/%m/%Y} → {est.end:%d/%m/%Y}. Les poids négatifs "
-                       f"correspondent à des ventes à découvert, autorisées uniquement pour ce contrôle.")
-        else:
-            st.info("Chargez des données pour exécuter le contrôle.")
-
-# --------------------------------------------------------------------------- #
-with tab_course, st.container(border=True):
-    card_title("Correspondance avec les scripts du cours", "Comment chaque fichier fourni est repris dans l'application")
-    st.markdown("""
-| Script du cours | Repris dans | Adaptation apportée |
-|---|---|---|
-| `MarkowitzModel.py` | `core/optimization.py`, page Optimisation | Ajout du taux sans risque dans le Sharpe, portefeuille de variance minimale, frontière exacte, bornes modifiables, graine aléatoire fixe, rendements simples pour l'agrégation |
-| `NormalReturns.py` | Analyse des actifs / du risque | Histogramme Plotly + densité normale ajustée, skewness, kurtosis et test de normalité (Jarque-Bera) |
-| `VaR.py` | `core/risk.py` | VaR paramétrique (gaussienne) à côté de la VaR **historique** demandée par le sujet |
-| `VaRMonteCarlo.py` | `core/risk.py` | VaR Monte-Carlo avec graine fixe, appliquée au portefeuille |
-| `CAPM.py` | Analyse des actifs | Bêta / alpha de chaque actif contre le benchmark |
-| `GBM.py`, `WienerProcess.py`, `RandomWalk.py` | Méthodologie | Justification de l'hypothèse de marche aléatoire des prix (hors calculs du portefeuille) |
-| `BlackScholes*.py`, `CouponBond.py`, `ZeroCouponBond.py`, `PresentValue.py`, `VasicekModel.py`, `OrnsteinUhlenbeckProcess.py` | — | Options, obligations et taux : hors du périmètre Markowitz du sujet |
-
-**Corrections nécessaires par rapport aux scripts d'origine :**
-`yfinance` ≥ 0.2.51 ajuste les cours par défaut et ne renvoie plus la colonne `Adj Close`
-(les scripts `ticker['Adj Close']` échouent) ; `resample('M')` est obsolète dans pandas ≥ 2.2
-(remplacé par `'ME'`) ; le Sharpe du cours omet le taux sans risque.
-""")

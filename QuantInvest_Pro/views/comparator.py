@@ -153,3 +153,41 @@ explain("La corrélation mesure si deux portefeuilles montent et baissent ensemb
         f"{len(names) * (len(names) - 1) // 2} ont un écart significatif. Corrélation moyenne entre portefeuilles : "
         f"{num(off.mean())} — " + ("ils se ressemblent beaucoup : les différences de méthode pèsent peu face au marché."
                                    if off.mean() > 0.85 else "ils offrent des profils réellement différents."))
+
+# ------------------------------------------------------------------ Navigation et rapport
+c1, c2 = st.columns([2, 1], gap="medium")
+with c1, st.container(border=True):
+    section("Ouvrir une fiche")
+    pick = st.pills("Portefeuille", names, key="cmp_open_p", selection_mode="single")
+    if pick:
+        st.session_state["focus_portfolio"] = pick
+        st.session_state["cmp_open_p"] = None
+        st.switch_page("views/portfolios.py")
+    pick_a = st.pills("Actif", bundle.assets, key="cmp_open_a", selection_mode="single")
+    if pick_a:
+        st.session_state["focus_asset"] = pick_a
+        st.session_state["cmp_open_a"] = None
+        st.switch_page("views/asset_analysis.py")
+with c2, st.container(border=True):
+    section("Rapport", "Page HTML autonome : tableau, graphiques interactifs, verdict, hypothèses, sources")
+    if st.button("📄 Générer le rapport", key="cmp_report", width="stretch"):
+        from core.report import build_html
+        from core.verdict import fr_num
+        best_s = num_tab["Ratio de Sharpe"].idxmax()
+        verdict_txt = (f"Sur la période {sel.label}, le meilleur Sharpe est celui de <b>{best_s}</b> "
+                       f"({fr_num(num_tab.loc[best_s, 'Ratio de Sharpe'])}). {n_sig} paire(s) de portefeuilles présentent "
+                       "un écart de Sharpe statistiquement significatif (test de Memmel, seuil 5 %).")
+        figs = {"Valeur de 100 investis": wealth_chart(pd.DataFrame(pr), None, 420, baseline=True),
+                "Drawdown": drawdown_chart(pd.DataFrame(pr), 300)}
+        html_doc = build_html(f"QuantInvest Pro — comparaison de portefeuilles", verdict_txt,
+                              {"Indicateurs": txt_tab.T, "Pondérations": pd.DataFrame({n: library[n].weights for n in opt}).fillna(0).map(lambda v: pct(v, 1)) if opt else pd.DataFrame(),
+                               "p-valeurs du test de Memmel": pv.map(lambda v: "—" if pd.isna(v) else num(v, 3))},
+                              figs,
+                              ["Poids estimés jusqu'à la date de séparation puis figés (achat puis conservation).",
+                               "Rendements simples, annualisation × 252 et × √252.", f"Taux sans risque {pct(rf)} par an.",
+                               "Biais du survivant : actions choisies a posteriori.", "Une seule période d'évaluation."],
+                              [SRC, "Indicateurs : core/indicators.py (formules dans la page Sources et méthodologie)."])
+        st.session_state["cmp_report_html"] = html_doc
+    if st.session_state.get("cmp_report_html"):
+        st.download_button("⬇️ Télécharger le rapport (HTML)", st.session_state["cmp_report_html"].encode("utf-8"),
+                           "rapport_quantinvest.html", "text/html", width="stretch", key="cmp_report_dl")

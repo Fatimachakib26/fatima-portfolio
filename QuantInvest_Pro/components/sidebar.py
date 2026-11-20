@@ -11,7 +11,7 @@ SHORT_LABELS = {
     "Analyse du risque": "Risque",
     "Test rétrospectif": "Test rétrospectif",
     "Analyse des actifs": "Actifs",
-    "Paramètres & méthodologie": "Paramètres",
+    "Sources et méthodologie": "Sources",
 }
 
 
@@ -30,11 +30,16 @@ def render_sidebar(pages: list) -> None:
                 <div class="qi-brand-tag">Analyse de portefeuille</div>
               </div>
             </div>
-            <div class="qi-nav-label">Navigation</div>
             """)
-        for page in pages:
-            # libellé court dans le menu ; le titre complet est dans la barre supérieure
-            st.page_link(page, label=SHORT_LABELS.get(page.title, page.title), icon=page.icon)
+        groups = {"Analyse": ["Tableau de bord", "Portefeuilles", "Comparateur", "Indicateurs"],
+                  "Méthode": ["Optimisation Markowitz", "Analyse du risque", "Test rétrospectif"],
+                  "Données": ["Analyse des actifs", "Sources et méthodologie", "Paramètres"]}
+        by_title = {pg.title: pg for pg in pages}
+        for g, titles in groups.items():
+            st.markdown(f'<div class="qi-nav-label">{g}</div>', unsafe_allow_html=True)
+            for t in titles:
+                if t in by_title:
+                    st.page_link(by_title[t], label=SHORT_LABELS.get(t, t), icon=by_title[t].icon)
 
         params = st.session_state.get("params")
         n_assets = len(params.tickers) if params else 0

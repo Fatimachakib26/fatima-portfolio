@@ -7,6 +7,7 @@ distribution des rendements et corrélation glissante entre actifs.
 import pandas as pd
 import streamlit as st
 from scipy import stats as sps
+import numpy as np
 
 from components import compute
 from components.charts import PLOTLY_CONFIG, distribution_chart, rolling_corr_chart
@@ -35,7 +36,7 @@ except ValueError as exc:
     st.stop()
 
 period_lbl = {"Quotidienne": "1 jour", "Hebdomadaire": "1 semaine", "Mensuelle": "1 mois"}[params.frequency]
-tabs = st.tabs(["📋 Indicateurs", "📊 Distribution des rendements", "🔗 Corrélation glissante"])
+tabs = st.tabs(["📋 Indicateurs", "📊 Distribution des rendements", "🔗 Corrélation glissante", "🧨 Scénarios"])
 
 # --------------------------------------------------------------------------- #
 with tabs[0]:
@@ -129,3 +130,73 @@ with tabs[2]:
             "diversification protège.",
             takeaway,
         )
+
+# --------------------------------------------------------------------------- #
+with tabs[3]:
+    from components.charts import base_figure
+    from components.workspace import get_library
+    from core import library as lib_
+    from core.indicators import calculer_indicateurs
+    from core.returns import simple_returns
+    from core.scenarios import monte_carlo, shock_loss, stress_table
+    import plotly.graph_objects as go
+
+    library = get_library(params, bundle)
+    names = st.multiselect("Portefeuilles", list(library), default=[n for n in st.session_state.get("sel_portfolios", [])
+                           if n in library][:4] or list(library)[:3], key="sc_ports")
+    full = simple_returns(bundle.clean.prices)
+    b_full = full[bundle.benchmark] if bundle.benchmark else None
+    series = {n: lib_.entry_returns(library[n], full[bundle.assets], b_full) for n in names}
+    if not series:
+        st.stop()
+    with st.container(border=True):
+        section("Tests de résistance historiques", "Poids de la bibliothèque appliqués à tout l'historique (achat puis conservation)")
+        stt = stress_table(series)
+        show = stt.copy()
+        for c in show.columns:
+            show[c] = show[c].map(lambda v: v.strftime("%d/%m/%Y") if hasattr(v, "strftime") else pct(v, 1))
+        st.dataframe(show, width="stretch")
+        worst = stt["Pire mois"].idxmin()
+        explain("Rendement cumulé pendant chaque crise, pire semaine (5 séances) et pire mois (21 séances) glissants.",
+                f"Pire mois : <b>{worst}</b> ({pct(stt.loc[worst, 'Pire mois'], 1)}, terminé le "
+                f"{stt.loc[worst, 'Date (mois)']:%d/%m/%Y}). Attention : 2020 et 2022 sont dans la période d'estimation "
+                "des portefeuilles optimisés, qui « connaissaient » ces crises.")
+    with st.container(border=True):
+        section("Choc hypothétique", "Perte estimée de chaque portefeuille à partir de son bêta (estimé sur toute la période)")
+        c1, c2 = st.columns(2)
+        shock = c1.slider(f"Baisse de {bundle.benchmark or 'l’indice'} (%)", 0, 40, 10, 1, key="sc_shock") / -100
+        vshock = c2.slider("Hausse de la volatilité (%)", 0, 200, 50, 10, key="sc_vol") / 100
+        rows = []
+        for n, r_ in series.items():
+            ind = calculer_indicateurs(r_, b_full, params.risk_free_rate, 252, sujet=n)
+            beta = ind["beta"].valeur if "beta" in ind else 1.0
+            out = shock_loss(beta, shock, ind["volatilite"].valeur, vshock)
+            rows.append({"Portefeuille": n, "Bêta": num(beta), "Perte attendue": pct(out["perte_attendue"], 1),
+                         "Perte au pire (95 %)": pct(out["perte_95"], 1),
+                         "Calcul": f"{num(beta)} × ({pct(shock, 0)}) = {pct(out['perte_attendue'], 1)} ; "
+                                   f"− 1,645 × {pct(out['sigma_jour'], 2)} (σ jour choquée) = {pct(out['perte_95'], 1)}"})
+        st.dataframe(pd.DataFrame(rows).set_index("Portefeuille"), width="stretch")
+        explain("Perte attendue = bêta × choc de marché. Perte au pire (95 %) : on retire 1,645 écart-type quotidien, "
+                "augmenté du choc de volatilité. Modèle à un facteur : le risque propre à chaque action est ignoré.",
+                f"Pour une baisse de {pct(-shock, 0)} du marché, le portefeuille le plus exposé perdrait environ "
+                f"{max(rows, key=lambda x: float(x['Bêta'].replace(',', '.').replace('−', '-')))['Perte attendue']}.")
+    with st.container(border=True):
+        section("Monte-Carlo sur 1 an", "1 000 trajectoires, graine 42 · μ et σ estimés sur la période d'estimation")
+        n_mc = st.selectbox("Portefeuille", list(series), key="sc_mc")
+        r_est = series[n_mc].loc[:pd.Timestamp(params.split_date)]
+        mu_a, sig_a = float(r_est.mean() * 252), float(r_est.std() * np.sqrt(252))
+        cone, p_loss = monte_carlo(mu_a, sig_a)
+        fig = base_figure("", 360)
+        fig.add_trace(go.Scatter(x=cone.index, y=cone["P95"], line=dict(width=0), showlegend=False, hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=cone.index, y=cone["P5"], fill="tonexty", fillcolor="rgba(168,85,247,0.2)",
+                                 line=dict(width=0), name="Entre 5 % et 95 %"))
+        fig.add_trace(go.Scatter(x=cone.index, y=cone["P50"], line=dict(color="#A855F7", width=2.5), name="Médiane"))
+        fig.add_hline(y=100, line=dict(color="#8E8FB5", dash="dot"))
+        fig.update_layout(xaxis_title="Séances", yaxis_title="Valeur de 100 investis", hovermode="x unified")
+        st.plotly_chart(fig, width="stretch", config=PLOTLY_CONFIG)
+        explain("Chaque trajectoire tire 252 rendements quotidiens d'une loi normale de moyenne μ/252 et d'écart-type "
+                "σ/√252 (généralisation de GBM.py du cours). Le cône contient 90 % des trajectoires.",
+                f"μ = {pct(mu_a, 1)}, σ = {pct(sig_a, 1)} : dans un an, médiane {num(cone['P50'].iloc[-1], 0)}, "
+                f"pessimiste (5 %) {num(cone['P5'].iloc[-1], 0)}, optimiste (95 %) {num(cone['P95'].iloc[-1], 0)}. "
+                f"Probabilité de perte : <b>{pct(p_loss, 1)}</b>. Hypothèses : rendements normaux et indépendants, μ "
+                "et σ constants — les queues épaisses observées rendent le scénario pessimiste trop optimiste.")

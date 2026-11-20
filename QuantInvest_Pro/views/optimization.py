@@ -17,10 +17,16 @@ from components.formatting import format_metrics, num, pct, weights_table
 from components.kpi_cards import KPI, banner, empty_state, kpi_row
 from components.navbar import render_navbar
 from config import COV_METHODS, FREQUENCIES, AppParams
+import numpy as np
+import plotly.graph_objects as go
+
+from core import library as lib_mod
 from core.backtest import realized_points
+from core.optimization import optimize_custom, target_portfolio
 from core.diversification import volatility_at_return
 from core.preprocessing import DataQualityError, clean_prices, resample_prices
 from core.returns import simple_returns
+from core.portfolio import metrics_table as metrics_table_fn
 from core.optimization import EQUAL, MAX_SHARPE, MIN_VAR
 from core.portfolio import risk_contributions
 from core.reporting import to_csv_bytes, to_excel_bytes
@@ -52,7 +58,7 @@ st.caption(f"Période d'estimation : {est.start:%d/%m/%Y} → {est.end:%d/%m/%Y}
            f"poids entre {pct(params.weight_min, 0)} et {pct(cap, 0)}")
 
 tabs = st.tabs(["🧮 Données et estimation", "🎯 Portefeuilles optimaux", "📈 Frontière efficiente",
-                "🧩 Contribution au risque", "🛡️ Ledoit-Wolf", "🌍 Diversification"])
+                "🧩 Contribution au risque", "🛡️ Ledoit-Wolf", "🌍 Diversification", "🎛️ Contraintes"])
 
 # --------------------------------------------------------------------------- #
 with tabs[0]:
@@ -64,11 +70,15 @@ with tabs[0]:
     c1, c2 = st.columns([1, 1.15], gap="medium")
     with c1, st.container(border=True):
         section("Rendements et volatilités annualisés", f"μ = moyenne × {ppy} · σ = écart-type × √{ppy}")
-        st.dataframe(pd.DataFrame({
+        ev = st.dataframe(pd.DataFrame({
             "Rendement moyen annualisé": stats.iloc[:, 0].map(pct),
             "Volatilité annualisée": stats.iloc[:, 1].map(pct),
             "Sharpe individuel": stats.iloc[:, 2].map(num),
-        }), width="stretch")
+        }), width="stretch", on_select="rerun", selection_mode="single-row", key="opt_stats_sel")
+        if ev.selection.rows:
+            st.session_state["focus_asset"] = stats.index[ev.selection.rows[0]]
+            st.switch_page("views/asset_analysis.py")
+        st.caption("Cliquez sur une ligne pour ouvrir la fiche de l'actif.")
         best, worst = stats.index[0], stats.index[-1]
         explain(
             "Chaque ligne résume un actif sur la période d'estimation : son rendement moyen, son risque "
@@ -168,8 +178,46 @@ with tabs[2]:
         section("Frontière efficiente de Markowitz", "Portefeuilles admissibles, frontière exacte et portefeuilles remarquables")
         cl = compute.cloud(est.mu, est.cov, rf, params.n_simulations, params.weight_min, cap)
         fr = compute.frontier(est.mu, est.cov, rf, params.weight_min, cap)
-        st.plotly_chart(frontier_chart(cl, fr, ports, rf, 560, assets=pd.DataFrame({"rendement": est.mu, "volatilite": est.vol})),
-                        width="stretch", config=PLOTLY_CONFIG)
+        vmin, vmax = float(fr["volatilite"].min()), float(fr["volatilite"].max())
+        tv = st.slider("Volatilité cible (%) — déplace le marqueur sur la frontière", round(vmin * 100, 1) + 0.1,
+                       round(vmax * 100, 1), round((vmin + vmax) * 50, 1), 0.1, key="tv_slider") / 100
+        tgt = target_portfolio(est.mu, est.cov, rf, params.weight_min, cap, target_vol=tv)
+        fig_f = frontier_chart(cl, fr, ports, rf, 560, assets=pd.DataFrame({"rendement": est.mu, "volatilite": est.vol}))
+        fig_f.add_trace(go.Scatter(x=[tgt.volatility], y=[tgt.expected_return], mode="markers", name="Cible",
+                                   marker=dict(size=16, symbol="x", color="#F43F5E", line=dict(width=2)),
+                                   hovertemplate="Cible<br>Rendement : %{y:.2%}<br>Volatilité : %{x:.2%}<extra></extra>"))
+        ev_f = st.plotly_chart(fig_f, width="stretch", config=PLOTLY_CONFIG, on_select="rerun", selection_mode="points",
+                               key="front_click")
+        st.caption("Cliquez sur un point de la frontière ou du nuage pour voir ses poids, ou sur un actif pour ouvrir sa fiche.")
+        picked, label = tgt.weights, f"Cible σ = {pct(tv, 1)}"
+        pts = ev_f.selection.points if ev_f and ev_f.selection else []
+        if pts:
+            pt = pts[0]
+            curve, idx = pt.get("curve_number"), pt.get("point_index")
+            if curve == 0 and idx is not None:
+                picked, label = cl.iloc[idx][list(est.mu.index)].astype(float), f"Portefeuille aléatoire n° {idx + 1}"
+            elif curve == 1 and idx is not None:
+                picked, label = fr.iloc[idx][list(est.mu.index)].astype(float), f"Frontière, point n° {idx + 1}"
+            elif curve == 2 and idx is not None:
+                st.session_state["focus_asset"] = est.mu.index[idx]
+                st.switch_page("views/asset_analysis.py")
+        p_ret = float(picked @ est.mu)
+        p_vol = float(np.sqrt(picked @ est.cov @ picked))
+        c_a, c_b = st.columns([2, 1])
+        c_a.markdown(f"**{label}** — rendement espéré {pct(p_ret, 1)} · volatilité {pct(p_vol, 1)} · "
+                     f"Sharpe {num((p_ret - rf) / p_vol)}")
+        c_a.dataframe(picked.map(lambda v: pct(v, 1)).rename("Poids").to_frame().T, width="stretch")
+        nm = c_b.text_input("Nom", value=label, key="front_name")
+        if c_b.button("💾 Enregistrer dans la bibliothèque", key="front_save"):
+            custom = st.session_state.setdefault("library_custom", {})
+            from components.workspace import get_library
+            if nm in get_library(params, bundle):
+                banner(f"« {nm} » existe déjà.", "error", "⛔")
+            else:
+                custom[nm] = lib_mod.Entry(nm, {k: float(v) for k, v in picked.items()}, "frontiere",
+                                           f"{label} (estimation)", lib_mod.next_color(get_library(params, bundle)),
+                                           parametres=lib_mod.params_dict(est, rf, params.weight_min, cap, "frontiere"))
+                st.toast(f"« {nm} » enregistré", icon="✅")
         if not fr["converged"].all():
             banner(f"{int((~fr['converged']).sum())} point(s) de la frontière n'ont pas convergé.", "warn", "⚠️")
         explain(
@@ -322,3 +370,75 @@ with tabs[5]:
                 )
                 st.dataframe(weights_table({f"Sharpe maximal · {n6} actifs": u6.max_sharpe_weights.reindex(u8.assets).fillna(0),
                                             f"Sharpe maximal · {n8} actifs": w8}), width="stretch")
+
+# --------------------------------------------------------------------------- #
+with tabs[6]:
+    from core.fundamentals import get_profile, sector_fr
+    from core.returns import estimate as _estimate
+
+    @st.cache_data(ttl=6 * 3600, show_spinner=False)
+    def _sector(t):
+        return sector_fr(get_profile(t).get("sector"))
+
+    with st.container(border=True):
+        section("Panneau de contraintes", "Modifiez puis cliquez sur « Recalculer » : résultat avant / après côte à côte")
+        c1, c2, c3, c4 = st.columns(4)
+        objective = c1.radio("Objectif", ["Sharpe maximal", "Variance minimale"], key="cst_obj")
+        estim = c2.selectbox("Estimateur", ["sample", "ledoit_wolf"], format_func=COV_METHODS.get, key="cst_est")
+        years = c3.selectbox("Fenêtre d'estimation", [1, 2, 3, 5], index=3, format_func=lambda y: f"{y} an(s) avant la séparation",
+                             key="cst_years")
+        rf_new = c4.number_input("Taux sans risque (%)", -5.0, 25.0, rf * 100, 0.25, key="cst_rf") / 100
+        g1, g2 = st.columns(2)
+        gmin = g1.number_input("Poids minimum global (%)", 0.0, 50.0, params.weight_min * 100, 1.0, key="cst_gmin") / 100
+        gmax = g2.number_input("Poids maximum global (%)", 1.0, 100.0, cap * 100, 1.0, key="cst_gmax") / 100
+        sectors = {a: _sector(a) for a in bundle.assets}
+        table = pd.DataFrame({"Secteur": sectors, "Minimum (%)": gmin * 100, "Maximum (%)": gmax * 100})
+        edited = st.data_editor(table, width="stretch", key="cst_table", disabled=["Secteur"],
+                                column_config={"Minimum (%)": st.column_config.NumberColumn(min_value=0, max_value=100, step=1),
+                                               "Maximum (%)": st.column_config.NumberColumn(min_value=0, max_value=100, step=1)})
+        groups = {}
+        for a, sct in sectors.items():
+            groups.setdefault(sct, []).append(a)
+        st.markdown("**Plafond par secteur (%)**")
+        cols = st.columns(max(len(groups), 1))
+        caps = {g: cols[i].number_input(g, 0.0, 100.0, 100.0, 5.0, key=f"cst_sec_{i}") / 100 for i, g in enumerate(groups)}
+        go_btn = st.button("🔄 Recalculer", type="primary", key="cst_go")
+    if go_btn:
+        st.session_state["cst_last"] = True
+    if st.session_state.get("cst_last"):
+        split = pd.Timestamp(params.split_date)
+        r_all = simple_returns(bundle.prices)
+        window = r_all.loc[(r_all.index > split - pd.DateOffset(years=years)) & (r_all.index <= split)]  # [no look-ahead]
+        try:
+            est_new = _estimate(window, ppy, estim)
+            after = optimize_custom(est_new.mu, est_new.cov, rf_new, "max_sharpe" if objective == "Sharpe maximal" else "min_variance",
+                                    edited["Minimum (%)"] / 100, edited["Maximum (%)"] / 100, groups, caps)
+        except ValueError as exc:
+            banner(f"Contraintes impossibles : {exc}", "error", "⛔")
+            st.stop()
+        before = ports[MAX_SHARPE if objective == "Sharpe maximal" else MIN_VAR]
+        if not after.converged:
+            banner(after.message, "warn", "⚠️")
+        test_r = r_all.loc[r_all.index > split]
+        from core.portfolio import buy_and_hold_returns as _bh
+        m_b = metrics_table_fn({"Avant": _bh(test_r, before.weights), "Après": _bh(test_r, after.weights)}, rf_new, ppy)
+        c1, c2 = st.columns(2, gap="medium")
+        with c1, st.container(border=True):
+            section("Poids avant / après")
+            st.plotly_chart(grouped_bars(pd.DataFrame({"Avant": before.weights, "Après": after.weights}), 320,
+                                         colors=["#8E8FB5", "#A855F7"], y_title="Poids"), width="stretch", config=PLOTLY_CONFIG)
+        with c2, st.container(border=True):
+            section("Indicateurs avant / après")
+            comp = pd.DataFrame({"Avant": [before.expected_return, before.volatility, before.sharpe,
+                                           m_b.loc["Avant", "Sharpe"], m_b.loc["Avant", "Drawdown maximal"]],
+                                 "Après": [after.expected_return, after.volatility, after.sharpe,
+                                           m_b.loc["Après", "Sharpe"], m_b.loc["Après", "Drawdown maximal"]]},
+                                index=["Rendement espéré", "Volatilité espérée", "Sharpe annoncé", "Sharpe en test",
+                                       "Drawdown maximal en test"])
+            st.dataframe(comp.apply(lambda col: [pct(v, 1) if i in (0, 1, 4) else num(v) for i, v in enumerate(col)]),
+                         width="stretch")
+        explain("« Avant » : le portefeuille calculé avec les paramètres de la page Paramètres. « Après » : avec vos "
+                "contraintes, sur la fenêtre d'estimation choisie. Le Sharpe en test est mesuré après la date de séparation.",
+                f"Sharpe annoncé {num(before.sharpe)} → {num(after.sharpe)} ; en test {num(m_b.loc['Avant', 'Sharpe'])} → "
+                f"<b>{num(m_b.loc['Après', 'Sharpe'])}</b>. Une contrainte réduit toujours le Sharpe annoncé, mais peut "
+                "améliorer le résultat hors échantillon.")

@@ -43,19 +43,26 @@ python -m pytest -q tests
 ---
 
 ## Pages de l'application
-| Page | Contenu |
-|---|---|
-| **Tableau de bord** | Carte **Verdict** générée à partir des résultats hors échantillon (test de Memmel), KPI du portefeuille retenu sur la période de test, filtres (actifs, dates), performance base 100 contre le S&P 500, cartes d'actifs, frontière, allocation, corrélations, comparaison des 3 portefeuilles |
-| **Optimisation** | *Données et estimation* (μ, σ, Σ, heatmap des corrélations) · *Portefeuilles optimaux* (avec et sans plafond, exports CSV / Excel) · *Frontière efficiente* (frontière exacte, nuage Monte-Carlo, droite de marché des capitaux) · *Contribution au risque* · *Ledoit-Wolf* |
-| **Risque** | Sharpe, Sortino, Calmar, drawdown maximal, VaR historique et paramétrique, CVaR (estimation et test) · distribution des rendements contre loi normale (Jarque-Bera) · corrélation moyenne glissante avec périodes de crise |
-| **Test rétrospectif** | Estimation contre test · frontière estimée vs réalisée · **fenêtre glissante** (4 stratégies, frais, rotation, nombre effectif de titres, Sharpe annoncé vs réalisé) · **significativité** (Memmel, bootstrap) · **carte de sensibilité** · export CSV pour Power BI |
-| **Actifs** | Prix ajustés, statistiques descriptives, **CAPM** (bêta, alpha, R²), comparaison base 100, origine et qualité des données |
-| **Paramètres** | Actifs, période, **date de séparation**, fréquence, taux sans risque, bornes et plafond, estimateur de covariance, fenêtre, rééquilibrage, frais · méthodologie · **contrôle de l'optimiseur** · correspondance avec les scripts du cours |
+| Groupe | Page | Contenu |
+|---|---|---|
+| Analyse | **Tableau de bord** | Verdict hors échantillon (Memmel), tableau des 3 portefeuilles et du SPY, valeur de 100 investis, KPI traçables, frontière, pondérations, corrélations |
+| Analyse | **Portefeuilles** | Fiche de chaque portefeuille : composition, *pourquoi ces poids ?* (entrées, contraintes actives, sensibilité des poids à μ), performance (heatmap mensuelle, sélection d'une zone de dates), attribution, risque, promesse contre réalité ; **bibliothèque** (constructeur, portefeuille cible, duplication, import/export JSON) |
+| Analyse | **Comparateur** | 24 indicateurs côte à côte (meilleur en vert, pire en rouge, détail traçable), radar, courbes, poids, contributions au risque, corrélations, p-valeurs de Memmel, **rapport HTML** |
+| Analyse | **Indicateurs** | Définition, formule, calcul pas à pas, comparaison portefeuilles / actifs, évolution glissante, lecture et limites |
+| Méthode | **Optimisation** | Données et estimation, portefeuilles optimaux et effet du plafond, **frontière cliquable** et volatilité cible, frontière estimée contre réalisée, contribution au risque, Ledoit-Wolf, diversification (TLT, GLD), **panneau de contraintes** (bornes par actif, plafonds par secteur) |
+| Méthode | **Risque** | Indicateurs (Sortino, Calmar, VaR, CVaR), distribution, corrélation glissante, **scénarios** (crises, choc hypothétique, Monte-Carlo) |
+| Méthode | **Test rétrospectif** | Estimation contre test, fenêtre glissante, significativité, sensibilité (durée d'estimation et fenêtre glissante), export Power BI |
+| Données | **Actifs** | Fiche action : profil, prix et performance, risque, fondamentaux, rôle dans les portefeuilles, comparaison, qualité des données |
+| Données | **Sources et méthodologie** | Origine de chaque série, traitements, toutes les formules, contrôle de l'optimiseur, hypothèses, références, scripts du cours, journal des calculs |
+| Données | **Paramètres** | Actifs, période, date de séparation, fréquence, taux sans risque, bornes, estimateur, fenêtre, rééquilibrage, frais |
 
-Chaque graphique est accompagné d'un encadré **« Comment lire »** et d'un encadré **« À retenir »**
-dont les chiffres sont calculés à partir des résultats.
+**Traçabilité** : chaque indicateur est un objet `Resultat` (valeur, formule, entrées, calcul détaillé avec les vrais
+nombres, source avec date de téléchargement, période). Le bouton « ⓘ D'où vient ce chiffre ? » l'affiche, avec les
+données utilisées exportables en CSV. Un test vérifie que le calcul détaillé redonne la valeur.
 
----
+**Barre de sélection globale** : portefeuilles, actifs, période (estimation, test, toute la période, krach Covid,
+hausse des taux 2022, personnalisée), indice, fréquence — conservée d'une page à l'autre. Les poids ne sont jamais
+réestimés sur la période affichée.
 
 ## Méthodologie (résumé)
 **Données.** Cours de clôture ajustés (dividendes et splits) via `yfinance`. Report de la dernière
@@ -128,7 +135,7 @@ QuantInvest_Pro/
 ├── components/            Interface : thème, menu, KPI, graphiques, formats français, cache
 ├── views/                 Les pages (affichage uniquement)
 ├── assets/                Feuille de style, logo
-└── tests/                 51 tests unitaires
+└── tests/                 101 tests unitaires
 ```
 
 ---

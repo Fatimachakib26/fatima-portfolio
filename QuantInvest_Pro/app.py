@@ -46,7 +46,8 @@ PAGES = [
     st.Page("views/risk_analysis.py", title="Analyse du risque", icon=":material/shield:"),
     st.Page("views/backtesting.py", title="Test rétrospectif", icon=":material/history:"),
     st.Page("views/asset_analysis.py", title="Analyse des actifs", icon=":material/candlestick_chart:"),
-    st.Page("views/settings.py", title="Paramètres & méthodologie", icon=":material/tune:"),
+    st.Page("views/sources.py", title="Sources et méthodologie", icon=":material/menu_book:"),
+    st.Page("views/settings.py", title="Paramètres", icon=":material/tune:"),
 ]
 
 current = st.navigation(PAGES, position="hidden")

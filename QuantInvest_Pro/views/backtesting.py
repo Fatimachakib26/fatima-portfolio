@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from components import compute
-from components.charts import (PLOTLY_CONFIG, announced_vs_realized_chart, drawdown_chart, realized_frontier_chart,
+from components.charts import (PLOTLY_CONFIG, announced_vs_realized_chart, drawdown_chart,
                                sensitivity_heatmap, stacked_weights_chart, wealth_chart)
 from components.data_service import MarketBundle, render_data_alerts
 from components.explain import explain, section
@@ -87,39 +87,18 @@ with tabs[0]:
 # 2. Frontière estimée vs réalisée
 # --------------------------------------------------------------------------- #
 with tabs[1]:
-    with st.spinner("Calcul des 30 portefeuilles de la frontière…"):
-        fr = compute.realized(bundle.prices, params.split_date, rf, params.weight_min, params.weight_max,
-                              params.cov_method, ppy)
-    r_est = simple_returns(bundle.prices).loc[:pd.Timestamp(params.split_date)]
-    r_test = simple_returns(bundle.prices).loc[res.returns_test.index]
-    eq_w = np.full(len(bundle.assets), 1 / len(bundle.assets))
-    eq_est = ((r_est @ eq_w).mean() * ppy, (r_est @ eq_w).std() * np.sqrt(ppy))
-    eq_real = ((r_test @ eq_w).mean() * ppy, (r_test @ eq_w).std() * np.sqrt(ppy))
-    with st.container(border=True):
-        section("Frontière estimée vs frontière réalisée",
-                "Chaque flèche relie un portefeuille de la frontière (estimé) à sa position réellement obtenue (test)")
-        st.plotly_chart(realized_frontier_chart(fr, eq_est, eq_real, 520), width="stretch", config=PLOTLY_CONFIG)
-        eq_sr_real = (eq_real[0] - rf) / eq_real[1]
-        beat = int((fr["sharpe_realise"] > eq_sr_real).sum())
-        ret_gap = (fr["rendement"] - fr["rendement_realise"]).mean()
-        best_i = fr["sharpe_realise"].idxmax()
-        explain(
-            "La courbe violette est la frontière telle que l'optimiseur la voyait sur la période d'estimation ; "
-            "la courbe cyan montre où ces mêmes portefeuilles (mêmes poids) ont réellement atterri sur la période "
-            "de test. Le carré orange suit le 1/N.",
-            f"En moyenne, les portefeuilles de la frontière réalisent <b>{pct(ret_gap, 1)}</b> de rendement annuel "
-            f"de moins que prévu. Seuls <b>{beat} sur {len(fr)}</b> battent le 1/N en Sharpe réalisé "
-            f"({num(eq_sr_real)}). Le meilleur réalisé est le n° {best_i + 1} (Sharpe {num(fr.loc[best_i, 'sharpe_realise'])}, "
-            f"volatilité estimée {pct(fr.loc[best_i, 'volatilite'], 1)}) : "
-            + ("les portefeuilles les moins risqués de la frontière ont le mieux résisté."
-               if best_i < len(fr) / 3 else "le haut de la frontière a le mieux résisté sur cette période."),
-        )
+    banner("La frontière estimée contre la frontière réalisée se trouve désormais dans la page <b>Optimisation</b>, "
+           "onglet « Frontière efficiente », avec les flèches annoncé → réalisé des trois portefeuilles clés.", "info", "➡️")
+    if st.button("Ouvrir l'onglet Frontière efficiente", key="bt_to_front"):
+        st.switch_page("views/optimization.py")
 
 # --------------------------------------------------------------------------- #
 # 3. Fenêtre glissante
 # --------------------------------------------------------------------------- #
 with tabs[2]:
     try:
+        compute.log("Test rétrospectif en fenêtre glissante", fenetre=params.estimation_window,
+                    reequilibrage=params.rebalance_days, frais_pb=params.transaction_cost_bps, plafond=f"{params.weight_max:.0%}")
         with st.spinner("Test rétrospectif en fenêtre glissante…"):
             bt = compute.rolling(bundle.daily_prices, rf, params.estimation_window, params.rebalance_days,
                                  params.transaction_cost_bps, params.weight_max)
@@ -240,6 +219,24 @@ with tabs[3]:
 # 5. Sensibilité
 # --------------------------------------------------------------------------- #
 with tabs[4]:
+    mode_s = st.radio("Méthode", ["Test simple (durée d'estimation avant la séparation)", "Fenêtre glissante"],
+                      horizontal=True, key="sens_method")
+    if mode_s.startswith("Test simple"):
+        with st.spinner("20 optimisations (mises en cache ensuite)…"):
+            g2, ref2 = compute.window_grid(bundle.prices, params.split_date, rf, params.weight_min, params.cov_method, ppy)
+        g2.index = [f"{y} an{'s' if y > 1 else ''}" for y in g2.index]
+        with st.container(border=True):
+            section("Sharpe en test du Sharpe maximal selon la durée d'estimation et le plafond",
+                    f"Estimation sur 1, 2, 3 ou 5 ans avant le {params.split_date:%d/%m/%Y} · test ensuite (achat puis conservation)")
+            st.plotly_chart(sensitivity_heatmap(g2, ref2, 360), width="stretch", config=PLOTLY_CONFIG)
+            gg = g2.astype(float)
+            explain("Chaque case : le portefeuille de Sharpe maximal estimé sur la durée indiquée (lignes) avec le plafond "
+                    "indiqué (colonnes), puis évalué sur toute la période de test. Case vide : historique insuffisant.",
+                    f"{int((gg > ref2).sum().sum())} configurations sur {int(gg.notna().sum().sum())} battent le 1/N "
+                    f"(Sharpe {num(ref2)}). Meilleure durée en moyenne : <b>{gg.mean(axis=1).idxmax()}</b> ; "
+                    f"pire : {gg.mean(axis=1).idxmin()}. Le résultat dépend fortement de ces choix, ce qui illustre "
+                    "l'instabilité de l'optimisation.")
+        st.stop()
     try:
         with st.spinner("20 tests rétrospectifs en cours (mis en cache ensuite)…"):
             grid, ref = compute.sensitivity(bundle.daily_prices, rf, params.rebalance_days, params.transaction_cost_bps)

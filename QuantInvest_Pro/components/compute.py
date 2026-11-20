@@ -18,6 +18,17 @@ from core.returns import estimate, periodic_rf, rolling_mean_correlation, simple
 TTL = 3600
 
 
+def log(calcul: str, **parametres) -> None:
+    """Ajoute une ligne au journal des calculs de la session (page Sources et méthodologie)."""
+    from datetime import datetime
+    entry = {"Heure": datetime.now().strftime("%H:%M:%S"), "Calcul": calcul,
+             "Paramètres": " · ".join(f"{k} = {v}" for k, v in parametres.items())}
+    journal = st.session_state.setdefault("journal", [])
+    if not journal or (journal[-1]["Calcul"], journal[-1]["Paramètres"]) != (calcul, entry["Paramètres"]):
+        journal.append(entry)
+        del journal[:-200]
+
+
 @st.cache_data(ttl=TTL, show_spinner=False)
 def split(prices: pd.DataFrame, split_date, rf: float, lo: float, hi: float, cov_method: str,
           ppy: int) -> bt.SplitResult:
@@ -83,6 +94,9 @@ def sensitivity(daily_prices: pd.DataFrame, rf: float, step: int, cost_bps: floa
 def split_for(params: AppParams, prices: pd.DataFrame, ppy: int, cov_method: str | None = None,
               hi: float | None = None) -> bt.SplitResult:
     """Raccourci : séparation estimation / test avec les paramètres de l'utilisateur."""
+    log("Optimisation de Markowitz (estimation / test)", separation=f"{params.split_date:%d/%m/%Y}",
+        estimateur=cov_method or params.cov_method, rf=f"{params.risk_free_rate:.2%}",
+        plafond=f"{(params.weight_max if hi is None else hi):.0%}", frequence=ppy)
     return split(prices, params.split_date, params.risk_free_rate, params.weight_min,
                  params.weight_max if hi is None else hi, cov_method or params.cov_method, ppy)
 
