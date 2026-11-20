@@ -1,0 +1,12 @@
+# QuantInvest Pro — dépendances (versions minimales testées)
+streamlit>=1.46        # st.navigation(position="hidden") requis
+pandas>=2.2
+numpy>=1.26
+scipy>=1.12
+scikit-learn>=1.4      # estimateur de covariance Ledoit-Wolf
+yfinance>=0.2.54       # auto_adjust=True par défaut, colonnes MultiIndex
+plotly>=5.22
+pyarrow>=15            # cache disque au format Parquet
+openpyxl>=3.1          # export Excel
+reportlab>=4.0         # rapport PDF
+pytest>=8.0
