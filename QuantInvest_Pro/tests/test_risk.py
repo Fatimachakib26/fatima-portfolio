@@ -52,3 +52,11 @@ def test_risk_contributions_sum_to_portfolio_volatility():
 def test_effective_n():
     assert abs(effective_n(np.full(6, 1 / 6)) - 6) < 1e-12
     assert effective_n([1, 0, 0]) == 1
+
+
+def test_capm_beta_equals_cov_over_var():
+    from core.capm import capm
+    r = synthetic_returns()
+    out = capm(r["A"], r["B"], 0.0)
+    expected = r["A"].cov(r["B"]) / r["B"].var()
+    assert abs(out["beta"] - expected) < 1e-10

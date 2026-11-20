@@ -34,7 +34,7 @@ def asset_colors(assets: list[str]) -> dict[str, str]:
 
 
 def base100_chart(prices: pd.DataFrame, benchmark: pd.Series | None = None,
-                  height: int = 360, title: str = "") -> go.Figure:
+                  height: int = 360, title: str = "", log_y: bool = False) -> go.Figure:
     """Performance comparée, toutes les séries ramenées à 100 au départ."""
     fig = base_figure(title, height)
     norm = prices / prices.iloc[0] * 100
@@ -52,7 +52,9 @@ def base100_chart(prices: pd.DataFrame, benchmark: pd.Series | None = None,
             line=dict(width=2.6, color=BENCH_COLOR, dash="dot"),
             hovertemplate=f"<b>{benchmark.name}</b><br>%{{x|%d/%m/%Y}}<br>Base 100 : %{{y:.1f}}<extra></extra>",
         ))
-    fig.update_layout(hovermode="x unified", yaxis_title="Base 100",
+    if log_y:  # échelle logarithmique : des performances très différentes restent lisibles
+        fig.update_yaxes(type="log", title="Base 100 (échelle log.)")
+    fig.update_layout(hovermode="x unified", yaxis_title="Base 100 (échelle log.)" if log_y else "Base 100",
                       margin=dict(l=10, r=10, t=40 if title else 10, b=10),
                       legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="left", x=0,
                                   font=dict(size=10)))
@@ -370,4 +372,20 @@ def sensitivity_heatmap(grid: pd.DataFrame, ref: float, height: int = 380) -> go
                       xaxis=dict(title="Plafond de poids par actif", type="category"),
                       yaxis=dict(title="Fenêtre d'estimation", type="category"),
                       title=dict(text=f"Référence 1/N : Sharpe {ref:.2f}".replace(".", ","), font=dict(size=13)))
+    return fig
+
+
+def capm_chart(cp: dict, asset: str, market: str, height: int = 300) -> go.Figure:
+    import numpy as np
+
+    fig = base_figure("", height)
+    fig.add_trace(go.Scatter(x=cp["x"], y=cp["y"], mode="markers", name="Séances",
+                             marker=dict(size=4, color=_hex_to_rgba(COLORS["violet2"], 0.45)),
+                             hovertemplate=f"{market} : %{{x:.2%}}<br>{asset} : %{{y:.2%}}<extra></extra>"))
+    xs = np.linspace(cp["x"].min(), cp["x"].max(), 50)
+    fig.add_trace(go.Scatter(x=xs, y=cp["intercept"] + cp["beta"] * xs, mode="lines", name="Droite du CAPM",
+                             line=dict(color=COLORS["cyan"], width=2.5), hoverinfo="skip"))
+    fig.update_xaxes(tickformat=".0%", title=f"Excès de rendement {market}")
+    fig.update_yaxes(tickformat=".0%", title=f"Excès de rendement {asset}")
+    fig.update_layout(showlegend=False)
     return fig
