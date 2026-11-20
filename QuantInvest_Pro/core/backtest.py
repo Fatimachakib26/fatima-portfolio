@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from core.optimization import EQUAL, MAX_SHARPE, MIN_VAR, efficient_frontier, equal_weight, max_sharpe, min_variance
-from core.portfolio import effective_n, fixed_weight_returns, metrics_table
+from core.portfolio import buy_and_hold_returns, effective_n, fixed_weight_returns, max_drawdown, metrics_table
 from core.returns import Estimates, estimate
 
 PERIODS = 252
@@ -55,8 +55,14 @@ def split_returns(returns: pd.DataFrame, split_date) -> tuple[pd.DataFrame, pd.D
 
 
 def static_split(returns: pd.DataFrame, split_date, rf: float, lo: float, hi: float,
-                 cov_method: str = "sample", periods_per_year: int = PERIODS) -> SplitResult:
-    """`returns` à la fréquence choisie (252, 52 ou 12 périodes par an)."""
+                 cov_method: str = "sample", periods_per_year: int = PERIODS,
+                 test_mode: str = "buy_and_hold") -> SplitResult:
+    """`returns` à la fréquence choisie (252, 52 ou 12 périodes par an).
+
+    Conventions : sur la période d'estimation, poids constants (ce que « voit »
+    l'optimiseur) ; sur la période de test, achat à la date de séparation puis
+    conservation (poids qui dérivent), sauf test_mode="constant".
+    """
     r_est, r_test = split_returns(returns, split_date)
     min_est, min_test = max(periods_per_year // 2, 24), max(periods_per_year // 12, 6)
     if len(r_est) < min_est or len(r_test) < min_test:
@@ -65,7 +71,8 @@ def static_split(returns: pd.DataFrame, split_date, rf: float, lo: float, hi: fl
     est = estimate(r_est, periods_per_year, cov_method)  # [no look-ahead] uniquement ≤ date de séparation
     ports = optimal_portfolios(est, rf, lo, hi)
     re = pd.DataFrame({k: fixed_weight_returns(r_est, p.weights) for k, p in ports.items()})
-    rt = pd.DataFrame({k: fixed_weight_returns(r_test, p.weights) for k, p in ports.items()})  # poids figés
+    apply = buy_and_hold_returns if test_mode == "buy_and_hold" else fixed_weight_returns
+    rt = pd.DataFrame({k: apply(r_test, p.weights) for k, p in ports.items()})  # poids décidés une seule fois
     return SplitResult(est, ports, re, rt, metrics_table(dict(re.items()), rf, periods_per_year),
                        metrics_table(dict(rt.items()), rf, periods_per_year))
 
@@ -88,6 +95,56 @@ def realized_frontier(returns: pd.DataFrame, split_date, rf: float, lo: float, h
     fr["volatilite_realisee"] = rp.std(axis=0, ddof=1) * np.sqrt(periods_per_year)
     fr["sharpe_realise"] = (fr["rendement_realise"] - rf) / fr["volatilite_realisee"]
     return fr
+
+
+def realized_points(returns: pd.DataFrame, split_date, portfolios: dict, rf: float,
+                    periods_per_year: int = PERIODS) -> pd.DataFrame:
+    """Position (σ, μ) annoncée puis réalisée de portefeuilles donnés, mêmes poids,
+    mêmes définitions que la frontière (poids constants, μ = moyenne × N)."""
+    _, r_test = split_returns(returns, split_date)
+    rows = {}
+    for name, p in portfolios.items():
+        rp = fixed_weight_returns(r_test, p.weights)
+        mu, vol = rp.mean() * periods_per_year, rp.std(ddof=1) * np.sqrt(periods_per_year)
+        rows[name] = {"rendement": p.expected_return, "volatilite": p.volatility, "sharpe": p.sharpe,
+                      "rendement_realise": mu, "volatilite_realisee": vol, "sharpe_realise": (mu - rf) / vol}
+    return pd.DataFrame(rows).T
+
+
+def window_sensitivity(returns: pd.DataFrame, split_date, rf: float, years: list[int], caps: list[float],
+                       lo: float = 0.0, cov_method: str = "sample",
+                       periods_per_year: int = PERIODS) -> tuple[pd.DataFrame, float]:
+    """Sharpe en test (achat puis conservation) du Sharpe maximal estimé sur les
+    `years` dernières années avant la date de séparation, pour chaque plafond.
+    NaN si l'historique disponible couvre moins de 95 % de la durée demandée."""
+    split = pd.Timestamp(split_date)
+    r_test = returns.loc[returns.index > split]
+    grid = pd.DataFrame(index=years, columns=caps, dtype=float)
+    for y in years:
+        window = returns.loc[(returns.index > split - pd.DateOffset(years=y)) & (returns.index <= split)]
+        if len(window) < 0.95 * y * periods_per_year:
+            continue
+        est = estimate(window, periods_per_year, cov_method)          # [no look-ahead] ≤ date de séparation
+        for c in caps:
+            hi = max(c, 1 / returns.shape[1])
+            w = max_sharpe(est.mu, est.cov, rf, lo, hi).weights
+            grid.loc[y, c] = metrics_table({"x": buy_and_hold_returns(r_test, w)}, rf, periods_per_year).loc["x", "Sharpe"]
+    eq = pd.Series(1 / returns.shape[1], index=returns.columns)
+    ref = metrics_table({"x": buy_and_hold_returns(r_test, eq)}, rf, periods_per_year).loc["x", "Sharpe"]
+    return grid, float(ref)
+
+
+def crisis_performance(series: dict[str, pd.Series], crises: list[tuple[str, str, str]]) -> pd.DataFrame:
+    """Rendement cumulé et drawdown maximal de chaque série pendant chaque crise."""
+    rows = []
+    for label, a, b in crises:
+        for name, r in series.items():
+            seg = r.loc[a:b].dropna()
+            if len(seg) < 5:
+                continue
+            rows.append({"Crise": label, "Portefeuille": name, "Rendement cumulé": float((1 + seg).prod() - 1),
+                         "Drawdown maximal": max_drawdown(seg), "Séances": len(seg)})
+    return pd.DataFrame(rows)
 
 
 # --------------------------------------------------------------------------- #

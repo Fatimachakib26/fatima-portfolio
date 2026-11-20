@@ -21,7 +21,7 @@ from components.theme import apply_theme
 from config import APP_NAME, LOGO_PATH, AppParams
 
 st.set_page_config(
-    page_title=f"{APP_NAME} · Smart Portfolio Optimization",
+    page_title=f"{APP_NAME} · Optimisation de portefeuille",
     page_icon=str(LOGO_PATH) if LOGO_PATH.exists() else "💠",
     layout="wide",
     initial_sidebar_state="expanded",

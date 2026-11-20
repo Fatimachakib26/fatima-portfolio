@@ -27,7 +27,7 @@ def render_sidebar(pages: list) -> None:
               {LOGO_SVG}
               <div>
                 <div class="qi-brand-name">{APP_NAME}</div>
-                <div class="qi-brand-tag">Portfolio Analytics</div>
+                <div class="qi-brand-tag">Analyse de portefeuille</div>
               </div>
             </div>
             <div class="qi-nav-label">Navigation</div>
@@ -41,7 +41,7 @@ def render_sidebar(pages: list) -> None:
         html(f"""
             <div class="qi-side-foot">
               <b>{n_assets}</b> actifs sélectionnés<br>
-              Benchmark : <b>{params.benchmark if params else "—"}</b><br>
+              Référence : <b>{params.benchmark if params else "—"}</b><br>
               <span style="opacity:.8">{INSTITUTION}<br>v{VERSION}</span>
             </div>
             """)

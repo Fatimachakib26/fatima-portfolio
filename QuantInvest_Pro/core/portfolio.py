@@ -34,6 +34,16 @@ def fixed_weight_returns(returns: pd.DataFrame, weights: pd.Series) -> pd.Series
     return returns[weights.index] @ weights
 
 
+def buy_and_hold_returns(returns: pd.DataFrame, weights: pd.Series) -> pd.Series:
+    """Achat au premier jour aux poids w, puis conservation : les poids dérivent
+    avec les cours (aucun rééquilibrage, aucun frais après l'achat).
+    V_t = Σᵢ wᵢ Π_{s≤t}(1 + r_{i,s}) ; r_p,t = V_t / V_{t−1} − 1, avec V_0 = 1."""
+    growth = (1 + returns[weights.index]).cumprod()
+    value = growth @ weights
+    prev = value.shift(1).fillna(float(weights.sum()))
+    return (value / prev - 1).rename("buy_and_hold")
+
+
 def max_drawdown(r: pd.Series) -> float:
     wealth = np.concatenate([[1.0], (1 + r).cumprod().to_numpy()])
     peak = np.maximum.accumulate(wealth)

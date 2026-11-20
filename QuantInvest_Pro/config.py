@@ -16,7 +16,7 @@ from pathlib import Path
 # Identité
 # --------------------------------------------------------------------------- #
 APP_NAME = "QuantInvest Pro"
-TAGLINE = "Smart Portfolio Optimization & Risk Analytics"
+TAGLINE = "Optimisation de portefeuille et analyse des risques"
 VERSION = "1.0.0"
 INSTITUTION = "EMSI — Finance quantitative avancée"
 

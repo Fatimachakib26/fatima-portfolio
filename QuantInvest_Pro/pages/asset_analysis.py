@@ -68,11 +68,11 @@ with tab_asset:
                     f"(p = {num(cp['p_alpha'], 4)} : {'significatif' if cp['p_alpha'] < 0.05 else 'non significatif'}), "
                     f"R² = {num(cp['r2'])}.")
         else:
-            empty_state("Benchmark indisponible", "Le CAPM nécessite le S&P 500.", "📐")
+            empty_state("Indice de référence indisponible", "Le CAPM nécessite le S&P 500.", "📐")
 
 with tab_compare:
     chosen = st.multiselect("Actions à comparer", bundle.assets, default=bundle.assets[:4])
-    show_bench = st.toggle("Afficher le benchmark", value=bundle.benchmark is not None,
+    show_bench = st.toggle("Afficher l'indice de référence", value=bundle.benchmark is not None,
                            disabled=bundle.benchmark is None)
     with st.container(border=True):
         card_title("Performance comparée (base 100)", "Valeur de 100 investis au début de la période")

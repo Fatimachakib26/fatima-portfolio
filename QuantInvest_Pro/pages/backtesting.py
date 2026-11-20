@@ -120,7 +120,7 @@ with tabs[1]:
 # --------------------------------------------------------------------------- #
 with tabs[2]:
     try:
-        with st.spinner("Backtest en fenêtre glissante…"):
+        with st.spinner("Test rétrospectif en fenêtre glissante…"):
             bt = compute.rolling(bundle.daily_prices, rf, params.estimation_window, params.rebalance_days,
                                  params.transaction_cost_bps, params.weight_max)
     except ValueError as exc:
@@ -241,20 +241,20 @@ with tabs[3]:
 # --------------------------------------------------------------------------- #
 with tabs[4]:
     try:
-        with st.spinner("20 backtests en cours (mis en cache ensuite)…"):
+        with st.spinner("20 tests rétrospectifs en cours (mis en cache ensuite)…"):
             grid, ref = compute.sensitivity(bundle.daily_prices, rf, params.rebalance_days, params.transaction_cost_bps)
     except ValueError as exc:
         banner(str(exc), "error", "⛔")
         st.stop()
     with st.container(border=True):
         section("Sharpe hors échantillon du Sharpe maximal selon la fenêtre et le plafond",
-                "Tous les backtests démarrent à la même date · couleur centrée sur le 1/N")
+                "Tous les tests démarrent à la même date · couleur centrée sur le 1/N")
         st.plotly_chart(sensitivity_heatmap(grid, ref, 400), width="stretch", config=PLOTLY_CONFIG)
         g = grid.astype(float)
         bw, bc = np.unravel_index(np.nanargmax(g.values), g.shape)
         n_beat = int((g > ref).sum().sum())
         explain(
-            "Chaque case est un backtest complet du Sharpe maximal avec une fenêtre d'estimation (lignes) et un "
+            "Chaque case est un test rétrospectif complet du Sharpe maximal avec une fenêtre d'estimation (lignes) et un "
             "plafond de poids (colonnes). Cyan : mieux que le 1/N ; rouge : moins bien.",
             f"<b>{n_beat} configurations sur {g.notna().sum().sum()}</b> battent le 1/N (Sharpe {num(ref)}). "
             f"Meilleure : fenêtre {g.index[bw]} séances, plafond {round(g.columns[bc] * 100)} % "

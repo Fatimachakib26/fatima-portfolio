@@ -89,3 +89,27 @@ def split_for(params: AppParams, prices: pd.DataFrame, ppy: int, cov_method: str
 
 def rf_periodic(params: AppParams, ppy: int) -> float:
     return periodic_rf(params.risk_free_rate, ppy)
+
+
+# --------------------------------------------------------------------------- #
+# Ajouts : positions réalisées, sensibilité par durée, diversification
+# --------------------------------------------------------------------------- #
+@st.cache_data(ttl=TTL, show_spinner=False)
+def window_grid(prices: pd.DataFrame, split_date, rf: float, lo: float, cov_method: str,
+                ppy: int) -> tuple[pd.DataFrame, float]:
+    from config import SENSITIVITY_CAPS
+    return bt.window_sensitivity(simple_returns(prices), split_date, rf, [1, 2, 3, 5], SENSITIVITY_CAPS, lo,
+                                 cov_method, ppy)
+
+
+@st.cache_data(ttl=TTL, show_spinner=False)
+def extra_prices(tickers: tuple[str, ...], start, end):
+    """Téléchargement d'actifs supplémentaires (même chargeur, même cache de secours)."""
+    from core.data_loader import load_prices
+    return load_prices(list(tickers), start, end)
+
+
+@st.cache_data(ttl=TTL, show_spinner=False)
+def universe(prices: pd.DataFrame, split_date, rf: float, lo: float, hi: float, cov_method: str, ppy: int):
+    from core.diversification import analyse_universe
+    return analyse_universe(simple_returns(prices), split_date, rf, lo, hi, cov_method, ppy)

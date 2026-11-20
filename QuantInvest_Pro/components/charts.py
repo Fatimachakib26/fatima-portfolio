@@ -6,6 +6,7 @@ retourne une figure ; aucune donnée n'est générée ici.
 """
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -48,15 +49,17 @@ def base100_chart(prices: pd.DataFrame, benchmark: pd.Series | None = None,
     if benchmark is not None:
         b = benchmark / benchmark.iloc[0] * 100
         fig.add_trace(go.Scatter(
-            x=b.index, y=b, name=f"{benchmark.name} (benchmark)", mode="lines",
-            line=dict(width=2.6, color=BENCH_COLOR, dash="dot"),
+            x=b.index, y=b, name=f"{benchmark.name} (référence)", mode="lines",
+            line=dict(width=3.4, color="#F1F5F9", dash="dot"),  # trait épais et clair : bien visible
             hovertemplate=f"<b>{benchmark.name}</b><br>%{{x|%d/%m/%Y}}<br>Base 100 : %{{y:.1f}}<extra></extra>",
         ))
     if log_y:  # échelle logarithmique : des performances très différentes restent lisibles
-        ticks = [v for v in (25, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000)
-                 if norm.min().min() * 0.8 <= v <= norm.max().max() * 1.25]
+        lo = min(norm.min().min(), b.min() if benchmark is not None else norm.min().min())
+        hi = max(norm.max().max(), b.max() if benchmark is not None else norm.max().max())
+        ticks = [v for v in (50, 100, 200, 500, 1000, 2000, 5000) if lo * 0.9 <= v <= hi * 1.1]
         fig.update_yaxes(type="log", title="Base 100 (échelle log.)", tickvals=ticks,
-                         ticktext=[f"{v:,}".replace(",", "\u202f") for v in ticks])
+                         ticktext=[f"{v:,}".replace(",", "\u202f") for v in ticks],
+                         minor=dict(ticks="", showgrid=False), tickmode="array")
     fig.update_layout(hovermode="x unified", yaxis_title="Base 100 (échelle log.)" if log_y else "Base 100",
                       margin=dict(l=10, r=10, t=40 if title else 10, b=10),
                       legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="left", x=0,
@@ -114,47 +117,81 @@ def _weights_hover(weights: pd.Series) -> str:
     return "<br>".join(f"{k} : {v:.1%}".replace(".", ",") for k, v in weights.items() if v > 0.0005)
 
 
+DISPLAY_NAMES = {"Équipondéré (1/N)": "Équipondéré 1/N"}
+
+
 def frontier_chart(cloud: pd.DataFrame | None, frontier: pd.DataFrame, portfolios: dict, rf: float,
-                   height: int = 480, show_cml: bool = True) -> go.Figure:
-    """Nuage Monte-Carlo, frontière exacte, droite de marché des capitaux et 3 portefeuilles."""
+                   height: int = 480, show_cml: bool = True, assets: pd.DataFrame | None = None,
+                   annotate: bool = True) -> go.Figure:
+    """Frontière efficiente : nuage Monte-Carlo, frontière exacte, droite de marché des capitaux
+    (depuis (0, r_f)), actifs individuels et les 3 portefeuilles remarquables.
+
+    assets : DataFrame indexé par ticker avec les colonnes « rendement » et « volatilite ».
+    """
     fig = base_figure("", height)
     if cloud is not None and len(cloud):
         fig.add_trace(go.Scatter(  # SVG (et non WebGL) : les marqueurs restent visibles au-dessus
             x=cloud["volatilite"], y=cloud["rendement"], mode="markers", name="Portefeuilles aléatoires",
             marker=dict(size=4, color=cloud["sharpe"], colorscale=[[0, "#1E1B4B"], [0.5, "#7C3AED"], [1, "#22D3EE"]],
-                        opacity=0.55, colorbar=dict(title="Sharpe", thickness=10, len=0.6)),
-            hovertemplate="Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<br>Sharpe : %{marker.color:.2f}<extra></extra>",
+                        opacity=0.5, colorbar=dict(title="Sharpe", thickness=10, len=0.55, x=1.02)),
+            hovertemplate="Portefeuille aléatoire<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}"
+                          "<br>Sharpe : %{marker.color:.2f}<extra></extra>",
         ))
     fig.add_trace(go.Scatter(
         x=frontier["volatilite"], y=frontier["rendement"], mode="lines", name="Frontière efficiente",
         line=dict(color="#fff", width=3),
-        hovertemplate="Frontière<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>",
+        customdata=frontier["sharpe"],
+        hovertemplate="<b>Frontière efficiente</b><br>Rendement : %{y:.2%}<br>Volatilité : %{x:.2%}"
+                      "<br>Sharpe : %{customdata:.2f}<extra></extra>",
     ))
-    vols = [frontier["volatilite"]] + ([cloud["volatilite"]] if cloud is not None and len(cloud) else [])
-    rets = [frontier["rendement"]] + ([cloud["rendement"]] if cloud is not None and len(cloud) else [])
-    x_lo, x_hi = min(float(v.min()) for v in vols), max(float(v.max()) for v in vols)
-    y_lo, y_hi = min(float(v.min()) for v in rets), max(float(v.max()) for v in rets)
-    px, py = (x_hi - x_lo) * 0.12, (y_hi - y_lo) * 0.12
+    if assets is not None and len(assets):
+        sr = (assets["rendement"] - rf) / assets["volatilite"]
+        fig.add_trace(go.Scatter(
+            x=assets["volatilite"], y=assets["rendement"], mode="markers+text", name="Actifs individuels",
+            text=list(assets.index), textposition="top center", textfont=dict(size=10, color=COLORS["muted"]),
+            marker=dict(size=7, color=COLORS["muted"], line=dict(color="#07071A", width=1)),
+            customdata=sr.to_numpy(),
+            hovertemplate="<b>%{text}</b><br>Rendement : %{y:.2%}<br>Volatilité : %{x:.2%}"
+                          "<br>Sharpe : %{customdata:.2f}<extra></extra>",
+        ))
+    pts_x = [frontier["volatilite"]] + ([assets["volatilite"]] if assets is not None and len(assets) else [])
+    pts_y = [frontier["rendement"]] + ([assets["rendement"]] if assets is not None and len(assets) else [])
+    if cloud is not None and len(cloud):
+        pts_x.append(cloud["volatilite"])
+        pts_y.append(cloud["rendement"])
+    x_hi = max(float(v.max()) for v in pts_x) * 1.08
+    y_lo = min(min(float(v.min()) for v in pts_y), rf) - 0.02
+    y_hi = max(float(v.max()) for v in pts_y) * 1.08
     ms = portfolios.get("Sharpe maximal")
     if show_cml and ms is not None and ms.volatility > 0:
-        xs = [x_lo - px, x_hi + px]  # segment visible de la droite de marché des capitaux
-        fig.add_trace(go.Scatter(
-            x=xs, y=[rf + ms.sharpe * x for x in xs], mode="lines", name="Droite de marché des capitaux",
-            line=dict(color=COLORS["violet2"], width=1.2, dash="dash"), hoverinfo="skip",
+        fig.add_trace(go.Scatter(  # droite de marché des capitaux : de (0, r_f) à travers le Sharpe maximal
+            x=[0, x_hi], y=[rf, rf + ms.sharpe * x_hi], mode="lines", name="Droite de marché des capitaux",
+            line=dict(color=COLORS["violet2"], width=1.6, dash="dash"),
+            hovertemplate=f"Droite de marché des capitaux<br>pente = Sharpe maximal ({ms.sharpe:.2f})<extra></extra>"
+                          .replace(f"{ms.sharpe:.2f}", f"{ms.sharpe:.2f}".replace(".", ",")),
         ))
+        fig.add_trace(go.Scatter(x=[0], y=[rf], mode="markers", name=f"Taux sans risque ({rf:.1%})".replace(".", ","),
+                                 marker=dict(size=8, color=COLORS["violet2"]), showlegend=False,
+                                 hovertemplate="Taux sans risque : %{y:.2%}<extra></extra>"))
     for name, p in portfolios.items():
+        label = DISPLAY_NAMES.get(name, name)
         fig.add_trace(go.Scatter(
-            x=[p.volatility], y=[p.expected_return], mode="markers", name=name,
-            marker=dict(size=18 if name == "Sharpe maximal" else 14, color=PORTFOLIO_COLORS.get(name, "#fff"),
+            x=[p.volatility], y=[p.expected_return], mode="markers", name=label,
+            marker=dict(size=19 if name == "Sharpe maximal" else 15, color=PORTFOLIO_COLORS.get(name, "#fff"),
                         symbol=PORTFOLIO_SYMBOLS.get(name, "circle"), line=dict(color="#07071A", width=2)),
-            hovertemplate=(f"<b>{name}</b><br>Rendement : %{{y:.2%}}<br>Volatilité : %{{x:.2%}}"
-                           f"<br>Sharpe : {p.sharpe:.2f}<br>".replace(f"{p.sharpe:.2f}", f"{p.sharpe:.2f}".replace(".", ","))
-                           + _weights_hover(p.weights) + "<extra></extra>"),
+            hovertemplate=(f"<b>{label}</b><br>Rendement : %{{y:.2%}}<br>Volatilité : %{{x:.2%}}<br>Sharpe : "
+                           + f"{p.sharpe:.2f}".replace(".", ",") + "<br>" + _weights_hover(p.weights)
+                           + "<extra></extra>"),
         ))
+        if annotate:
+            fig.add_annotation(x=p.volatility, y=p.expected_return, text=label, showarrow=True, arrowhead=0,
+                               ax=-60 if name == "Équipondéré (1/N)" else 50, ay=-28 if name != "Variance minimale" else 28,
+                               font=dict(size=11, color=PORTFOLIO_COLORS.get(name, "#fff")),
+                               arrowcolor=PORTFOLIO_COLORS.get(name, "#fff"), bgcolor="rgba(7,7,26,0.75)")
     _pct_axes(fig)
-    fig.update_xaxes(range=[x_lo - px, x_hi + px])
-    fig.update_yaxes(range=[y_lo - py, y_hi + py])
-    fig.update_layout(legend=dict(orientation="h", y=-0.15, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
+    fig.update_xaxes(range=[0, x_hi])
+    fig.update_yaxes(range=[y_lo, y_hi])
+    fig.update_layout(legend=dict(orientation="h", y=-0.14, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
     return fig
 
 
@@ -173,17 +210,20 @@ def donut_chart(weights: pd.Series, height: int = 320) -> go.Figure:
 
 def corr_heatmap(corr: pd.DataFrame, height: int = 380) -> go.Figure:
     fig = go.Figure(go.Heatmap(
-        z=corr.values, x=corr.columns, y=corr.index, zmin=-1, zmax=1,
-        colorscale=[[0, "#F43F5E"], [0.5, "#161743"], [0.75, "#7C3AED"], [1, "#22D3EE"]],
+        z=corr.values, x=corr.columns, y=corr.index, zmin=0, zmax=1,  # actions : corrélations positives
+        colorscale=[[0, "#0B0B24"], [0.4, "#1E1B4B"], [0.55, "#33207A"], [0.65, "#5B21B6"], [0.75, "#7C3AED"],
+                    [0.9, "#A21CAF"], [1, "#C026D3"]],
         text=[[f"{v:.2f}".replace(".", ",") for v in row] for row in corr.values], texttemplate="%{text}",
-        hovertemplate="%{y} / %{x}<br>Corrélation : %{z:.2f}<extra></extra>", colorbar=dict(thickness=10),
+        textfont=dict(color="#FFFFFF", size=11),
+        hovertemplate="%{y} / %{x}<br>Corrélation : %{z:.2f}<extra></extra>",
+        colorbar=dict(thickness=10, tickvals=[0, 0.25, 0.5, 0.75, 1], ticktext=["0", "0,25", "0,5", "0,75", "1"]),
     ))
     fig.update_layout(height=height, margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(autorange="reversed"))
     return fig
 
 
 def grouped_bars(df: pd.DataFrame, height: int = 360, pct_axis: bool = True, colors: list[str] | None = None,
-                 y_title: str = "") -> go.Figure:
+                 y_title: str = "", hline: float | None = None, hline_label: str = "") -> go.Figure:
     """Barres groupées : une série par colonne, une catégorie par ligne."""
     fig = base_figure("", height)
     palette = colors or [COLORS["violet2"], COLORS["cyan"], COLORS["amber"], COLORS["pink"]]
@@ -193,6 +233,9 @@ def grouped_bars(df: pd.DataFrame, height: int = 360, pct_axis: bool = True, col
             hovertemplate=f"<b>%{{x}}</b><br>{col} : %{{y:.1%}}<extra></extra>",
         ))
     fig.update_layout(barmode="group", bargap=0.25, yaxis_title=y_title)
+    if hline is not None:
+        fig.add_hline(y=hline, line=dict(color=COLORS["down"], dash="dash", width=1.5), annotation_text=hline_label,
+                      annotation_position="top right", annotation_font=dict(size=10, color=COLORS["down"]))
     if pct_axis:
         fig.update_yaxes(tickformat=".0%")
     return fig
@@ -271,7 +314,7 @@ def strategy_colors(names: list[str]) -> dict[str, str]:
 
 
 def wealth_chart(returns: pd.DataFrame, benchmark: pd.Series | None = None, height: int = 420,
-                 crises=None, start_value: float = 100.0) -> go.Figure:
+                 crises=None, start_value: float = 100.0, baseline: bool = False) -> go.Figure:
     """Valeur de 100 investis (rendements nets)."""
     fig = base_figure("", height)
     colors = strategy_colors(list(returns.columns))
@@ -286,6 +329,8 @@ def wealth_chart(returns: pd.DataFrame, benchmark: pd.Series | None = None, heig
                                  hovertemplate=f"<b>{benchmark.name}</b><br>%{{x|%d/%m/%Y}}<br>Valeur : %{{y:.1f}}<extra></extra>"))
     if crises:
         add_crisis_bands(fig, crises, returns.index)
+    if baseline:
+        fig.add_hline(y=start_value, line=dict(color=COLORS["muted"], dash="dot", width=1.2))
     fig.update_layout(hovermode="x unified", yaxis_title=f"Valeur de {start_value:.0f} investis",
                       legend=dict(orientation="h", y=-0.12, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
     return fig
@@ -331,33 +376,61 @@ def announced_vs_realized_chart(announced: pd.Series, realized: pd.Series, heigh
     return fig
 
 
-def realized_frontier_chart(fr: pd.DataFrame, eq_est: tuple[float, float], eq_real: tuple[float, float],
-                            height: int = 500) -> go.Figure:
-    """Frontière estimée (période d'estimation) vs position réalisée (période de test)."""
+def realized_frontier_chart(fr: pd.DataFrame, points: pd.DataFrame, height: int = 500) -> go.Figure:
+    """Frontière estimée (période d'estimation) et position réalisée (test) des mêmes
+    portefeuilles ; flèches reliant l'annoncé au réalisé pour les portefeuilles clés."""
     fig = base_figure("", height)
-    n = len(fr)
-    shades = [f"rgba(168,85,247,{0.25 + 0.6 * i / max(n - 1, 1):.2f})" for i in range(n)]
-    for i, row in fr.iterrows():  # flèches : estimé → réalisé
+    fig.add_trace(go.Scatter(x=fr["volatilite"], y=fr["rendement"], mode="lines+markers", name="Frontière estimée",
+                             line=dict(color=COLORS["violet2"], width=3), marker=dict(size=4),
+                             hovertemplate="Frontière estimée<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>"))
+    fig.add_trace(go.Scatter(x=fr["volatilite_realisee"], y=fr["rendement_realise"], mode="lines+markers",
+                             name="Frontière réalisée (mêmes poids)", line=dict(color=COLORS["cyan"], width=2, dash="dot"),
+                             marker=dict(size=4),
+                             hovertemplate="Réalisé en test<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>"))
+    for name, row in points.iterrows():
+        color = PORTFOLIO_COLORS.get(name, "#fff")
+        label = DISPLAY_NAMES.get(name, name)
+        sym = PORTFOLIO_SYMBOLS.get(name, "circle")
+        fig.add_trace(go.Scatter(
+            x=[row["volatilite"]], y=[row["rendement"]], mode="markers", name=f"{label} · annoncé",
+            marker=dict(size=14, symbol=sym + "-open", color=color, line=dict(width=2)),
+            hovertemplate=f"<b>{label} — annoncé</b><br>Rendement : %{{y:.2%}}<br>Volatilité : %{{x:.2%}}"
+                          f"<br>Sharpe : {row['sharpe']:.2f}<extra></extra>".replace(f"{row['sharpe']:.2f}", f"{row['sharpe']:.2f}".replace(".", ","))))
+        fig.add_trace(go.Scatter(
+            x=[row["volatilite_realisee"]], y=[row["rendement_realise"]], mode="markers", name=f"{label} · réalisé",
+            marker=dict(size=14, symbol=sym, color=color, line=dict(color="#07071A", width=1.5)),
+            hovertemplate=f"<b>{label} — réalisé</b><br>Rendement : %{{y:.2%}}<br>Volatilité : %{{x:.2%}}"
+                          f"<br>Sharpe : {row['sharpe_realise']:.2f}<extra></extra>".replace(f"{row['sharpe_realise']:.2f}", f"{row['sharpe_realise']:.2f}".replace(".", ","))))
         fig.add_annotation(x=row["volatilite_realisee"], y=row["rendement_realise"], ax=row["volatilite"],
                            ay=row["rendement"], xref="x", yref="y", axref="x", ayref="y", showarrow=True,
-                           arrowhead=2, arrowsize=1, arrowwidth=1, arrowcolor=shades[i], opacity=0.8)
-    fig.add_trace(go.Scatter(x=fr["volatilite"], y=fr["rendement"], mode="lines+markers", name="Frontière estimée",
-                             line=dict(color=COLORS["violet2"], width=3), marker=dict(size=6),
-                             hovertemplate="Estimé<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>"))
-    fig.add_trace(go.Scatter(x=fr["volatilite_realisee"], y=fr["rendement_realise"], mode="lines+markers",
-                             name="Position réalisée", line=dict(color=COLORS["cyan"], width=2, dash="dot"),
-                             marker=dict(size=6),
-                             hovertemplate="Réalisé<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>"))
-    fig.add_trace(go.Scatter(x=[eq_est[1]], y=[eq_est[0]], mode="markers", name="1/N estimé",
-                             marker=dict(size=14, symbol="square-open", color=COLORS["amber"], line=dict(width=2)),
-                             hovertemplate="1/N estimé<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>"))
-    fig.add_trace(go.Scatter(x=[eq_real[1]], y=[eq_real[0]], mode="markers", name="1/N réalisé",
-                             marker=dict(size=14, symbol="square", color=COLORS["amber"]),
-                             hovertemplate="1/N réalisé<br>Volatilité : %{x:.1%}<br>Rendement : %{y:.1%}<extra></extra>"))
-    fig.add_annotation(x=eq_real[1], y=eq_real[0], ax=eq_est[1], ay=eq_est[0], xref="x", yref="y", axref="x",
-                       ayref="y", showarrow=True, arrowhead=2, arrowwidth=1.5, arrowcolor=COLORS["amber"])
+                           arrowhead=3, arrowsize=1.2, arrowwidth=2, arrowcolor=color, standoff=6, startstandoff=6)
     _pct_axes(fig, y="Rendement annualisé (moyenne × 252)")
-    fig.update_layout(legend=dict(orientation="h", y=-0.12, yanchor="top", xanchor="left", x=0))
+    fig.update_layout(legend=dict(orientation="h", y=-0.14, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
+    return fig
+
+
+def two_frontiers_chart(a, b, label_a: str, label_b: str, height: int = 480) -> go.Figure:
+    """Deux univers (UniverseResult) : frontières et Sharpe maximal de chacun."""
+    fig = base_figure("", height)
+    for u, label, color in ((a, label_a, COLORS["violet2"]), (b, label_b, COLORS["cyan"])):
+        fig.add_trace(go.Scatter(x=u.frontier["volatilite"], y=u.frontier["rendement"], mode="lines", name=label,
+                                 line=dict(color=color, width=3),
+                                 hovertemplate=f"{label}<br>Volatilité : %{{x:.1%}}<br>Rendement : %{{y:.1%}}<extra></extra>"))
+        ms_ret = float(u.max_sharpe_weights @ u.est.mu)
+        ms_vol = float(np.sqrt(u.max_sharpe_weights @ u.est.cov @ u.max_sharpe_weights))
+        fig.add_trace(go.Scatter(x=[ms_vol], y=[ms_ret], mode="markers", name=f"Sharpe maximal · {label}",
+                                 marker=dict(size=16, symbol="star", color=color, line=dict(color="#07071A", width=1.5)),
+                                 hovertemplate=f"<b>Sharpe maximal · {label}</b><br>Rendement : %{{y:.2%}}<br>"
+                                               f"Volatilité : %{{x:.2%}}<br>Sharpe : " + f"{u.sharpe_announced:.2f}".replace(".", ",")
+                                               + "<extra></extra>"))
+        extra = [t for t in u.assets if t not in a.assets] if u is b else []
+        if extra:
+            fig.add_trace(go.Scatter(x=u.est.vol[extra], y=u.est.mu[extra], mode="markers+text", text=extra,
+                                     textposition="top center", name="Actifs ajoutés",
+                                     marker=dict(size=8, color=COLORS["amber"]),
+                                     hovertemplate="<b>%{text}</b><br>Rendement : %{y:.2%}<br>Volatilité : %{x:.2%}<extra></extra>"))
+    _pct_axes(fig)
+    fig.update_layout(legend=dict(orientation="h", y=-0.14, yanchor="top", xanchor="left", x=0, font=dict(size=11)))
     return fig
 
 

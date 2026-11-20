@@ -115,7 +115,7 @@ def render_data_alerts(bundle: MarketBundle) -> None:
         details = "; ".join(f"<b>{t}</b> — {r}" for t, r in bundle.clean.excluded.items())
         banner("Actifs exclus du calcul : " + details, "warn", "🧹")
     if bundle.clean is not None and not bundle.benchmark:
-        banner("Benchmark indisponible : les comparaisons avec le S&amp;P 500 sont désactivées.", "warn", "📉")
+        banner("Indice de référence indisponible : les comparaisons avec le S&amp;P 500 sont désactivées.", "warn", "📉")
     currencies = mixed_currencies({t: c for t, c in raw.currencies.items() if t in bundle.assets})
     if len(currencies) > 1:
         banner("Devises multiples détectées (" + ", ".join(sorted(currencies)) + ") : les rendements sont "
