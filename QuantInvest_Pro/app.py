@@ -38,13 +38,15 @@ def init_state() -> None:
 init_state()
 
 PAGES = [
-    st.Page("pages/dashboard.py", title="Tableau de bord", icon=":material/space_dashboard:", default=True),
-    st.Page("pages/portfolios.py", title="Portefeuilles", icon=":material/folder_special:"),
-    st.Page("pages/optimization.py", title="Optimisation Markowitz", icon=":material/hub:"),
-    st.Page("pages/risk_analysis.py", title="Analyse du risque", icon=":material/shield:"),
-    st.Page("pages/backtesting.py", title="Test rétrospectif", icon=":material/history:"),
-    st.Page("pages/asset_analysis.py", title="Analyse des actifs", icon=":material/candlestick_chart:"),
-    st.Page("pages/settings.py", title="Paramètres & méthodologie", icon=":material/tune:"),
+    st.Page("views/dashboard.py", title="Tableau de bord", icon=":material/space_dashboard:", default=True),
+    st.Page("views/portfolios.py", title="Portefeuilles", icon=":material/folder_special:"),
+    st.Page("views/comparator.py", title="Comparateur", icon=":material/compare_arrows:"),
+    st.Page("views/indicators.py", title="Indicateurs", icon=":material/functions:"),
+    st.Page("views/optimization.py", title="Optimisation Markowitz", icon=":material/hub:"),
+    st.Page("views/risk_analysis.py", title="Analyse du risque", icon=":material/shield:"),
+    st.Page("views/backtesting.py", title="Test rétrospectif", icon=":material/history:"),
+    st.Page("views/asset_analysis.py", title="Analyse des actifs", icon=":material/candlestick_chart:"),
+    st.Page("views/settings.py", title="Paramètres & méthodologie", icon=":material/tune:"),
 ]
 
 current = st.navigation(PAGES, position="hidden")

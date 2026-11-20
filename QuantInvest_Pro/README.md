@@ -126,7 +126,7 @@ QuantInvest_Pro/
 │   ├── verdict.py         Synthèse en une phrase
 │   └── reporting.py       Exports CSV (format long) et Excel
 ├── components/            Interface : thème, menu, KPI, graphiques, formats français, cache
-├── pages/                 Les 6 pages (affichage uniquement)
+├── views/                 Les pages (affichage uniquement)
 ├── assets/                Feuille de style, logo
 └── tests/                 51 tests unitaires
 ```
