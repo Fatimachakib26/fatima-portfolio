@@ -42,7 +42,7 @@ def render_navbar(title: str, subtitle: str = "", crumb: str = "QuantInvest Pro"
             """)
     with btn:
         # on_click s'exécute avant la réexécution : app.py retélécharge alors les données
-        clicked = st.button("⟳ Actualiser", key=f"refresh_{title}", use_container_width=True,
+        clicked = st.button("⟳ Actualiser", key=f"refresh_{title}", width="stretch",
                             on_click=request_refresh, help="Forcer un nouveau téléchargement Yahoo Finance")
     st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
     return clicked

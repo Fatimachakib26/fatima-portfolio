@@ -38,10 +38,10 @@ def init_state() -> None:
 init_state()
 
 PAGES = [
-    st.Page("pages/dashboard.py", title="Dashboard", icon=":material/space_dashboard:", default=True),
+    st.Page("pages/dashboard.py", title="Tableau de bord", icon=":material/space_dashboard:", default=True),
     st.Page("pages/optimization.py", title="Optimisation Markowitz", icon=":material/hub:"),
     st.Page("pages/risk_analysis.py", title="Analyse du risque", icon=":material/shield:"),
-    st.Page("pages/backtesting.py", title="Backtesting", icon=":material/history:"),
+    st.Page("pages/backtesting.py", title="Test rétrospectif", icon=":material/history:"),
     st.Page("pages/asset_analysis.py", title="Analyse des actifs", icon=":material/candlestick_chart:"),
     st.Page("pages/settings.py", title="Paramètres & méthodologie", icon=":material/tune:"),
 ]

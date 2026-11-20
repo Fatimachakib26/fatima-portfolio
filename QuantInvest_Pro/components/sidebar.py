@@ -9,6 +9,7 @@ from config import APP_NAME, INSTITUTION, VERSION
 SHORT_LABELS = {
     "Optimisation Markowitz": "Optimisation",
     "Analyse du risque": "Risque",
+    "Test rétrospectif": "Test rétrospectif",
     "Analyse des actifs": "Actifs",
     "Paramètres & méthodologie": "Paramètres",
 }

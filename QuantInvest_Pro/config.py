@@ -79,11 +79,22 @@ OPTIMIZATION_OBJECTIVES: dict[str, str] = {
     "min_variance": "Variance minimale",
     "equal_weight": "Équipondéré (1/N)",
 }
-REBALANCING: dict[str, str] = {
-    "ME": "Mensuel",
-    "QE": "Trimestriel",
-    "YE": "Annuel",
+# Rééquilibrage exprimé en séances de bourse (≈ 21 par mois)
+REBALANCING: dict[int, str] = {
+    21: "Mensuel (21 séances)",
+    63: "Trimestriel (63 séances)",
+    126: "Semestriel (126 séances)",
+    252: "Annuel (252 séances)",
 }
+# Analyse de sensibilité (fenêtres en séances × plafonds de poids)
+SENSITIVITY_WINDOWS = [126, 252, 504, 756]
+SENSITIVITY_CAPS = [0.20, 0.30, 0.40, 0.60, 1.00]
+# Périodes de crise grisées sur les graphiques
+CRISES = [
+    ("Krach Covid", "2020-02-20", "2020-03-23"),
+    ("Hausse des taux 2022", "2022-01-01", "2022-12-31"),
+]
+MIN_HISTORY_YEARS = 2      # en dessous : avertissement (estimation fragile)
 
 # --------------------------------------------------------------------------- #
 # Traitement des données
@@ -106,13 +117,15 @@ class AppParams:
     frequency: str = "Quotidienne"
     risk_free_rate: float = 0.04          # taux annuel, ex. bons du Trésor US
     weight_min: float = 0.0               # pas de vente à découvert par défaut
-    weight_max: float = 1.0
+    weight_max: float = 0.40              # plafond par actif (diversification imposée)
+    split_date: date = date(2023, 12, 31) # fin de la période d'estimation
     n_simulations: int = 5000             # portefeuilles aléatoires (nuage)
     cov_method: str = "sample"
     objective: str = "max_sharpe"
     # Backtesting
-    estimation_window: int = 252          # jours d'estimation glissante
-    rebalancing: str = "ME"
+    estimation_window: int = 252          # séances d'estimation glissante
+    rebalance_days: int = 21              # séances entre deux rééquilibrages
+    corr_window: int = 63                 # fenêtre de la corrélation glissante
     transaction_cost_bps: float = 10.0    # 10 points de base par unité de rotation
     initial_capital: float = 10_000.0
 
@@ -137,6 +150,8 @@ class AppParams:
             errors.append(
                 f"Contraintes infaisables : {n} actifs × min {self.weight_min:.0%} > 100 %."
             )
+        if not self.start_date < self.split_date < self.end_date:
+            errors.append("La date de séparation doit se situer strictement entre le début et la fin.")
         if not -0.05 <= self.risk_free_rate <= 0.25:
             errors.append("Taux sans risque hors de la plage plausible [-5 %, 25 %].")
         return errors

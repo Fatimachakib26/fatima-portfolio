@@ -17,7 +17,7 @@ import pandas as pd
 import streamlit as st
 
 from components.kpi_cards import banner
-from config import CACHE_TTL_SECONDS, FREQUENCIES, AppParams
+from config import CACHE_TTL_SECONDS, FREQUENCIES, MIN_HISTORY_YEARS, AppParams
 from core.data_loader import MarketData, load_prices
 from core.preprocessing import CleanResult, DataQualityError, clean_prices, mixed_currencies, resample_prices
 
@@ -31,6 +31,8 @@ class MarketBundle:
     error: str | None = None
     assets: list[str] = field(default_factory=list)     # actifs retenus (hors benchmark)
     benchmark: str | None = None                         # None si benchmark indisponible
+    freq_prices: pd.DataFrame | None = None              # prix à la fréquence choisie
+    periods_per_year: int = 252
 
     @property
     def ok(self) -> bool:
@@ -39,11 +41,20 @@ class MarketBundle:
     @property
     def prices(self) -> pd.DataFrame:
         """Prix des actifs retenus (fréquence choisie)."""
-        return self.clean.prices[self.assets]
+        return self.freq_prices[self.assets]
 
     @property
     def benchmark_prices(self) -> pd.Series | None:
-        return self.clean.prices[self.benchmark] if self.benchmark else None
+        return self.freq_prices[self.benchmark] if self.benchmark else None
+
+    @property
+    def daily_prices(self) -> pd.DataFrame:
+        """Prix quotidiens des actifs retenus (backtests en séances)."""
+        return self.clean.prices[self.assets]
+
+    @property
+    def history_years(self) -> float:
+        return (self.clean.end - self.clean.start).days / 365.25 if self.clean is not None else 0.0
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner=False)
@@ -71,8 +82,9 @@ def load_market_data(params: AppParams) -> MarketBundle:
     bundle = MarketBundle(raw=raw)
     try:
         clean = clean_prices(raw.prices)
-        clean.prices = resample_prices(clean.prices, FREQUENCIES[params.frequency][0])
         bundle.clean = clean
+        rule, bundle.periods_per_year = FREQUENCIES[params.frequency]
+        bundle.freq_prices = resample_prices(clean.prices, rule)
     except DataQualityError as exc:
         bundle.error = str(exc)
         return bundle
@@ -108,5 +120,9 @@ def render_data_alerts(bundle: MarketBundle) -> None:
     if len(currencies) > 1:
         banner("Devises multiples détectées (" + ", ".join(sorted(currencies)) + ") : les rendements sont "
                "calculés dans la devise de chaque actif, sans conversion de change.", "warn", "💱")
+    if bundle.clean is not None and bundle.history_years < MIN_HISTORY_YEARS:
+        banner(f"Historique commun de seulement {bundle.history_years:.1f} an(s)".replace(".", ",")
+               + f" (minimum conseillé : {MIN_HISTORY_YEARS} ans) : les estimations de μ et Σ sont fragiles "
+               "et la période de test sera courte.", "warn", "⏳")
     if bundle.error and raw.status != "error":  # évite un doublon avec le bandeau ci-dessus
         banner(bundle.error, "error", "⛔")

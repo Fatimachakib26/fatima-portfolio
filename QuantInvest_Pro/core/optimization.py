@@ -1,0 +1,203 @@
+"""
+Optimisation de Markowitz (SciPy SLSQP).
+
+Problèmes résolus, sous Σwᵢ = 1 et w_min ≤ wᵢ ≤ w_max :
+- variance minimale :   min  wᵀΣw
+- Sharpe maximal :      max  (wᵀμ − r_f) / √(wᵀΣw)
+- frontière efficiente : min wᵀΣw  sous wᵀμ = cible, pour une grille de cibles
+Référence : 1/N (équipondéré), sans estimation.
+
+Chaque résultat indique si l'optimiseur a convergé ET si les contraintes sont
+respectées (vérification indépendante après résolution).
+
+Améliorations par rapport à MarkowitzModel.py du cours : taux sans risque
+dans le Sharpe, gradients analytiques, plusieurs points de départ
+(déterministes), bornes modifiables, contrôle par la formule fermée.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize
+
+MIN_VAR, MAX_SHARPE, EQUAL = "Variance minimale", "Sharpe maximal", "Équipondéré (1/N)"
+TOL = 1e-6
+
+
+@dataclass
+class OptResult:
+    weights: pd.Series
+    converged: bool
+    message: str
+    expected_return: float
+    volatility: float
+    sharpe: float
+
+
+def portfolio_stats(w: np.ndarray, mu: np.ndarray, cov: np.ndarray, rf: float) -> tuple[float, float, float]:
+    ret = float(w @ mu)
+    vol = float(np.sqrt(max(w @ cov @ w, 0.0)))
+    return ret, vol, (ret - rf) / vol if vol > 0 else float("nan")
+
+
+def check_feasible(n: int, lo: float, hi: float) -> None:
+    if not (lo <= hi and n * lo <= 1 + 1e-12 and n * hi >= 1 - 1e-12):
+        raise ValueError(f"Contraintes infaisables : {n} actifs avec des poids entre {lo:.0%} et {hi:.0%}.")
+
+
+def _validate(w: np.ndarray, lo: float, hi: float) -> bool:
+    return abs(w.sum() - 1) < TOL and w.min() >= lo - TOL and w.max() <= hi + TOL
+
+
+def _clean(w: np.ndarray, lo: float, hi: float) -> np.ndarray:
+    """Supprime le bruit numérique (ex. −1e-17) sans fausser les contraintes."""
+    w = np.clip(w, lo, hi)
+    return w / w.sum() if abs(w.sum() - 1) < 1e-4 else w
+
+
+def _starts(n: int, lo: float, hi: float, mu: np.ndarray) -> list[np.ndarray]:
+    """Points de départ déterministes : équipondéré + portefeuilles « en coin »."""
+    eq = np.full(n, 1.0 / n)
+    starts = [eq]
+    for i in np.argsort(-mu)[:3]:  # orientés vers les meilleurs rendements
+        w = np.full(n, float(lo))
+        rest = 1 - w.sum()
+        add = min(hi - lo, rest)
+        w[i] += add
+        rest -= add
+        others = [j for j in range(n) if j != i]
+        w[others] += rest / len(others)
+        if _validate(w, lo, hi):
+            starts.append(w)
+    return starts
+
+
+def _solve(fun, jac, n, lo, hi, x0s, extra_cons=()) -> tuple[np.ndarray, bool, str]:
+    cons = [{"type": "eq", "fun": lambda w: w.sum() - 1, "jac": lambda w: np.ones_like(w)}, *extra_cons]
+    best = None
+    for x0 in x0s:
+        res = minimize(fun, x0, jac=jac, method="SLSQP", bounds=[(lo, hi)] * n, constraints=cons,
+                       options={"ftol": 1e-12, "maxiter": 1000})
+        ok = res.success and _validate(res.x, lo, hi) and all(abs(c["fun"](res.x)) < 1e-6 for c in extra_cons)
+        if best is None or (ok and (not best[1] or res.fun < best[0].fun - 1e-12)):
+            best = (res, ok)
+    res, ok = best
+    return _clean(res.x, lo, hi), ok, "Convergence atteinte" if ok else f"Échec de l'optimiseur : {res.message}"
+
+
+def _result(w, assets, mu, cov, rf, ok, msg) -> OptResult:
+    ret, vol, sr = portfolio_stats(w, mu, cov, rf)
+    return OptResult(pd.Series(w, index=assets), ok, msg, ret, vol, sr)
+
+
+def min_variance(mu: pd.Series, cov: pd.DataFrame, lo: float = 0.0, hi: float = 1.0, rf: float = 0.0) -> OptResult:
+    n = len(mu)
+    check_feasible(n, lo, hi)
+    S = cov.to_numpy()
+    w, ok, msg = _solve(lambda w: w @ S @ w, lambda w: 2 * S @ w, n, lo, hi, [np.full(n, 1 / n)])
+    return _result(w, mu.index, mu.to_numpy(), S, rf, ok, msg)
+
+
+def max_sharpe(mu: pd.Series, cov: pd.DataFrame, rf: float, lo: float = 0.0, hi: float = 1.0) -> OptResult:
+    n = len(mu)
+    check_feasible(n, lo, hi)
+    m, S = mu.to_numpy(), cov.to_numpy()
+
+    def neg_sharpe(w):
+        v = np.sqrt(w @ S @ w)
+        return -(w @ m - rf) / v
+
+    def grad(w):
+        v = np.sqrt(w @ S @ w)
+        ex = w @ m - rf
+        return -(m * v - ex * (S @ w) / v) / v**2
+
+    w, ok, msg = _solve(neg_sharpe, grad, n, lo, hi, _starts(n, lo, hi, m))
+    return _result(w, mu.index, m, S, rf, ok, msg)
+
+
+def equal_weight(mu: pd.Series, cov: pd.DataFrame, rf: float) -> OptResult:
+    n = len(mu)
+    return _result(np.full(n, 1 / n), mu.index, mu.to_numpy(), cov.to_numpy(), rf, True, "Sans optimisation")
+
+
+def max_feasible_return(mu: np.ndarray, lo: float, hi: float) -> float:
+    """Rendement maximal atteignable sous les bornes (allocation gloutonne)."""
+    w = np.full(len(mu), float(lo))
+    rest = 1 - w.sum()
+    for i in np.argsort(-mu):
+        add = min(hi - lo, rest)
+        w[i] += add
+        rest -= add
+    return float(w @ mu)
+
+
+def efficient_frontier(mu: pd.Series, cov: pd.DataFrame, rf: float, lo: float = 0.0, hi: float = 1.0,
+                       n_points: int = 30) -> pd.DataFrame:
+    """Frontière exacte : variance minimale pour chaque rendement cible.
+
+    Retourne un DataFrame (une ligne par portefeuille) : rendement, volatilité,
+    sharpe, converged, puis une colonne de poids par actif.
+    """
+    n = len(mu)
+    m, S = mu.to_numpy(), cov.to_numpy()
+    gmv = min_variance(mu, cov, lo, hi, rf)
+    r_lo, r_hi = gmv.expected_return, max_feasible_return(m, lo, hi)
+    rows = []
+    prev = gmv.weights.to_numpy()
+    for target in np.linspace(r_lo, r_hi, n_points):
+        con = {"type": "eq", "fun": lambda w, t=target: w @ m - t, "jac": lambda w: m}
+        w, ok, _ = _solve(lambda w: w @ S @ w, lambda w: 2 * S @ w, n, lo, hi, [prev, np.full(n, 1 / n)], (con,))
+        prev = w
+        ret, vol, sr = portfolio_stats(w, m, S, rf)
+        rows.append({"rendement": ret, "volatilite": vol, "sharpe": sr, "converged": ok,
+                     **dict(zip(mu.index, w))})
+    return pd.DataFrame(rows)
+
+
+def random_portfolios(mu: pd.Series, cov: pd.DataFrame, rf: float, n_portfolios: int = 5000,
+                      lo: float = 0.0, hi: float = 1.0, seed: int = 42) -> pd.DataFrame:
+    """Nuage illustratif de portefeuilles admissibles (tirages de Dirichlet,
+    graine fixe → résultats reproductibles). Seuls les tirages respectant les
+    bornes sont conservés."""
+    rng = np.random.default_rng(seed)
+    n = len(mu)
+    m, S = mu.to_numpy(), cov.to_numpy()
+    kept = []
+    for _ in range(20):  # quelques lots suffisent, même avec un plafond
+        w = rng.dirichlet(np.ones(n), size=n_portfolios)
+        w = w[(w.min(axis=1) >= lo - 1e-12) & (w.max(axis=1) <= hi + 1e-12)]
+        kept.append(w)
+        if sum(len(k) for k in kept) >= n_portfolios:
+            break
+    W = np.vstack(kept)[:n_portfolios]
+    rets = W @ m
+    vols = np.sqrt(np.einsum("ij,jk,ik->i", W, S, W))
+    df = pd.DataFrame(W, columns=mu.index)
+    df.insert(0, "sharpe", (rets - rf) / vols)
+    df.insert(0, "volatilite", vols)
+    df.insert(0, "rendement", rets)
+    return df
+
+
+# --------------------------------------------------------------------------- #
+# Contrôle de l'optimiseur par la formule fermée
+# --------------------------------------------------------------------------- #
+def min_variance_analytic(cov: pd.DataFrame) -> pd.Series:
+    """Variance minimale SANS bornes (ventes à découvert permises) :
+    w* = Σ⁻¹1 / (1ᵀ Σ⁻¹ 1)   (solution du lagrangien de min wᵀΣw s.c. 1ᵀw = 1)."""
+    ones = np.ones(len(cov))
+    x = np.linalg.solve(cov.to_numpy(), ones)  # Σ⁻¹1 sans inverser explicitement Σ
+    return pd.Series(x / x.sum(), index=cov.index)
+
+
+def check_optimizer(cov: pd.DataFrame, bound: float = 10.0) -> dict:
+    """Compare SLSQP (bornes ±`bound`, quasi non contraintes) à la formule exacte."""
+    analytic = min_variance_analytic(cov)
+    mu0 = pd.Series(0.0, index=cov.index)
+    numeric = min_variance(mu0, cov, lo=-bound, hi=bound)
+    diff = float((analytic - numeric.weights).abs().max())
+    return {"analytique": analytic, "numerique": numeric.weights, "ecart_max": diff,
+            "ok": diff < 1e-4 and numeric.converged}

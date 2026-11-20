@@ -18,6 +18,11 @@ class KPI:
     signed: bool = False         # colorer en vert / rouge selon le signe
 
 
+def to_french(s: str) -> str:
+    """« 1,234.56% » → « 1 234,56 % » (séparateurs français)."""
+    return (s.replace(",", "\u202f").replace(".", ",").replace("%", "\u202f%").replace("-", "−"))
+
+
 def _kpi_html(k: KPI) -> str:
     if k.value is None:
         value_html = '<div class="qi-kpi-value pending">—</div>'
@@ -25,7 +30,7 @@ def _kpi_html(k: KPI) -> str:
         cls = ""
         if k.signed:
             cls = "qi-up" if k.value >= 0 else "qi-down"
-        value_html = f'<div class="qi-kpi-value {cls}">{k.fmt.format(k.value)}</div>'
+        value_html = f'<div class="qi-kpi-value {cls}">{to_french(k.fmt.format(k.value))}</div>'
     label = html.escape(k.label)
     if k.help:
         label = f'<span class="qi-help" title="{html.escape(k.help)}">{label}</span>'

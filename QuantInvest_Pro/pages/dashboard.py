@@ -8,6 +8,8 @@ from datetime import date
 
 import streamlit as st
 
+from components.state import get_market, get_params
+
 from components.charts import PLOTLY_CONFIG, base100_chart, sparkline
 from components.data_service import MarketBundle, render_data_alerts
 from components.kpi_cards import KPI, banner, card_title, empty_state, kpi_row
@@ -15,10 +17,10 @@ from components.navbar import render_navbar
 from components.theme import html
 from config import ASSET_UNIVERSE, FREQUENCIES, AppParams
 
-params: AppParams = st.session_state["params"]
-bundle: MarketBundle = st.session_state["market"]
+params: AppParams = get_params()
+bundle: MarketBundle = get_market()
 
-render_navbar("Dashboard", "Vue d'ensemble du portefeuille optimisé")
+render_navbar("Tableau de bord", "Vue d'ensemble du portefeuille optimisé")
 render_data_alerts(bundle)
 
 # --------------------------------------------------------------------------- #
@@ -34,7 +36,7 @@ with st.container(border=True):
                               format="DD/MM/YYYY")
         end = f3.date_input("Au", params.end_date, min_value=date(2000, 1, 1), max_value=date.today(),
                             format="DD/MM/YYYY")
-        apply = f4.form_submit_button("Appliquer", use_container_width=True)
+        apply = f4.form_submit_button("Appliquer", width="stretch")
     if apply:
         candidate = replace(params, tickers=sel, start_date=start, end_date=end)
         errors = candidate.validate()
@@ -70,7 +72,7 @@ with perf, st.container(border=True, height=330):
     card_title("Actifs vs S&P 500", f"Performance base 100 · benchmark {bench_label}")
     if bundle.ok:
         st.plotly_chart(base100_chart(bundle.prices, bundle.benchmark_prices, height=250),
-                        use_container_width=True, config=PLOTLY_CONFIG)
+                        width="stretch", config=PLOTLY_CONFIG)
     else:
         empty_state("Données indisponibles", "Vérifiez la connexion puis cliquez sur Actualiser.", "📡")
 
@@ -118,7 +120,7 @@ if bundle.ok:
                     <div class="qi-asset-name">{cur} · {period_label} · période {total:+.0%}</div>
                 """)
                 tail = s.iloc[-spark_window:]
-                st.plotly_chart(sparkline(tail, tail.iloc[-1] >= tail.iloc[0]), use_container_width=True,
+                st.plotly_chart(sparkline(tail, tail.iloc[-1] >= tail.iloc[0]), width="stretch",
                                 config={"displayModeBar": False, "staticPlot": True}, key=f"spark_{t}")
 
 # --------------------------------------------------------------------------- #

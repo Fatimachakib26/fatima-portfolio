@@ -72,6 +72,7 @@ def register_plotly_template() -> None:
     pio.templates[TEMPLATE_NAME] = go.layout.Template(
         layout=go.Layout(
             font=dict(family="Inter, sans-serif", color=COLORS["text"], size=12),
+            separators=", ",  # virgule décimale, espace pour les milliers (format français)
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             colorway=SERIES_COLORS,
@@ -99,6 +100,22 @@ def register_plotly_template() -> None:
     pio.templates.default = TEMPLATE_NAME
 
 
+def force_french_page() -> None:
+    """Déclare la page en français et désactive la traduction automatique.
+
+    Streamlit déclare ses pages en anglais : Chrome « traduit » alors des mots
+    français qu'il croit anglais (ex. « Fin » → « Ailette »).
+    """
+    st.html(
+        "<script>(function(){var d=window.parent&&window.parent.document?window.parent.document:document;"
+        "d.documentElement.lang='fr';d.documentElement.setAttribute('translate','no');"
+        "if(!d.querySelector('meta[name=google]')){var m=d.createElement('meta');m.name='google';"
+        "m.content='notranslate';d.head.appendChild(m);}})();</script>",
+        unsafe_allow_javascript=True,
+    )
+
+
 def apply_theme() -> None:
     inject_css()
     register_plotly_template()
+    force_french_page()
