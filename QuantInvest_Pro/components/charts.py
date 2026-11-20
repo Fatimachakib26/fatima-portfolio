@@ -53,7 +53,10 @@ def base100_chart(prices: pd.DataFrame, benchmark: pd.Series | None = None,
             hovertemplate=f"<b>{benchmark.name}</b><br>%{{x|%d/%m/%Y}}<br>Base 100 : %{{y:.1f}}<extra></extra>",
         ))
     if log_y:  # échelle logarithmique : des performances très différentes restent lisibles
-        fig.update_yaxes(type="log", title="Base 100 (échelle log.)")
+        ticks = [v for v in (25, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000)
+                 if norm.min().min() * 0.8 <= v <= norm.max().max() * 1.25]
+        fig.update_yaxes(type="log", title="Base 100 (échelle log.)", tickvals=ticks,
+                         ticktext=[f"{v:,}".replace(",", "\u202f") for v in ticks])
     fig.update_layout(hovermode="x unified", yaxis_title="Base 100 (échelle log.)" if log_y else "Base 100",
                       margin=dict(l=10, r=10, t=40 if title else 10, b=10),
                       legend=dict(orientation="h", yanchor="top", y=-0.12, xanchor="left", x=0,
