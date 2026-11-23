@@ -366,7 +366,7 @@ wald <- summary(modele_log)$coefficients["wt", ]
 z <- wald["Estimate"] / wald["Std. Error"]
 cat("Statistique de Wald z =", round(z, 3), "  p-value =", signif(2 * pnorm(-abs(z)), 4), "\n")
 
-# Équation estimée : log(frac{p^}{1-p^}) ≈ 12,04 - 4,02 x wt
+# Équation estimée : log(p^ / (1 - p^)) ≈ 12,04 - 4,02 x wt
 #
 # - Signe négatif de beta^_1 : plus la voiture est lourde, plus la probabilité d'avoir une transmission manuelle diminue.
 # - Test de Wald : H_0 : beta_1 = 0 contre H_1 : beta_1 != 0, z = beta^_1 / se(beta^_1) ~ N(0,1) sous H_0.
